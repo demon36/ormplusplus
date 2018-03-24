@@ -8,21 +8,37 @@ using namespace Poco::Data::Keywords;
 using Poco::Data::Session;
 using Poco::Data::Statement;
 
-#define MAP_TO_FIELD(NAME) NAME = mapToField(#NAME)
-#define MAP_TO_FIELD2(DATATYPE,NAME) DATATYPE& NAME = mapToField<DATATYPE>(#NAME)
+#define DEFINE_MEMBER(DATATYPE, NAME) DATATYPE& NAME = mapToField<DATATYPE>(#NAME)
+#define DEFINE_MEMBER_WITH_COL_NAME(DATATYPE, NAME, COL_NAME) DATATYPE& NAME = mapToField<DATATYPE>(COL_NAME)
+#define DEFINE_MEMBER2(DATATYPE, NAME) DATATYPE& NAME = mapNullable(#NAME)
 
-class Client : public Model<Client>
+class Client : public ORMPlusPlus::Model<Client>
 {
 public:
 	string getTableName(){
 		return "";
 	}
 	
-	int x;
-//	int& y = mapToField("id");
-//	int& MAP_TO_FIELD(y);
-	MAP_TO_FIELD2(int, y);
+	DEFINE_MEMBER(int, y);
+	DEFINE_MEMBER_WITH_COL_NAME(int, id, "USER_ID");
+	ORMPlusPlus::Integer test = mapNullable("loc_id").asKey();
+	DEFINE_MEMBER2(ORMPlusPlus::Integer, test2).asKey();
 };
+
+class M1;
+int testFn(M1* m){
+	return 1;
+}
+
+class M1{
+	M1():
+	x(testFn(this))
+	{
+
+	}
+	int x;
+};
+
 
 
 struct Person
@@ -74,7 +90,8 @@ int main(int argc, char** argv)
 	cout<<numcols<<endl;
 	
 	Client c;
-	cout<<c.y<<endl;
+	cout<<c.test2<<endl;
+	cout<<c.test2<<endl;
     
     return 0;
 }
