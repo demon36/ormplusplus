@@ -7,7 +7,7 @@ BUILD_DIR := ./build
 EXEC_NAME := demo
 
 CFLAGS= -w -Wall -g -std=c++0x
-LIBS= -std=c++0x -lPocoMySQL
+LIBS= -std=c++0x -lPocoUtil -lPocoXML -lPocoJSON -lPocoNet -lPocoFoundation -lPocoData -lPocoDataSQLite -lPocoDataMySQL
 
 all: $(EXEC_NAME)
 

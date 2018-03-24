@@ -1,4 +1,1 @@
-class Model{
-	public:
-	Model();
-};
+#include "Model.h"
