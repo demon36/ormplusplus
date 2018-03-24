@@ -22,6 +22,8 @@ public:
 	int numCols = 0;
 	virtual string getTableName() = 0;
 	int fieldvalue = 2;
+
+	template<typename T>
 	int& mapToField(string fieldName){
 		return fieldvalue;
 	}

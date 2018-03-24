@@ -8,8 +8,8 @@ using namespace Poco::Data::Keywords;
 using Poco::Data::Session;
 using Poco::Data::Statement;
 
-#define MAP_TO_FIELD()
-
+#define MAP_TO_FIELD(NAME) NAME = mapToField(#NAME)
+#define MAP_TO_FIELD2(DATATYPE,NAME) DATATYPE& NAME = mapToField<DATATYPE>(#NAME)
 
 class Client : public Model<Client>
 {
@@ -19,7 +19,9 @@ public:
 	}
 	
 	int x;
-	int& y = mapToField("id");
+//	int& y = mapToField("id");
+//	int& MAP_TO_FIELD(y);
+	MAP_TO_FIELD2(int, y);
 };
 
 
