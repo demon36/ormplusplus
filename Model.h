@@ -8,7 +8,9 @@ namespace ORMPlusPlus{
 
 	class Integer{
 	public:
-		Integer(int& binding):
+		ORMPlusPlus::Integer& operator=(const ORMPlusPlus::Integer&) = delete;
+
+		Integer(int* binding):
 		value(binding)
 		{
 		}
@@ -18,9 +20,9 @@ namespace ORMPlusPlus{
 			return *this;
 		}
 
-		operator int&() const { return value; }
+		operator int&() { return *value; }
 
-		int& value;
+		int* value;
 		bool null = false;
 		bool primaryKey = false;
 	};
@@ -56,7 +58,8 @@ namespace ORMPlusPlus{
 		}
 
 		Integer mapNullable(string colName){
-			Integer n(this->mapToField<int>(colName));
+//			Integer n(this->mapToField<int>(colName));
+			Integer n(&fieldvalue);
 		}
 	};
 

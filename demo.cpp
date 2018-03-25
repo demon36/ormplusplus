@@ -82,16 +82,37 @@ void testConnection(){
     }
 }
 
+class X {
+public:
+//	X(int val){
+//		cout<<"constructor called"<<endl;
+//		this->val = val;
+//	}
+	X& operator=(int y){val = y; return *this;}
+    operator int&() { return val; }
+    int val = 0;
+};
+
 int main(int argc, char** argv)
 {
 	std::vector<Client> list = Client::findMany();
 	int s = list.size();
 	int numcols = list[0].numCols;
-	cout<<numcols<<endl;
+//	cout<<numcols<<endl;
 	
-	Client c;
-	cout<<c.test2<<endl;
-	cout<<c.test2<<endl;
-    
+	X x;
+//	int f = x;
+	x = 9;
+
+	int y = 3 + x;
+//	x = f;
+//	x = 14;
+	cout<<x<<endl;
+//	Client c;
+//	c.test2 = 3;
+//	c.save();
+//	cout<<c.test2<<endl;
+//	cout<<c.test2<<endl;
+//
     return 0;
 }
