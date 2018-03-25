@@ -7,10 +7,13 @@ using namespace std;
 using namespace Poco::Data::Keywords;
 using Poco::Data::Session;
 using Poco::Data::Statement;
+using namespace ORMPlusPlus;
 
-#define DEFINE_MEMBER(DATATYPE, NAME) DATATYPE& NAME = mapToField<DATATYPE>(#NAME)
-#define DEFINE_MEMBER_WITH_COL_NAME(DATATYPE, NAME, COL_NAME) DATATYPE& NAME = mapToField<DATATYPE>(COL_NAME)
-#define DEFINE_MEMBER2(DATATYPE, NAME) DATATYPE& NAME = mapNullable(#NAME)
+//#define DEFINE_MEMBER(DATATYPE, NAME) DATATYPE& NAME = mapToField<DATATYPE>(#NAME)
+//#define DEFINE_MEMBER_WITH_COL_NAME(DATATYPE, NAME, COL_NAME) DATATYPE& NAME = mapToField<DATATYPE>(COL_NAME)
+//#define DEFINE_MEMBER2(DATATYPE, NAME) DATATYPE& NAME = mapNullable(#NAME)
+#define DEFINE_MEMBER3(DATATYPE, NAME) DATATYPE NAME = mapToField<DATATYPE>(#NAME)
+
 
 class Client : public ORMPlusPlus::Model<Client>
 {
@@ -19,27 +22,14 @@ public:
 		return "";
 	}
 	
-	DEFINE_MEMBER(int, y);
-	DEFINE_MEMBER_WITH_COL_NAME(int, id, "USER_ID");
-	ORMPlusPlus::Integer test = mapNullable("loc_id").asKey();
-	DEFINE_MEMBER2(ORMPlusPlus::Integer, test2).asKey();
+//	DEFINE_MEMBER(int, y);
+//	DEFINE_MEMBER_WITH_COL_NAME(int, id, "USER_ID");
+//	ORMPlusPlus::Integer test = mapNullable("loc_id").asKey();
+//	DEFINE_MEMBER2(ORMPlusPlus::Integer, test2).asKey();
+//	DEFINE_MEMBER3(Integer, test2);
+//	Integer test = mapToField<Integer>("colname").asPrimaryKey();
+	DEFINE_MEMBER3(Integer, test).asPrimaryKey();
 };
-
-class M1;
-int testFn(M1* m){
-	return 1;
-}
-
-class M1{
-	M1():
-	x(testFn(this))
-	{
-
-	}
-	int x;
-};
-
-
 
 struct Person
 {
@@ -95,9 +85,9 @@ public:
 
 int main(int argc, char** argv)
 {
-	std::vector<Client> list = Client::findMany();
-	int s = list.size();
-	int numcols = list[0].numCols;
+//	std::vector<Client> list = Client::findMany();
+//	int s = list.size();
+//	int numcols = list[0].numCols;
 //	cout<<numcols<<endl;
 	
 	X x;
@@ -107,12 +97,12 @@ int main(int argc, char** argv)
 	int y = 3 + x;
 //	x = f;
 //	x = 14;
-	cout<<x<<endl;
-//	Client c;
-//	c.test2 = 3;
+//	cout<<x<<endl;
+	Client c;
+	c.test.get() = 3;
 //	c.save();
-//	cout<<c.test2<<endl;
-//	cout<<c.test2<<endl;
+	cout<<c.test.get()<<endl;
+	cout<<c.test.get()<<endl;
 //
     return 0;
 }

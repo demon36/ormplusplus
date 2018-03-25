@@ -6,61 +6,57 @@ using namespace std;
 
 namespace ORMPlusPlus{
 
-	class Integer{
+	class NullableField{
+		bool null = false;
+		bool primaryKey = false;
 	public:
-		ORMPlusPlus::Integer& operator=(const ORMPlusPlus::Integer&) = delete;
-
-		Integer(int* binding):
-		value(binding)
-		{
-		}
-
-		Integer& asKey(){
+		NullableField& asKey(){
 			primaryKey = true;
 			return *this;
 		}
-
-		operator int&() { return *value; }
-
-		int* value;
-		bool null = false;
-		bool primaryKey = false;
 	};
 
-	class Table{
-		map<string, void*> fields;
+	class Integer{
+		int* valuePtr;
 	public:
-		template<typename T>
-		T& mapToField(string columnName){
-			fields[columnName] = new T;
-			return (T&)fields[columnName];
+		Integer(void* binding){
+			binding = new int;
+			valuePtr = (int*)binding;
+		}
+
+		int& get(){
+			return *valuePtr;
+		}
+
+		Integer& asPrimaryKey(){
+			return *this;
 		}
 	};
 
 	template<class Derived>
 	class Model{
 	public:
+		virtual string getTableName() = 0;
 		static vector<Derived> findMany(){
 			vector<Derived> list;
 			Derived d;
-			d.numCols = 14;
 			list.push_back(d);
 			return list;
 		}
 
-		int numCols = 0;
-		virtual string getTableName() = 0;
-		int fieldvalue = 2;
+		map<string, void*> fields;
 	
 		template<typename T>
-		int& mapToField(string colName){
-			return fieldvalue;
+		T mapToField(string colName){
+			fields[colName] = nullptr;
+			T member(fields[colName]);
+			return member;
 		}
 
-		Integer mapNullable(string colName){
-//			Integer n(this->mapToField<int>(colName));
-			Integer n(&fieldvalue);
-		}
+//		void* mapToField(string colName){
+//			fields[colName] = nullptr;
+//			return fields[colName];
+//		}
 	};
 
 }
