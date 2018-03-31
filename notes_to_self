@@ -1,0 +1,10 @@
+ORM todo:
+enable using NULL
+let loadMany take a limit parameter
+use loadMany without taking Class as parameter
+implement saveMany
+use eloquent like where (decorator design pattern)
+add order by
+
+when user tries to select where, he will have to type column name in snake case
+any better practice to that ?
