@@ -1,62 +1,83 @@
+#ifndef MODEL_H
+#define MODEL_H
+
 #include <iostream>
 #include <vector>
 #include <map>
 
+#include "ORMPlusPlus.h"
+
 using namespace std;
+using namespace Poco::Data::Keywords;
+using Poco::Data::Session;
+using Poco::Data::Statement;
+
+#define DEFINE_MEMBER(DATATYPE, NAME) DATATYPE NAME = mapToField<DATATYPE>(#NAME)
 
 namespace ORMPlusPlus{
 
-	class NullableField{
-		bool null = false;
-		bool primaryKey = false;
-	public:
-		NullableField& asKey(){
-			primaryKey = true;
-			return *this;
-		}
-	};
+template<class DerivedType, class PrimitiveType>
+class NullableField{
+	bool isNull = true;
+	bool isPrimaryKey = false;
+protected:
+	void* valuePtr = nullptr;
+	bool requireQuotes = true;
+public:
 
-	class Integer{
-		int* valuePtr;
-	public:
-		Integer(void* binding){
-			binding = new int;
-			valuePtr = (int*)binding;
-		}
+	NullableField(void* binding){
+		binding = new PrimitiveType;
+		valuePtr = binding;
+	}
 
-		int& get(){
-			return *valuePtr;
-		}
+	DerivedType& asPrimaryKey(){
+		isPrimaryKey = true;
+		return static_cast<DerivedType&>(*this);
+	}
 
-		Integer& asPrimaryKey(){
-			return *this;
-		}
-	};
+	DerivedType& setToNull(){
+		isNull = true;
+		return static_cast<DerivedType&>(*this);
+	}
 
-	template<class Derived>
-	class Model{
-	public:
-		virtual string getTableName() = 0;
-		static vector<Derived> findMany(){
-			vector<Derived> list;
-			Derived d;
-			list.push_back(d);
-			return list;
-		}
+	PrimitiveType& get(){
+		return *static_cast<PrimitiveType*>(valuePtr);
+	}
 
-		map<string, void*> fields;
-	
-		template<typename T>
-		T mapToField(string colName){
-			fields[colName] = nullptr;
-			T member(fields[colName]);
-			return member;
-		}
+	virtual DerivedType& withDefault(PrimitiveType value) = 0;
+};
 
-//		void* mapToField(string colName){
-//			fields[colName] = nullptr;
-//			return fields[colName];
-//		}
-	};
+class Integer : public NullableField<Integer, int>{
+public:
+	using NullableField::NullableField;
 
+	Integer& withDefault(int value){
+		*((int*)valuePtr) = value;
+		return *this;
+	}
+};
+
+template<class Derived>
+class Model{
+	map<string, void*> fields;
+public:
+	virtual string getTableName() = 0;
+
+	static std::vector<Derived> findMany(){
+//			vector<Derived> list;
+//			Derived d;
+//			list.push_back(d);
+//			return list;
+	}
+
+	template<typename T>
+	T mapToField(string colName){
+		fields[colName] = nullptr;
+		T member(fields[colName]);
+		return member;
+	}
+
+};
 }
+
+#endif MODEL_H
