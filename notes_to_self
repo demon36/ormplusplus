@@ -5,6 +5,44 @@ use loadMany without taking Class as parameter
 implement saveMany
 use eloquent like where (decorator design pattern)
 add order by
+check if column exist before executing the query 
+check database models are copy-able
+assert condition fields are available at current model
+assert column exists in result
+
 
 when user tries to select where, he will have to type column name in snake case
 any better practice to that ?
+
+watch this notation:
+
+	class CreateMigrationStatisticsTable extends Migration
+	{
+		public function up()
+		{
+			Schema::create('migration_statistics', function (Blueprint $table) {
+				$table->increments('id');
+				$table->integer('s3_migration_id')->unsigned()->index();
+
+for the problem of trying to access this inside the declaration scope of the user model
+without letting the user notice
+instead of using macros
+we might just call a static function in another class that is implemented in Model.h
+that stores all model tables
+once other advantage is that we can check if a specific model is already tied to a table
+
+
+should I use Poco built in datatypes?
+	no, because they are not nullable
+
+in nullable type I must make a constructor that takes primitive type.
+
+check that poco sessions are thread safe
+check that poco sessions have connection pools
+
+static_cast vs dynamic_cast
+
+is it essential to store values as pointers ?
+should we store member attributes as normal variable and store pointers to them in the fields map ?
+this will allow adding an effective const keyword to them
+

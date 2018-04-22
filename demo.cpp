@@ -9,19 +9,22 @@ class Client : public ORMPlusPlus::Model<Client>
 {
 public:
 	string getTableName(){
-		return "";
+		return "Person";
 	}
 	
-	DEFINE_MEMBER(Integer, test).asPrimaryKey().withDefault(8);
+	DEFINE_MEMBER(Integer, id).asPrimaryKey().withDefault(8).withColumnName("ID");
 };
 
 int main(int argc, char** argv)
 {
+	ORMPlusPlus::DB::initialize("localhost", "ormplusplus", "root", "root");
 	Client c;
-	cout<<c.test.get()<<endl;
-	c.test.get() = 3;
-	cout<<c.test.get()<<endl;
-	cout<<c.test.get()<<endl;
+	cout<<c.id.get()<<endl;
+	c.id.get() = 3;
+	cout<<c.id.get()<<endl;
+	for(int i = 0; i < c.getColumnNames().size(); i++){
+		cout<<"column["<<i<<"]="<<c.getColumnNames()[i]<<endl;
+	}
 
     return 0;
 }
