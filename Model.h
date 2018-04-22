@@ -8,12 +8,13 @@
 #include "ORMPlusPlus.h"
 
 using namespace std;
-using namespace Poco::Data::Keywords;
 using Poco::Data::Session;
 using Poco::Data::Statement;
+using namespace Poco::Data;
 
 #define MYSQL_DEFAULT_PORT 3306
-#define DEFINE_MEMBER(DATATYPE, NAME) DATATYPE NAME = mapToField<DATATYPE>(#NAME)
+#define DEFINE_ATTR(DATATYPE, NAME) DATATYPE& NAME = mapToField<DATATYPE>(#NAME)
+#define COLUMN(NAME)(#NAME)
 
 namespace ORMPlusPlus{
 
@@ -24,11 +25,14 @@ public:
 	static void executeRawQuery(string query);
 };
 
+class nullableBase{
+};
+
 //used for accessing renameColumn() and getColumnNames()
 //without having to specify template class parameters
 class ModelBase{
 protected:
-	map<string, void*> fields;
+	map<string, nullableBase*> fields;
 public:
 	void renameColumn(string oldColumnName, string newColumnName){
 		fields[newColumnName] = fields[oldColumnName];
@@ -44,25 +48,34 @@ public:
 	}
 };
 
+
+
 template<class DerivedType, class PrimitiveType>
-class NullableField{
+class NullableField : public nullableBase{
 	ModelBase* modelPtr = nullptr;
 	string columnName = "";
 	bool isNull = true;
 	bool isPrimaryKey = false;
 protected:
-	void* valuePtr = nullptr;
+	PrimitiveType primitiveValue;
 	bool requireQuotes = true;
 public:
-	NullableField(string columnName, void* binding, ModelBase* OwnerModel){
+	NullableField();
+
+	NullableField(ModelBase* OwnerModel, string columnName){
 		this->columnName = columnName;
 		modelPtr = OwnerModel;
-		binding = new PrimitiveType;
-		valuePtr = binding;
+	}
+
+	NullableField(PrimitiveType value){
+		primitiveValue = value;
 	}
 
 	//changes already set column name
 	DerivedType& withColumnName(string newColumnName){
+		if(modelPtr == nullptr){
+			throw runtime_error("NullableField is not bound to model");
+		}
 		modelPtr->renameColumn(columnName, newColumnName);
 		columnName = newColumnName;
 		return static_cast<DerivedType&>(*this);
@@ -83,11 +96,11 @@ public:
 	}
 
 	PrimitiveType& get(){
-		return *static_cast<PrimitiveType*>(valuePtr);
+		return primitiveValue;
 	}
 
 	DerivedType& withDefault(PrimitiveType value){
-		*((PrimitiveType*)valuePtr) = value;
+		primitiveValue = value;
 		return static_cast<DerivedType&>(*this);
 	}
 };
@@ -100,13 +113,33 @@ class String : public NullableField<String, string>{
 	using NullableField::NullableField;
 };
 
-struct condition{
+class condition{
+	string columnName;
+	string operator_;
+	nullableBase* value = nullptr;
+	condition(string columnName, string operator_){
+		this->columnName = columnName;
+		this->operator_ = operator_;
+	}
+public:
+	condition(string columnName, string operator_, string value)
+	: condition(columnName, operator_)
+	{
+		this->value = new String(value);
+	}
+
+	condition(string columnName, string operator_, int value)
+	: condition(columnName, operator_)
+	{
+		this->value = new Integer(value);
+	}
 };
 
 template<class UserModel>
 class Query{
+public:
 	Query& where();
-	std::vector<UserModel> get();
+	std::vector<UserModel> get(){}
 	void remove();
 	Query& update(std::vector<string>);
 	void set(std::vector<string>);
@@ -119,23 +152,20 @@ public:
 	virtual string getTableName() = 0;
 	virtual ~Model(){};
 
-	static std::vector<UserModel> findMany(){
-		int x;
-		Statement select(DB);
-		select << "SELECT Name, Address, Age FROM Person",
-			into(x),
-			range(0, 1);
-//			vector<Derived> list;
-//			Derived d;
-//			list.push_back(d);
-//			return list;
+	static std::vector<UserModel> get(){
+		Query<UserModel> query;
+		return query.get();
 	}
 
-	template<typename T>
-	T mapToField(string colName){
-		fields[colName] = nullptr;
-		T member(colName, fields[colName], this);
-		return member;
+	static Query<UserModel> where(std::vector<condition> conditions){
+		Query<UserModel> query;
+		return query;
+	}
+
+	template<typename FieldType>
+	FieldType& mapToField(string colName){
+		fields[colName] = new FieldType(this, colName);
+		return static_cast<FieldType&>(*fields[colName]);
 	}
 
 };

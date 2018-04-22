@@ -12,19 +12,23 @@ public:
 		return "Person";
 	}
 	
-	DEFINE_MEMBER(Integer, id).asPrimaryKey().withDefault(8).withColumnName("ID");
+	DEFINE_ATTR(Integer, id).asPrimaryKey().withDefault(8).withColumnName("ID");
+	DEFINE_ATTR(Integer, age).withDefault(0);
 };
 
 int main(int argc, char** argv)
 {
 	ORMPlusPlus::DB::initialize("localhost", "ormplusplus", "root", "root");
+	vector<Client> allClients = Client::get();
+	vector<Client> youngClients = Client::where({
+		{COLUMN(age), "=", ""}
+	}).get();
+
 	Client c;
 	cout<<c.id.get()<<endl;
-	c.id.get() = 3;
-	cout<<c.id.get()<<endl;
-	for(int i = 0; i < c.getColumnNames().size(); i++){
-		cout<<"column["<<i<<"]="<<c.getColumnNames()[i]<<endl;
-	}
+	cout<<c.age.get()<<endl;
+	c.age = 3;
+	cout<<c.age.get()<<endl;
 
     return 0;
 }
