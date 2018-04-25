@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "ORMPlusPlus.h"
+#include "../include/ormplusplus.h"
 
 using namespace std;
 using namespace ORMPlusPlus;

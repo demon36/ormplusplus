@@ -1,4 +1,4 @@
-#include "Model.h"
+#include "DB.h"
 
 using namespace ORMPlusPlus;
 
@@ -14,4 +14,3 @@ void DB::initialize(string host, string database, string user, string password, 
 void DB::executeRawQuery(string query){
 
 }
-
