@@ -1,26 +1,35 @@
 CC=g++
-SRC_DIR := .
-OBJ_DIR := ./obj
+SRC_DIR := ./src
+OBJ_DIR := ./build
+INC_DIR := ./include
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
-BUILD_DIR := ./build
+BIN_DIR := ./bin
+LIB_DIR := ./lib
 EXEC_NAME := demo
+LIB_NAME := ormplusplus
+TEST_DIR := ./test
 
-CFLAGS= -w -Wall -g -std=c++0x
+CFLAGS= -w -Wall -g -std=c++0x -I$(INC_DIR)
 LIBS= -std=c++0x -lPocoUtil -lPocoXML -lPocoJSON -lPocoNet -lPocoFoundation -lPocoData -lPocoDataSQLite -lPocoDataMySQL
+EXEC_LIBS=$(LIBS) -L$(LIB_DIR) -l$(LIB_NAME)
+LDOPTIONS= -Wl,-rpath='$$ORIGIN/../lib'
 
 all: $(EXEC_NAME)
 
 $(OBJ_DIR)/demo.o: $(SRC_DIR)/demo.cpp
 	$(CC) -c -o $@ $< $(CFLAGS)
 	
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(SRC_DIR)/%.h
-	$(CC) -c -o $@ $< $(CFLAGS)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
+	$(CC) -fPIC -c -o $@ $< $(CFLAGS)
 
-demo: $(OBJ_FILES)
-	$(CC) -g -o $(BUILD_DIR)/$@ $^ $(LIBS) $(LDOPTIONS)
+demo: $(LIB_NAME)
+	$(CC) -g $(TEST_DIR)/$@.cpp -o $(BIN_DIR)/$@ $(CFLAGS) $(EXEC_LIBS) $(LDOPTIONS)
+
+$(LIB_NAME): $(OBJ_FILES)
+	$(CC) -shared -g -o $(LIB_DIR)/lib$@.so $^ $(LIBS) $(LDOPTIONS)
 
 .phony: all clean
 
 clean:
-	rm -f $(OBJ_DIR)/*.o *~ core $(INCDIR)/*~  $(BUILD_DIR)/$(EXEC_NAME)
+	rm -f $(OBJ_DIR)/*.o *~ core $(INCDIR)/*~  $(BIN_DIR)/$(EXEC_NAME)

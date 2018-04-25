@@ -1,5 +1,7 @@
-/build
-/obj
+build/
+lib/
+bin/
+.settings/
 /nbproject
 /.cproject
 /.project

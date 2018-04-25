@@ -25,20 +25,17 @@ public:
 	static void executeRawQuery(string query);
 };
 
-class nullableBase{
+class NullableFieldBase{
 };
 
 //used for accessing renameColumn() and getColumnNames()
 //without having to specify template class parameters
 class ModelBase{
 protected:
-	map<string, nullableBase*> fields;
+	//holds attribute name as key
+	//NullableFields ptr as value
+	map<string, NullableFieldBase*> fields;
 public:
-	void renameColumn(string oldColumnName, string newColumnName){
-		fields[newColumnName] = fields[oldColumnName];
-		fields.erase(fields.find(oldColumnName));
-	}
-
 	std::vector<string> getColumnNames(){
 		std::vector<string> columnNames;
 		for(auto& field : fields){
@@ -48,11 +45,10 @@ public:
 	}
 };
 
-
-
 template<class DerivedType, class PrimitiveType>
-class NullableField : public nullableBase{
+class NullableField : public NullableFieldBase{
 	ModelBase* modelPtr = nullptr;
+	//column name in the database
 	string columnName = "";
 	bool isNull = true;
 	bool isPrimaryKey = false;
@@ -62,8 +58,9 @@ protected:
 public:
 	NullableField();
 
-	NullableField(ModelBase* OwnerModel, string columnName){
-		this->columnName = columnName;
+	//initialize column name with the same attribute name value
+	NullableField(ModelBase* OwnerModel, string attributeName){
+		this->columnName = attributeName;
 		modelPtr = OwnerModel;
 	}
 
@@ -71,13 +68,11 @@ public:
 		primitiveValue = value;
 	}
 
-	//changes already set column name
-	DerivedType& withColumnName(string newColumnName){
+	DerivedType& withColumnName(string customColumnName){
 		if(modelPtr == nullptr){
 			throw runtime_error("NullableField is not bound to model");
 		}
-		modelPtr->renameColumn(columnName, newColumnName);
-		columnName = newColumnName;
+		columnName = customColumnName;
 		return static_cast<DerivedType&>(*this);
 	}
 
@@ -113,23 +108,23 @@ class String : public NullableField<String, string>{
 	using NullableField::NullableField;
 };
 
-class condition{
+class Condition{
 	string columnName;
 	string operator_;
-	nullableBase* value = nullptr;
-	condition(string columnName, string operator_){
+	NullableFieldBase* value = nullptr;
+	Condition(string columnName, string operator_){
 		this->columnName = columnName;
 		this->operator_ = operator_;
 	}
 public:
-	condition(string columnName, string operator_, string value)
-	: condition(columnName, operator_)
+	Condition(string columnName, string operator_, string value)
+	: Condition(columnName, operator_)
 	{
 		this->value = new String(value);
 	}
 
-	condition(string columnName, string operator_, int value)
-	: condition(columnName, operator_)
+	Condition(string columnName, string operator_, int value)
+	: Condition(columnName, operator_)
 	{
 		this->value = new Integer(value);
 	}
@@ -137,12 +132,23 @@ public:
 
 template<class UserModel>
 class Query{
+	string whereClause = "WHERE ";
 public:
-	Query& where();
-	std::vector<UserModel> get(){}
+	Query(){};
+	Query(vector<Condition> conditions){
+		for(auto& condition : conditions){
+		}
+	}
+
+	std::vector<UserModel> get(){
+
+	}
+
 	void remove();
 	Query& update(std::vector<string>);
 	void set(std::vector<string>);
+	long long count();
+	long long sum();
 };
 
 template<class UserModel>
@@ -157,15 +163,15 @@ public:
 		return query.get();
 	}
 
-	static Query<UserModel> where(std::vector<condition> conditions){
+	static Query<UserModel> where(std::vector<Condition> conditions){
 		Query<UserModel> query;
 		return query;
 	}
 
 	template<typename FieldType>
-	FieldType& mapToField(string colName){
-		fields[colName] = new FieldType(this, colName);
-		return static_cast<FieldType&>(*fields[colName]);
+	FieldType& mapToField(string attributeName){
+		fields[attributeName] = new FieldType(this, attributeName);
+		return static_cast<FieldType&>(*fields[attributeName]);
 	}
 
 };
