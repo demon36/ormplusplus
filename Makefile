@@ -27,9 +27,9 @@ demo: $(LIB_NAME)
 	$(CC) -g $(TEST_DIR)/$@.cpp -o $(BIN_DIR)/$@ $(CFLAGS) $(EXEC_LIBS) $(LDOPTIONS)
 
 $(LIB_NAME): $(OBJ_FILES)
-	$(CC) -shared -g -o $(LIB_DIR)/lib$@.so $^ $(LIBS) $(LDOPTIONS)
+	$(CC) -shared -g -o $(LIB_DIR)/lib$@.so $^ $(LIBS)
 
 .phony: all clean
 
 clean:
-	rm -f $(OBJ_DIR)/*.o *~ core $(INCDIR)/*~  $(BIN_DIR)/$(EXEC_NAME)
+	rm -f $(OBJ_DIR)/*.o $(LIB_DIR)/*.so $(BIN_DIR)/$(EXEC_NAME)
