@@ -12,3 +12,9 @@ use decorator pattern for conditioned queries:  `model::where({loc_id, 20})->ord
 use camelCase for model user defined members and snake_case for column bindings
 
 use nullable data types
+
+### build instructions
+
+to build ./lib/libormplusplus.so and ./bin/demo run make
+
+to build library only run make ormplusplus
