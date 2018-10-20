@@ -1,27 +1,30 @@
 #include <iostream>
 
-#include "../include/ormplusplus.h"
+#include "ormplusplus.h"
 
 using namespace std;
 using namespace ORMPlusPlus;
 
-class Client : public ORMPlusPlus::Model<Client>
+BOUND_MODEL(Client)
 {
 public:
-	string getTableName(){
+	static string getTableName(){
 		return "Person";
 	}
-	
+
 	DEFINE_ATTR(Integer, id).asPrimaryKey().withDefault(8).withColumnName("ID");
 	DEFINE_ATTR(Integer, age).withDefault(0);
+	DEFINE_ATTR(String, name).withDefault("test");
+	String& lastName = mapToField<String>("lastName").withDefault("_");
 };
 
 int main(int argc, char** argv)
 {
-	ORMPlusPlus::DB::initialize("localhost", "ormplusplus", "root", "root");
-	vector<Client> allClients = Client::get();
-	vector<Client> youngClients = Client::where({
-		{COLUMN(age), "=", ""}
+	DB::initialize("localhost", "ormplusplus", "root", "root");
+	std::vector<Client> allClients = Client::get();
+	std::vector<Client> youngClients = Client::where({
+		{"age", "=", ""}, //todo: should this be accepted
+		{"name", "=", NullValue},
 	}).get();
 
 	Client c;

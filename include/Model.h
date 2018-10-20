@@ -10,6 +10,7 @@
 
 using namespace std;
 
+#define BOUND_MODEL(CLASS_NAME) class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME>
 #define DEFINE_ATTR(DATATYPE, NAME) DATATYPE& NAME = mapToField<DATATYPE>(#NAME)
 #define COLUMN(NAME)(#NAME)
 
@@ -19,9 +20,6 @@ template<class UserModel>
 class Model : public ModelBase
 {
 public:
-	virtual string getTableName() = 0;
-	virtual ~Model(){};
-
 	static std::vector<UserModel> get(){
 		Query<UserModel> query;
 		return query.get();
