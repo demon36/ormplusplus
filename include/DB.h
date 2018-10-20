@@ -2,12 +2,11 @@
 #define INCLUDE_DBH_
 
 #include <string>
+#include <memory>
 
 #include <Poco/Data/Session.h>
 #include <Poco/Data/MySQL/MySQL.h>
 #include <Poco/Data/MySQL/Connector.h>
-
-#include "ormplusplus.h"
 
 #define MYSQL_DEFAULT_PORT 3306
 
@@ -19,8 +18,9 @@ using namespace Poco::Data;
 namespace ORMPlusPlus{
 
 class DB{
-	static unique_ptr<Session> session;
+
 public:
+	static unique_ptr<Session> session;
 	static void initialize(string host, string database, string user, string password, int port = MYSQL_DEFAULT_PORT);
 	static void executeRawQuery(string query);
 };

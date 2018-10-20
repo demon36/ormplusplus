@@ -9,6 +9,8 @@
 using namespace std;
 
 namespace ORMPlusPlus{
+
+class NullableFieldBase;
 //used for accessing renameColumn() and getColumnNames()
 //without having to specify template class parameters
 class ModelBase{

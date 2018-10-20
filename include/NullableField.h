@@ -2,6 +2,7 @@
 #define INCLUDE_NULLABLEFIELD_H_
 
 #include <string>
+#include <sstream>
 
 #include "ModelBase.h"
 
@@ -12,6 +13,8 @@ namespace ORMPlusPlus{
 class ModelBase;
 
 class NullableFieldBase{
+public:
+	virtual string toString(){ return ""; };
 };
 
 template<class DerivedType, class PrimitiveType>
@@ -27,7 +30,7 @@ protected:
 public:
 	NullableField();
 
-	//initialize column name with the same attribute name value
+	//attach to model
 	NullableField(ModelBase* OwnerModel, string attributeName){
 		this->columnName = attributeName;
 		modelPtr = OwnerModel;
@@ -35,6 +38,7 @@ public:
 
 	NullableField(PrimitiveType value){
 		primitiveValue = value;
+		isNull = false;
 	}
 
 	DerivedType& withColumnName(string customColumnName){
@@ -67,6 +71,12 @@ public:
 		primitiveValue = value;
 		return static_cast<DerivedType&>(*this);
 	}
+
+	string toString(){
+		stringstream ss;
+		ss << primitiveValue;
+		return ss.str();
+	}
 };
 
 class Integer : public NullableField<Integer, int>{
@@ -77,6 +87,7 @@ class String : public NullableField<String, string>{
 	using NullableField::NullableField;
 };
 
+const NullableFieldBase NullValue;
 }
 
 

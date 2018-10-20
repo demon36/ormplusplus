@@ -1,6 +1,6 @@
 #include "DB.h"
 
-using namespace ORMPlusPlus;
+namespace ORMPlusPlus{
 
 unique_ptr<Session> DB::session;
 
@@ -12,5 +12,7 @@ void DB::initialize(string host, string database, string user, string password, 
 }
 
 void DB::executeRawQuery(string query){
+
+}
 
 }
