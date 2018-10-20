@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "NullableField.h"
+
 using namespace std;
 
 namespace ORMPlusPlus{
@@ -16,6 +18,9 @@ class QueryCondition{
 		this->operator_ = operator_;
 	}
 public:
+	string getColumnName(){ return columnName; };
+	string getOperator(){ return operator_; };
+	NullableFieldBase* getValue(){ return value; };
 	QueryCondition(string columnName, string operator_, string value)
 	: QueryCondition(columnName, operator_)
 	{
@@ -26,6 +31,12 @@ public:
 	: QueryCondition(columnName, operator_)
 	{
 		this->value = new Integer(value);
+	}
+
+	QueryCondition(string columnName, string operator_, NullableFieldBase value)
+	: QueryCondition(columnName, operator_)
+	{
+		this->value = new NullableFieldBase;
 	}
 };
 
