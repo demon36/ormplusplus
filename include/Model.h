@@ -20,6 +20,8 @@ template<class UserModel>
 class Model : public ModelBase
 {
 public:
+	Model<UserModel>(){};
+	Model<UserModel>(Model<UserModel>& model) = delete;
 	static std::vector<UserModel> get(){
 		Query<UserModel> query;
 		return query.get();
@@ -32,8 +34,8 @@ public:
 
 	template<typename FieldType>
 	FieldType& mapToField(string attributeName){
-		fields[attributeName] = new FieldType(this, attributeName);
-		return static_cast<FieldType&>(*fields[attributeName]);
+		fieldValues[attributeName] = new FieldType(this, attributeName);
+		return static_cast<FieldType&>(*fieldValues[attributeName]);
 	}
 
 };

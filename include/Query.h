@@ -47,6 +47,7 @@ public:
 		Statement select(*DB::session);
 
 		std::vector<UserModel> modelsList;
+		//use select variable instead of creating new stream queryStream
 		select << queryStream.str();
 		select.execute();
 		RecordSet rs(select);

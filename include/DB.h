@@ -8,6 +8,8 @@
 #include <Poco/Data/MySQL/MySQL.h>
 #include <Poco/Data/MySQL/Connector.h>
 
+class ModelBase;
+
 #define MYSQL_DEFAULT_PORT 3306
 
 using namespace std;
@@ -22,6 +24,9 @@ class DB{
 public:
 	static unique_ptr<Session> session;
 	static void initialize(string host, string database, string user, string password, int port = MYSQL_DEFAULT_PORT);
+	static void createOrReplaceTable(ModelBase& userModel);
+	static void createTable(ModelBase& userModel);
+	static bool checkTableExists(ModelBase& userModel, bool checkSchema = false);
 	static void executeRawQuery(string query);
 };
 

@@ -13,11 +13,16 @@ retrieve only columns declared by user
 check column types at retrieval and insertion
 implement Model::createTable()
 use const by ref where possible
+allow creating a data base if requested one does not exist
+start writing unit tests
+start commenting out code
+allow using .async() on a query
+show descriptive exception message
 
 when user tries to select where, he will have to type column name in snake case
 any better practice to that ?
 
-watch this notation:
+watch this notation that is used by laravel's Eloquent:
 
 	class CreateMigrationStatisticsTable extends Migration
 	{
@@ -38,3 +43,10 @@ check if Poco::Nullable can be used ?
 
 check that poco sessions are thread safe
 check that poco sessions have connection pools
+
+what should user do if he wants to connect to multiple databases and migrate objects from one to another for example
+	use two modes of implementation
+		send DB instance to model
+		set default context DB to DB class and use it when user does not specify a db when creating a model instance 
+	send database object when constructing a model instance
+	create function DB::createObjects(vector<DBModel>), DB::deleteObjects(vector<DBModel>)

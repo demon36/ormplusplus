@@ -6,28 +6,23 @@
 
 #include "NullableField.h"
 
-using namespace std;
-
 namespace ORMPlusPlus{
 
+//pair<name, type>
+typedef pair<std::string, DataType> TableColumn;
+
 class NullableFieldBase;
+
 //used for accessing renameColumn() and getColumnNames()
 //without having to specify template class parameters
 class ModelBase{
 protected:
-	//holds attribute name as key
-	//NullableFields ptr as value
-	map<string, NullableFieldBase*> fields;
+	//map<column name, value>
+	map<std::string, NullableFieldBase*> fieldValues;
+	static std::vector<TableColumn> columns;
 public:
-	std::vector<string> getColumnNames(){
-		std::vector<string> columnNames;
-		for(auto& field : fields){
-			columnNames.push_back(field.first);
-		}
-		return columnNames;
-	}
+	static std::vector<TableColumn> getColumns();
 };
-
 }
 
 #endif /* INCLUDE_MODELBASE_H_ */

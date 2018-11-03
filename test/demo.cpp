@@ -9,7 +9,7 @@ BOUND_MODEL(Client)
 {
 public:
 	static string getTableName(){
-		return "Person";
+		return "clinet_info";
 	}
 
 	DEFINE_ATTR(Integer, id).asPrimaryKey().withDefault(8).withColumnName("ID");
@@ -20,19 +20,23 @@ public:
 
 int main(int argc, char** argv)
 {
-	DB::initialize("localhost", "ormplusplus", "root", "root");
-	std::vector<Client> allClients = Client::get();
-	std::vector<Client> youngClients = Client::where({
-		{"age", "=", ""}, //todo: should this be accepted
-		{"name", "=", NullValue},
-	}).get();
+	try{
+		DB::initialize("localhost", "ormplusplus", "root", "root");
+//		DB::createOrReplaceTable(Client);
+		std::vector<Client> allClients = Client::get();
+		std::vector<Client> youngClients = Client::where({
+			{"age", "=", 45}, //todo: should this be accepted?
+			{"name", "=", NullValue},
+		}).get();
 
-	Client c;
-	cout<<c.id.get()<<endl;
-	cout<<c.age.get()<<endl;
-	c.age = 3;
-	cout<<c.age.get()<<endl;
-
+		Client c;
+		cout<<c.id.get()<<endl;
+		cout<<c.age.get()<<endl;
+		c.age = 3;
+		cout<<c.age.get()<<endl;
+	}catch(Poco::Exception& ex){
+		cout<<ex.message()<<endl;
+	}
     return 0;
 }
 

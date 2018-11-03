@@ -12,6 +12,11 @@ namespace ORMPlusPlus{
 
 class ModelBase;
 
+enum DataType{
+	_Integer,
+	_String,
+};
+
 class NullableFieldBase{
 public:
 	virtual string toString(){ return ""; };
