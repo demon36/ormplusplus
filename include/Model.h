@@ -4,8 +4,10 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <memory>
 
 #include "ModelBase.h"
+#include "AttributeInitializer.h"
 #include "Query.h"
 
 using namespace std;
@@ -19,7 +21,12 @@ namespace ORMPlusPlus{
 template<class UserModel>
 class Model : public ModelBase
 {
+private:
+//	static AttributeInitializer<UserModel> attribInitializer;
+	template<class NullableType>
+	friend class AttributeInitializer<UserModel, NullableType>;
 public:
+	static std::map<std::string, TableColumn> columns;
 	Model<UserModel>(){};
 	Model<UserModel>(Model<UserModel>& model) = delete;
 	static std::vector<UserModel> get(){
@@ -32,13 +39,20 @@ public:
 		return query;
 	}
 
-	template<typename FieldType>
-	FieldType& mapToField(string attributeName){
-		fieldValues[attributeName] = new FieldType(this, attributeName);
-		return static_cast<FieldType&>(*fieldValues[attributeName]);
+//	template<class NullableType>
+//	static AttributeInitializer<UserModel>& initialize(std::string columnName){
+//		return attribInitializer;
+//	}
+
+	template<class NullableType>
+	static shared_ptr<AttributeInitializer<UserModel, NullableType>> initialize2(UserModel* modelInstance){
+		return make_shared<AttributeInitializer<UserModel, NullableType>>(modelInstance);
 	}
 
 };
+
+template<class UserModel>
+std::map<std::string, TableColumn> Model<UserModel>::columns;
 }
 
 #endif MODEL_H

@@ -3,8 +3,10 @@
 
 #include <string>
 #include <sstream>
+#include <iostream>
 
 #include "ModelBase.h"
+#include "AttributeInitializer.h"
 
 using namespace std;
 
@@ -25,14 +27,13 @@ public:
 template<class DerivedType, class PrimitiveType>
 class NullableField : public NullableFieldBase{
 	ModelBase* modelPtr = nullptr;
-	//column name in the database
 	string columnName = "";
 	bool isNull = true;
-	bool isPrimaryKey = false;
 protected:
 	PrimitiveType primitiveValue;
 	bool requireQuotes = true;
 public:
+
 	NullableField();
 
 	//attach to model
@@ -44,6 +45,12 @@ public:
 	NullableField(PrimitiveType value){
 		primitiveValue = value;
 		isNull = false;
+	}
+
+	template<class UserModel>
+	NullableField(AttributeInitializer<UserModel, DerivedType> initr){
+		std::cout<<"NullableField(AttributeInitializer<UserModel, DerivedType> initr)\n";
+		columnName = "initr";
 	}
 
 	DerivedType& withColumnName(string customColumnName){
@@ -59,7 +66,7 @@ public:
 	}
 
 	DerivedType& asPrimaryKey(){
-		isPrimaryKey = true;
+		modelPtr->columns[columnName].setAsPrimaryKey();
 		return static_cast<DerivedType&>(*this);
 	}
 
@@ -86,10 +93,18 @@ public:
 
 class Integer : public NullableField<Integer, int>{
 	using NullableField::NullableField;
+public:
+	static DataType getTypeName(){
+		return DataType::_Integer;
+	}
 };
 
 class String : public NullableField<String, string>{
 	using NullableField::NullableField;
+public:
+	static DataType getTypeName(){
+		return DataType::_String;
+	}
 };
 
 const NullableFieldBase NullValue;

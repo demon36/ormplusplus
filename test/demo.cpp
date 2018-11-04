@@ -5,6 +5,8 @@
 using namespace std;
 using namespace ORMPlusPlus;
 
+#define TEMP_DEFINE_ATTR(TYPE, NAME) TYPE NAME = initialize2<TYPE>(this)->withColumnName(#NAME);
+
 BOUND_MODEL(Client)
 {
 public:
@@ -12,14 +14,19 @@ public:
 		return "clinet_info";
 	}
 
-	DEFINE_ATTR(Integer, id).asPrimaryKey().withDefault(8).withColumnName("ID");
-	DEFINE_ATTR(Integer, age).withDefault(0);
-	DEFINE_ATTR(String, name).withDefault("test");
-	String& lastName = mapToField<String>("lastName").withDefault("_");
+//	DEFINE_ATTR(Integer, id).asPrimaryKey().withDefault(8).withColumnName("ID");
+//	DEFINE_ATTR(Integer, age).withDefault(0);
+//	DEFINE_ATTR(String, name).withDefault("test");
+//	String& lastName = mapToField<String>("lastName").withDefault("_");
+//	String& lastName = initialize2<String>(this)->withColumnName("colname").getRef();
+	String lastName = AttributeInitializer<Client,String>(this).withColumnName("colname");
+	TEMP_DEFINE_ATTR(String, firstname);
 };
 
 int main(int argc, char** argv)
 {
+	Client c;
+
 	try{
 		DB::initialize("localhost", "ormplusplus", "root", "root");
 //		DB::createOrReplaceTable(Client);
@@ -30,10 +37,10 @@ int main(int argc, char** argv)
 		}).get();
 
 		Client c;
-		cout<<c.id.get()<<endl;
-		cout<<c.age.get()<<endl;
-		c.age = 3;
-		cout<<c.age.get()<<endl;
+//		cout<<c.id.get()<<endl;
+//		cout<<c.age.get()<<endl;
+//		c.age = 3;
+//		cout<<c.age.get()<<endl;
 	}catch(Poco::Exception& ex){
 		cout<<ex.message()<<endl;
 	}
