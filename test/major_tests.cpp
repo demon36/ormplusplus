@@ -4,46 +4,54 @@
 using namespace std;
 using namespace ORMPlusPlus;
 
-#define TEST(expression) printTestResult(#expression, expression)
+#define TEST(expression, expectedValue) printTestResult(string("test ")+#expression, expression, expectedValue)
 
-void printTestResult(string expression, bool result){
-	if(result){
+void printTestResult(string expression, bool result, bool expectedValue){
+	if(result == expectedValue){
 		cout<<expression<<" succeeded"<<endl;
 	}else{
 		cerr<<expression<<" failed"<<endl;
 	}
 }
 
-#define CLIENT_TABLE "client_info"
-#define NAME_ATTR_COLUMN "name"
-#define AGE_ATTR_COLUMN "age"
-
 BOUND_MODEL(Client)
 {
 public:
 	static string getTableName(){
-		return CLIENT_TABLE;
+		return "client_info";
 	}
 
-	String name = initializeAttrib()->withColumn<String>(NAME_ATTR_COLUMN);
-	Integer age = initializeAttrib()->withColumn<Integer>(AGE_ATTR_COLUMN);
+	DEFINE_ATTRIB(String, name).withDefault(string("nameless"));
+	DEFINE_ATTRIB(Integer, age).withDefault(5);
+	DEFINE_ATTRIB(Integer, height);
 };
 
-bool assertDefinedColumnsExist(string columnName){
-	if(Client::columnDefs.find(columnName) == Client::columnDefs.end()){
-		return false;
-	}else{
+template<class U>
+bool assertClassIsUserModel(){
+	try{
+		DB::assertClassIsUserModel<U>();
 		return true;
+	}catch(std::runtime_error& err){
+		return false;
 	}
 }
-
 int main(int argc, char** argv)
 {
 	Client c;
-	TEST(assertDefinedColumnsExist(NAME_ATTR_COLUMN));
-	TEST(assertDefinedColumnsExist(AGE_ATTR_COLUMN));
+	TEST(c.name.get() == "nameless", true);
+	TEST(c.age.get() == 5, true);
+	TEST(c.height.get() == 4, false);
+	TEST(Client::columnExists("name"), true);
+	TEST(Client::columnExists("age"), true);
 	
-    return 0;
+	DB::initialize("localhost", "ormplusplus", "root", "root");
+
+	TEST(assertClassIsUserModel<Client>(), true);
+	TEST(assertClassIsUserModel<Integer>(), false);
+	TEST(DB::tableExists<Client>(), false);
+	DB::createTable<Client>();
+	TEST(DB::tableExists<Client>(), true);
+	return 0;
 }
 
 
