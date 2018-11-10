@@ -6,25 +6,25 @@ SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
 BIN_DIR := ./bin
 LIB_DIR := ./lib
-EXEC_NAME := demo
 LIB_NAME := ormplusplus
-TEST_DIR := ./test
+TESTS_DIR := ./test
+TEST_SRC_FILES := $(wildcard $(TESTS_DIR)/*.cpp)
+TEST_BIN_FILES := $(patsubst $(TESTS_DIR)/%.cpp,$(BIN_DIR)/%,$(TEST_SRC_FILES))
 
 CFLAGS= -w -Wall -g -std=c++0x -I$(INC_DIR)
 LIBS= -std=c++0x -lPocoUtil -lPocoXML -lPocoJSON -lPocoNet -lPocoFoundation -lPocoData -lPocoDataSQLite -lPocoDataMySQL
 EXEC_LIBS=$(LIBS) -L$(LIB_DIR) -l$(LIB_NAME)
 LDOPTIONS= -Wl,-rpath='$$ORIGIN/../lib'
 
-all: $(EXEC_NAME)
+all: $(LIB_NAME) tests
 
-$(OBJ_DIR)/demo.o: $(SRC_DIR)/demo.cpp
-	$(CC) -c -o $@ $< $(CFLAGS)
-	
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
 	$(CC) -fPIC -c -o $@ $< $(CFLAGS)
 
-demo: $(LIB_NAME)
-	$(CC) -g $(TEST_DIR)/$@.cpp -o $(BIN_DIR)/$@ $(CFLAGS) $(EXEC_LIBS) $(LDOPTIONS)
+tests: $(TEST_BIN_FILES)
+	
+$(BIN_DIR)/%: $(TESTS_DIR)/%.cpp
+	$(CC) -g $< -o $@ $(CFLAGS) $(EXEC_LIBS) $(LDOPTIONS)
 
 $(LIB_NAME): $(OBJ_FILES)
 	$(CC) -shared -g -o $(LIB_DIR)/lib$@.so $^ $(LIBS)
@@ -32,4 +32,4 @@ $(LIB_NAME): $(OBJ_FILES)
 .phony: all clean
 
 clean:
-	rm -f $(OBJ_DIR)/*.o $(LIB_DIR)/*.so $(BIN_DIR)/$(EXEC_NAME)
+	rm -f $(OBJ_DIR)/*.o $(LIB_DIR)/*.so $(BIN_DIR)/*

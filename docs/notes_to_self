@@ -1,4 +1,5 @@
 ORM todo:
+columns are initialized each time a user model is constructed
 enable using NULL
 let loadMany take a limit parameter
 use loadMany without taking Class as parameter
