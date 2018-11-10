@@ -11,7 +11,7 @@
 #include "Query.h"
 
 #define BOUND_MODEL(CLASS_NAME) class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME>
-#define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE& NAME = mapToField<DATATYPE>(#NAME)
+#define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE& NAME = initializeAttrib<DATATYPE>(#NAME)
 
 namespace ORMPlusPlus{
 
@@ -19,7 +19,6 @@ template<class UserModel>
 class Model
 {
 private:
-	template<class UserModel, class AttribType> friend class AttributeInitializer;
 	static std::map<std::string, TableColumn> columnDefs;
 	std::map<std::string, unique_ptr<NullableFieldBase>> attributes;
 
@@ -37,7 +36,7 @@ private:
 	template<class AttribType>
 	static void addColumnIfNotExists(std::string name){
 		DataType columnType = deduceDataType<AttribType>();
-		if(columnExists(name)){
+		if(!columnExists(name)){
 			columnDefs.insert({name, TableColumn(columnType, name)});
 		}
 	}
@@ -65,7 +64,9 @@ public:
 				
 	template<typename AttribType>
 	AttributeInitializer<UserModel, AttribType> initializeAttrib(std::string name){
-		AttributeInitializer<UserModel, AttribType> initr(this, name);
+		addColumnIfNotExists<AttribType>(name);
+		AttribType* attribVariablePtr = addAttributeVariable<AttribType>(name);
+		AttributeInitializer<UserModel, AttribType> initr(attribVariablePtr, name);
 		return initr;
 	}
 

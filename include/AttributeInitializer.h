@@ -24,10 +24,9 @@ public:
 		this->modelInstance = that.modelInstance;
 	}
 
-	AttributeInitializer(Model<UserModel>* modelInstance, std::string attributeName){
+	AttributeInitializer(AttribType* attribVariablePtr, std::string attributeName){
 		this->modelInstance = modelInstance;
-		Model<UserModel>::template addColumnIfNotExists<AttribType>(attributeName);
-		fieldPtr = modelInstance->template addAttributeVariable<AttribType>(attributeName);
+		fieldPtr = attribVariablePtr;
 	}
 
 	AttributeInitializer& withDefault(AttribType value){
@@ -38,7 +37,6 @@ public:
 	//fns that might be needed
 	AttributeInitializer& asPrimary();//change columnDefs
 	AttributeInitializer& asIndex();//change columnDefs, does it apply on numerical types only?
-
 
 	~AttributeInitializer(){
 	}
