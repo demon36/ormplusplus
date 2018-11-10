@@ -3,30 +3,41 @@
 
 #include <string>
 
-#include "ModelBase.h"
 #include "TableColumn.h"
 
 namespace ORMPlusPlus{
 
-template<class UserModel, class NullableType>
+class NullableFieldBase;
+template<class UserModel>
+class Model;
+
+template<class UserModel>
 class AttributeInitializer{
-	NullableType* fieldPtr;
-	UserModel* modelInstance;
+	NullableFieldBase* fieldPtr;
+	Model<UserModel>* modelInstance;
 public:
-	AttributeInitializer(UserModel* modelInstance){
+	std::string test;
+	AttributeInitializer(Model<UserModel>* modelInstance){
 		this->modelInstance = modelInstance;
+		std::cerr<<"AttributeInitializer::AttributeInitializer()"<<std::endl;
+		test = "live";
 	}
 
-	AttributeInitializer& withColumnName(std::string attributeName){
-		UserModel::columns["attributeName"] = TableColumn();
-//		UserModel::columns["attributeName"].setType(NullableType::getTypeName());
-//		addColumn(attributeName, FieldType::getTypeName());
-		this->modelInstance->fieldValues[attributeName] = new NullableType(modelInstance, attributeName);
-//		return static_cast<FieldType&>(*fieldValues[attributeName]);
-	}
+    template<class NullableType>
+    AttributeInitializer& withColumn(std::string attributeName){
+		//TODO: datatype hardcoded for now, change later
+		Model<UserModel>::columnDefs[attributeName] = TableColumn(DataType::_String, attributeName);
+		modelInstance->attributes[attributeName] = new NullableType();
+		fieldPtr = modelInstance->attributes[attributeName];
+		return *this;
+    }
 
-	NullableType& getRef(){
-		return *fieldPtr;
+	NullableFieldBase* getRef(){
+		return fieldPtr;
+	}
+	
+	~AttributeInitializer(){
+		std::cerr<<"AttributeInitializer::~AttributeInitializer()"<<std::endl;
 	}
 
 };

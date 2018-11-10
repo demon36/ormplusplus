@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 
-#include "NullableField.h"
+//#include "NullableField.h"
 
 namespace ORMPlusPlus{
 
@@ -19,7 +19,7 @@ protected:
 
 
 public:
-	map<std::string, NullableFieldBase*> fieldValues;
+//	std::map<std::string, NullableFieldBase*> fieldValues;
 //	static std::vector<TableColumn> getColumns();
 //	static void addColumn(std::string name, DataType type);
 

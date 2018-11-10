@@ -11,21 +11,28 @@ BOUND_MODEL(Client)
 {
 public:
 	static string getTableName(){
-		return "clinet_info";
+		return "clieny_info";
 	}
 
 //	DEFINE_ATTR(Integer, id).asPrimaryKey().withDefault(8).withColumnName("ID");
 //	DEFINE_ATTR(Integer, age).withDefault(0);
 //	DEFINE_ATTR(String, name).withDefault("test");
 //	String& lastName = mapToField<String>("lastName").withDefault("_");
-//	String& lastName = initialize2<String>(this)->withColumnName("colname").getRef();
-	String lastName = AttributeInitializer<Client,String>(this).withColumnName("colname");
-	TEMP_DEFINE_ATTR(String, firstname);
+//	String lastName = initializeAttrib()->withColumnName<String>("colname");
+	String lastName = initializeAttrib()->withColumn<String>("colname");
+	Integer age = initializeAttrib()->withColumn<Integer>("age");
+//	String lastName = AttributeInitializer<Client,String>(this).withColumnName("colname");
+//	TEMP_DEFINE_ATTR(String, firstname);
 };
 
 int main(int argc, char** argv)
 {
 	Client c;
+	
+	cout<<"Client::columnDefs.size()="<<Client::columnDefs.size()<<endl;
+	for(auto& column : Client::columnDefs){
+		cout<<column.second.getName()<<endl;
+	}
 
 	try{
 		DB::initialize("localhost", "ormplusplus", "root", "root");

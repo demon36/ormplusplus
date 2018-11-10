@@ -8,11 +8,11 @@
 #include "ModelBase.h"
 #include "AttributeInitializer.h"
 
-using namespace std;
-
 namespace ORMPlusPlus{
 
 class ModelBase;
+template<class UserModel>
+class AttributeInitializer;
 
 enum DataType{
 	_Integer,
@@ -21,26 +21,26 @@ enum DataType{
 
 class NullableFieldBase{
 public:
-	virtual string toString(){ return ""; };
+	virtual std::string toString(){ return ""; };
 };
 
-template<class DerivedType, class PrimitiveType>
+template<class PrimitiveType>
 class NullableField : public NullableFieldBase{
-	ModelBase* modelPtr = nullptr;
-	string columnName = "";
+	std::string columnName = "";
 	bool isNull = true;
 protected:
 	PrimitiveType primitiveValue;
 	bool requireQuotes = true;
 public:
 
-	NullableField();
+	NullableField(){}
 
 	//attach to model
-	NullableField(ModelBase* OwnerModel, string attributeName){
-		this->columnName = attributeName;
-		modelPtr = OwnerModel;
-	}
+//        template<class UserModel>
+//	NullableField(Model<UserModel>* OwnerModel, string attributeName){
+//		this->columnName = attributeName;
+//		modelPtr = OwnerModel;
+//	}
 
 	NullableField(PrimitiveType value){
 		primitiveValue = value;
@@ -48,64 +48,67 @@ public:
 	}
 
 	template<class UserModel>
-	NullableField(AttributeInitializer<UserModel, DerivedType> initr){
-		std::cout<<"NullableField(AttributeInitializer<UserModel, DerivedType> initr)\n";
+	NullableField(AttributeInitializer<UserModel>& initr){
+		std::cout<<"NullableField::NullableField()\n";
 		columnName = "initr";
 	}
 
-	DerivedType& withColumnName(string customColumnName){
-		if(modelPtr == nullptr){
-			throw runtime_error("NullableField is not bound to model");
-		}
-		columnName = customColumnName;
-		return static_cast<DerivedType&>(*this);
-	}
+//	DerivedType& withColumnName(string customColumnName){
+//		if(modelPtr == nullptr){
+//			throw runtime_error("NullableField is not bound to model");
+//		}
+//		columnName = customColumnName;
+//		return static_cast<DerivedType&>(*this);
+//	}
 
-	string getColumnName(){
+	std::string getColumnName(){
 		return columnName;
 	}
 
-	DerivedType& asPrimaryKey(){
-		modelPtr->columns[columnName].setAsPrimaryKey();
-		return static_cast<DerivedType&>(*this);
-	}
+//	DerivedType& asPrimaryKey(){
+////		modelPtr->columns[columnName].setAsPrimaryKey();
+//		return static_cast<DerivedType&>(*this);
+//	}
 
-	DerivedType& setToNull(){
-		isNull = true;
-		return static_cast<DerivedType&>(*this);
-	}
+//	DerivedType& setToNull(){
+//		isNull = true;
+//		return static_cast<DerivedType&>(*this);
+//	}
 
 	PrimitiveType& get(){
 		return primitiveValue;
 	}
 
-	DerivedType& withDefault(PrimitiveType value){
-		primitiveValue = value;
-		return static_cast<DerivedType&>(*this);
-	}
+//	DerivedType& withDefault(PrimitiveType value){
+//		primitiveValue = value;
+//		return static_cast<DerivedType&>(*this);
+//	}
 
-	string toString(){
-		stringstream ss;
+	std::string toString(){
+		std::stringstream ss;
 		ss << primitiveValue;
 		return ss.str();
 	}
 };
 
-class Integer : public NullableField<Integer, int>{
-	using NullableField::NullableField;
-public:
-	static DataType getTypeName(){
-		return DataType::_Integer;
-	}
-};
+typedef NullableField<std::string> String;
+typedef NullableField<int> Integer;
 
-class String : public NullableField<String, string>{
-	using NullableField::NullableField;
-public:
-	static DataType getTypeName(){
-		return DataType::_String;
-	}
-};
+//class String : public NullableField<string>{
+//	using NullableField::NullableField;
+//public:
+//	static DataType getTypeName(){
+//		return DataType::_String;
+//	}
+//};
+
+//class Integer : public NullableField<int>{
+//	using NullableField::NullableField;
+//public:
+//	static DataType getTypeName(){
+//		return DataType::_Integer;
+//	}
+//};
 
 const NullableFieldBase NullValue;
 }

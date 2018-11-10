@@ -12,7 +12,6 @@ class ModelBase;
 
 #define MYSQL_DEFAULT_PORT 3306
 
-using namespace std;
 using Poco::Data::Session;
 using Poco::Data::Statement;
 using namespace Poco::Data;
@@ -22,12 +21,12 @@ namespace ORMPlusPlus{
 class DB{
 
 public:
-	static unique_ptr<Session> session;
-	static void initialize(string host, string database, string user, string password, int port = MYSQL_DEFAULT_PORT);
+	static std::unique_ptr<Session> session;
+	static void initialize(std::string host, std::string database, std::string user, std::string password, int port = MYSQL_DEFAULT_PORT);
 	static void createOrReplaceTable(ModelBase& userModel);
 	static void createTable(ModelBase& userModel);
 	static bool checkTableExists(ModelBase& userModel, bool checkSchema = false);
-	static void executeRawQuery(string query);
+	static void executeRawQuery(std::string query);
 };
 
 }

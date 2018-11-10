@@ -10,8 +10,6 @@
 #include "AttributeInitializer.h"
 #include "Query.h"
 
-using namespace std;
-
 #define BOUND_MODEL(CLASS_NAME) class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME>
 #define DEFINE_ATTR(DATATYPE, NAME) DATATYPE& NAME = mapToField<DATATYPE>(#NAME)
 #define COLUMN(NAME)(#NAME)
@@ -19,14 +17,15 @@ using namespace std;
 namespace ORMPlusPlus{
 
 template<class UserModel>
-class Model : public ModelBase
+class Model
 {
 private:
 //	static AttributeInitializer<UserModel> attribInitializer;
-	template<class NullableType>
-	friend class AttributeInitializer<UserModel, NullableType>;
+	friend class AttributeInitializer<UserModel>;
+	
+        std::map<std::string, NullableFieldBase*> attributes;
 public:
-	static std::map<std::string, TableColumn> columns;
+static std::map<std::string, TableColumn> columnDefs;
 	Model<UserModel>(){};
 	Model<UserModel>(Model<UserModel>& model) = delete;
 	static std::vector<UserModel> get(){
@@ -39,20 +38,30 @@ public:
 		return query;
 	}
 
+	template<typename FieldType>
+		FieldType& mapToField(std::string attributeName){
+		attributes[attributeName] = new FieldType(this, attributeName);
+		return static_cast<FieldType&>(*attributes[attributeName]);
+	}
+                
 //	template<class NullableType>
 //	static AttributeInitializer<UserModel>& initialize(std::string columnName){
 //		return attribInitializer;
 //	}
 
-	template<class NullableType>
-	static shared_ptr<AttributeInitializer<UserModel, NullableType>> initialize2(UserModel* modelInstance){
-		return make_shared<AttributeInitializer<UserModel, NullableType>>(modelInstance);
+	static shared_ptr<AttributeInitializer<UserModel>> initialize2(UserModel* modelInstance){
+		return make_shared<AttributeInitializer<UserModel>>(modelInstance);
 	}
-
+        
+	shared_ptr<AttributeInitializer<UserModel>> initializeAttrib(){
+		shared_ptr<AttributeInitializer<UserModel>> attribInitializerPtr = make_shared<AttributeInitializer<UserModel>>(this);
+		return attribInitializerPtr;
+	}
+        
 };
 
 template<class UserModel>
-std::map<std::string, TableColumn> Model<UserModel>::columns;
+std::map<std::string, TableColumn> Model<UserModel>::columnDefs;
 }
 
 #endif MODEL_H

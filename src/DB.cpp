@@ -1,5 +1,7 @@
 #include "DB.h"
 
+using namespace std;
+
 namespace ORMPlusPlus{
 
 unique_ptr<Session> DB::session;

@@ -1,20 +1,30 @@
 #ifndef INCLUDE_TABLECOLUMN_H_
 #define INCLUDE_TABLECOLUMN_H_
 
+#include "NullableField.h"
+
 namespace ORMPlusPlus{
 
 class TableColumn{
 private:
 	std::string name;
-//	DataType type;
+	DataType type;
 	bool isPrimaryKey = false;
 public:
-	void setAsPrimaryKey(){
-		isPrimaryKey = true;
-	}
-//	void setType(DataType type){
-//		this->type = type;
-//	}
+    TableColumn(){};
+    TableColumn(DataType type, std::string name){
+	this->type = type;
+	this->name = name;
+    }
+    
+    void setAsPrimaryKey(){
+	isPrimaryKey = true;
+    }
+    
+    const std::string getName(){
+	return name;
+    }
+
 };
 
 }
