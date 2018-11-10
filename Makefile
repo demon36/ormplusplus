@@ -23,7 +23,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
 
 tests: $(TEST_BIN_FILES)
 	
-$(BIN_DIR)/%: $(TESTS_DIR)/%.cpp
+$(BIN_DIR)/%: $(TESTS_DIR)/%.cpp $(wildcard $(INC_DIR)/*.h)
 	$(CC) -g $< -o $@ $(CFLAGS) $(EXEC_LIBS) $(LDOPTIONS)
 
 $(LIB_NAME): $(OBJ_FILES)
