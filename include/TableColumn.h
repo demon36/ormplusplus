@@ -11,19 +11,19 @@ private:
 	DataType type;
 	bool isPrimaryKey = false;
 public:
-    TableColumn(){};
-    TableColumn(DataType type, std::string name){
-	this->type = type;
-	this->name = name;
-    }
-    
-    void setAsPrimaryKey(){
-	isPrimaryKey = true;
-    }
-    
-    const std::string getName(){
-	return name;
-    }
+//	TableColumn(){};
+	TableColumn(DataType type, std::string name){
+		this->type = type;
+		this->name = name;
+	}
+	
+	void setAsPrimaryKey(){
+		isPrimaryKey = true;
+	}
+	
+	const std::string getName(){
+		return name;
+	}
 
 };
 

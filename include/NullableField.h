@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <memory>
 
 #include "ModelBase.h"
 #include "AttributeInitializer.h"
@@ -11,7 +12,7 @@
 namespace ORMPlusPlus{
 
 class ModelBase;
-template<class UserModel>
+template<class UserModel, class AttribType>
 class AttributeInitializer;
 
 enum DataType{
@@ -26,7 +27,6 @@ public:
 
 template<class PrimitiveType>
 class NullableField : public NullableFieldBase{
-	std::string columnName = "";
 	bool isNull = true;
 protected:
 	PrimitiveType primitiveValue;
@@ -35,23 +35,23 @@ public:
 
 	NullableField(){}
 
-	//attach to model
-//        template<class UserModel>
-//	NullableField(Model<UserModel>* OwnerModel, string attributeName){
-//		this->columnName = attributeName;
-//		modelPtr = OwnerModel;
-//	}
-
 	NullableField(PrimitiveType value){
 		primitiveValue = value;
 		isNull = false;
 	}
 
-	template<class UserModel>
-	NullableField(AttributeInitializer<UserModel>& initr){
-		std::cout<<"NullableField::NullableField()\n";
-		columnName = "initr";
+	NullableField& operator=(const NullableField& that) // copy assignment
+	{
+		this->primitiveValue = that.primitiveValue;
+		return *this;
 	}
+
+	//attach to model
+//		template<class UserModel>
+//	NullableField(Model<UserModel>* OwnerModel, string attributeName){
+//		this->columnName = attributeName;
+//		modelPtr = OwnerModel;
+//	}
 
 //	DerivedType& withColumnName(string customColumnName){
 //		if(modelPtr == nullptr){
@@ -60,10 +60,6 @@ public:
 //		columnName = customColumnName;
 //		return static_cast<DerivedType&>(*this);
 //	}
-
-	std::string getColumnName(){
-		return columnName;
-	}
 
 //	DerivedType& asPrimaryKey(){
 ////		modelPtr->columns[columnName].setAsPrimaryKey();

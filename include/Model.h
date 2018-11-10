@@ -11,8 +11,7 @@
 #include "Query.h"
 
 #define BOUND_MODEL(CLASS_NAME) class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME>
-#define DEFINE_ATTR(DATATYPE, NAME) DATATYPE& NAME = mapToField<DATATYPE>(#NAME)
-#define COLUMN(NAME)(#NAME)
+#define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE& NAME = mapToField<DATATYPE>(#NAME)
 
 namespace ORMPlusPlus{
 
@@ -20,12 +19,38 @@ template<class UserModel>
 class Model
 {
 private:
-//	static AttributeInitializer<UserModel> attribInitializer;
-	friend class AttributeInitializer<UserModel>;
-	
-        std::map<std::string, NullableFieldBase*> attributes;
+	template<class UserModel, class AttribType> friend class AttributeInitializer;
+	static std::map<std::string, TableColumn> columnDefs;
+	std::map<std::string, unique_ptr<NullableFieldBase>> attributes;
+
+	template<class AttribType>
+	static DataType deduceDataType(){
+		if (std::is_same<AttribType, String>::value) {
+			return DataType::_String;
+		}else if(std::is_same<AttribType, Integer>::value){
+			return DataType::_Integer;
+		}else{
+			throw std::runtime_error("Attribute type not supported");
+		}
+	}
+
+	template<class AttribType>
+	static void addColumnIfNotExists(std::string name){
+		DataType columnType = deduceDataType<AttribType>();
+		if(columnExists(name)){
+			columnDefs.insert({name, TableColumn(columnType, name)});
+		}
+	}
+
+	template<class AttribType>
+	AttribType* addAttributeVariable(std::string name){
+		deduceDataType<AttribType>();	//called to make sure AttribType is supported
+		attributes[name].reset(new AttribType());
+		return (AttribType*)attributes[name].get();
+	}
+
 public:
-static std::map<std::string, TableColumn> columnDefs;
+
 	Model<UserModel>(){};
 	Model<UserModel>(Model<UserModel>& model) = delete;
 	static std::vector<UserModel> get(){
@@ -37,27 +62,17 @@ static std::map<std::string, TableColumn> columnDefs;
 		Query<UserModel> query;
 		return query;
 	}
+				
+	template<typename AttribType>
+	AttributeInitializer<UserModel, AttribType> initializeAttrib(std::string name){
+		AttributeInitializer<UserModel, AttribType> initr(this, name);
+		return initr;
+	}
 
-	template<typename FieldType>
-		FieldType& mapToField(std::string attributeName){
-		attributes[attributeName] = new FieldType(this, attributeName);
-		return static_cast<FieldType&>(*attributes[attributeName]);
+	static bool columnExists(std::string name){
+		return columnDefs.find(name) != columnDefs.end();
 	}
-                
-//	template<class NullableType>
-//	static AttributeInitializer<UserModel>& initialize(std::string columnName){
-//		return attribInitializer;
-//	}
-
-	static shared_ptr<AttributeInitializer<UserModel>> initialize2(UserModel* modelInstance){
-		return make_shared<AttributeInitializer<UserModel>>(modelInstance);
-	}
-        
-	shared_ptr<AttributeInitializer<UserModel>> initializeAttrib(){
-		shared_ptr<AttributeInitializer<UserModel>> attribInitializerPtr = make_shared<AttributeInitializer<UserModel>>(this);
-		return attribInitializerPtr;
-	}
-        
+		
 };
 
 template<class UserModel>
