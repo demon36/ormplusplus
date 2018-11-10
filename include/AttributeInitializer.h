@@ -2,6 +2,8 @@
 #define INCLUDE_ATTRIBUTEINITIALIZER_H_
 
 #include <string>
+#include <type_traits>
+#include <exception>
 
 #include "TableColumn.h"
 
@@ -11,35 +13,39 @@ class NullableFieldBase;
 template<class UserModel>
 class Model;
 
-template<class UserModel>
+template<class UserModel, class AttribType>
 class AttributeInitializer{
-	NullableFieldBase* fieldPtr;
+protected:
+	AttribType* fieldPtr;
 	Model<UserModel>* modelInstance;
 public:
-	std::string test;
-	AttributeInitializer(Model<UserModel>* modelInstance){
+	AttributeInitializer(AttributeInitializer& that){
+		this->fieldPtr = that.fieldPtr;
+		this->modelInstance = that.modelInstance;
+	}
+
+	AttributeInitializer(Model<UserModel>* modelInstance, std::string attributeName){
 		this->modelInstance = modelInstance;
-		std::cerr<<"AttributeInitializer::AttributeInitializer()"<<std::endl;
-		test = "live";
+		Model<UserModel>::template addColumnIfNotExists<AttribType>(attributeName);
+		fieldPtr = modelInstance->template addAttributeVariable<AttribType>(attributeName);
 	}
 
-    template<class NullableType>
-    AttributeInitializer& withColumn(std::string attributeName){
-		//TODO: datatype hardcoded for now, change later
-		Model<UserModel>::columnDefs[attributeName] = TableColumn(DataType::_String, attributeName);
-		modelInstance->attributes[attributeName] = new NullableType();
-		fieldPtr = modelInstance->attributes[attributeName];
+	AttributeInitializer& withDefault(AttribType value){
+		*fieldPtr = value;
 		return *this;
-    }
-
-	NullableFieldBase* getRef(){
-		return fieldPtr;
 	}
-	
+
+	//fns that might be needed
+	AttributeInitializer& asPrimary();//change columnDefs
+	AttributeInitializer& asIndex();//change columnDefs, does it apply on numerical types only?
+
+
 	~AttributeInitializer(){
-		std::cerr<<"AttributeInitializer::~AttributeInitializer()"<<std::endl;
 	}
 
+	operator AttribType&(){
+		return *fieldPtr;
+	}
 };
 
 }
