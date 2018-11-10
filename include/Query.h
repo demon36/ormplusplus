@@ -44,7 +44,7 @@ public:
 		stringstream queryStream;
 		//todo: select specific columns before additional error check
 		queryStream << "SELECT * FROM " << UserModel::getTableName() << whereClause.str();
-		Statement select(*DB::session);
+		Statement select(DB::getSession());
 
 		std::vector<UserModel> modelsList;
 		//use select variable instead of creating new stream queryStream

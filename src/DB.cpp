@@ -13,11 +13,7 @@ void DB::initialize(string host, string database, string user, string password, 
 	session.reset(new Session("MySQL", connectionString));
 }
 
-void DB::createOrReplaceTable(ModelBase &userModel){
-}
-
-void DB::executeRawQuery(string query){
-
+Statement::Result DB::executeRawQuery(string queryString){
 }
 
 }
