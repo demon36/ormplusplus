@@ -5,27 +5,40 @@
 
 namespace ORMPlusPlus{
 
+enum DataType{
+	_Integer,
+	_String,
+	_UnsupportedType,
+};
+
 class TableColumn{
 private:
+	static std::vector<std::string> DataTypeNames;
 	std::string name;
 	DataType type;
+	int length = 0;
+	int precision = 0;
+	bool isNullable = false;
+	std::string defaultValue;
 	bool isPrimaryKey = false;
 public:
-//	TableColumn(){};
-	TableColumn(DataType type, std::string name){
-		this->type = type;
-		this->name = name;
-	}
-	
-	void setAsPrimaryKey(){
-		isPrimaryKey = true;
-	}
-	
-	const std::string getName(){
-		return name;
-	}
+	TableColumn();
+	TableColumn(std::string name, DataType type, int length, int precision, bool isNullable, std::string defaultValue, bool isPrimaryKey);
+	TableColumn(std::string name, DataType type);
+
+	std::string getName();
+	DataType getType();
+	std::string getTypeName();
+	int getLength();
+	int getPrecision();
+	bool isPrimary();
+
+	bool operator==(const TableColumn& that);
+	bool operator!=(const TableColumn& that);
 
 };
+
+typedef std::map<std::string, TableColumn> TableSchema;
 
 }
 

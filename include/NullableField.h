@@ -15,11 +15,6 @@ class ModelBase;
 template<class UserModel, class AttribType>
 class AttributeInitializer;
 
-enum DataType{
-	_Integer,
-	_String,
-};
-
 class NullableFieldBase{
 public:
 	virtual std::string toString(){ return ""; };

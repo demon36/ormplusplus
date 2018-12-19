@@ -19,7 +19,7 @@ template<class UserModel>
 class Model
 {
 private:
-	static std::map<std::string, TableColumn> columnDefs;
+	static TableSchema columnDefs;
 	std::map<std::string, unique_ptr<NullableFieldBase>> attributes;
 
 	template<class AttribType>
@@ -37,7 +37,7 @@ private:
 	static void addColumnIfNotExists(std::string name){
 		DataType columnType = deduceDataType<AttribType>();
 		if(!columnExists(name)){
-			columnDefs.insert({name, TableColumn(columnType, name)});
+			columnDefs.insert({name, TableColumn(name, columnType)});
 		}
 	}
 
@@ -73,11 +73,15 @@ public:
 	static bool columnExists(std::string name){
 		return columnDefs.find(name) != columnDefs.end();
 	}
+
+	static TableSchema getColumnDefs(){
+		return columnDefs;
+	}
 		
 };
 
 template<class UserModel>
-std::map<std::string, TableColumn> Model<UserModel>::columnDefs;
+TableSchema Model<UserModel>::columnDefs;
 }
 
 #endif MODEL_H

@@ -36,9 +36,9 @@ int main(int argc, char** argv)
 ```
 ### Implemented features
 - defining a model
-### todo features
 - create table
 - assert table exists with schema comparison
+### todo features
 - single instance save/load/delete
 - model load many with conditions
 - model delete many, update many

@@ -35,6 +35,8 @@ public:
 	}
 
 	//fns that might be needed
+
+	//TODO: make sure there is only one primary
 	AttributeInitializer& asPrimary();//change columnDefs
 	AttributeInitializer& asIndex();//change columnDefs, does it apply on numerical types only?
 
