@@ -10,14 +10,14 @@
 namespace ORMPlusPlus{
 
 class NullableFieldBase;
-template<class UserModel>
+template<class UserModel, const char* TableName>
 class Model;
 
-template<class UserModel, class AttribType>
+template<class UserModel, const char* TableName, class AttribType>
 class AttributeInitializer{
 protected:
 	AttribType* fieldPtr;
-	Model<UserModel>* modelInstance;
+	Model<UserModel, TableName>* modelInstance;
 public:
 	AttributeInitializer(AttributeInitializer& that){
 		this->fieldPtr = that.fieldPtr;

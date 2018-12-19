@@ -16,13 +16,9 @@ void printTestResult(string expression, bool result, bool expectedValue){
 
 
 //TODO: send table name as template parameter
-BOUND_MODEL(Client)
+BOUND_MODEL(Client, "client_info")
 {
 public:
-	static string getTableName(){
-		return "client_info";
-	}
-
 	DEFINE_ATTRIB(String, name).withDefault(string("nameless"));
 	DEFINE_ATTRIB(Integer, age).withDefault(5);
 	DEFINE_ATTRIB(Integer, height);

@@ -10,15 +10,20 @@
 #include "AttributeInitializer.h"
 #include "Query.h"
 
-#define BOUND_MODEL(CLASS_NAME) class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME>
+#define GET_MACRO(_1,_2,NAME,...) NAME
+#define BOUND_MODEL(...) GET_MACRO(__VA_ARGS__, BOUND_MODEL_2, BOUND_MODEL_1)(__VA_ARGS__)
+
+#define BOUND_MODEL_1(CLASS_NAME) char CLASS_NAME##__ [] = #CLASS_NAME; class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME, CLASS_NAME##__>
+#define BOUND_MODEL_2(CLASS_NAME, TABLE_NAME) char CLASS_NAME##__ [] = TABLE_NAME; class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME, CLASS_NAME##__>
 #define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE& NAME = initializeAttrib<DATATYPE>(#NAME)
 
 namespace ORMPlusPlus{
 
-template<class UserModel>
+template<class UserModel, const char* TableName>
 class Model
 {
 private:
+	static const char* tableName;
 	static TableSchema columnDefs;
 	std::map<std::string, unique_ptr<NullableFieldBase>> attributes;
 
@@ -50,11 +55,15 @@ private:
 
 public:
 
-	Model<UserModel>(){};
-	Model<UserModel>(Model<UserModel>& model) = delete;
+	Model<UserModel, TableName>(){};
+	Model<UserModel, TableName>(Model<UserModel, TableName>& model) = delete;
 	static std::vector<UserModel> get(){
 		Query<UserModel> query;
 		return query.get();
+	}
+
+	static std::string getTableName(){
+		return tableName;
 	}
 
 	static Query<UserModel> where(std::vector<QueryCondition> conditions){
@@ -63,10 +72,10 @@ public:
 	}
 				
 	template<typename AttribType>
-	AttributeInitializer<UserModel, AttribType> initializeAttrib(std::string name){
+	AttributeInitializer<UserModel, TableName, AttribType> initializeAttrib(std::string name){
 		addColumnIfNotExists<AttribType>(name);
 		AttribType* attribVariablePtr = addAttributeVariable<AttribType>(name);
-		AttributeInitializer<UserModel, AttribType> initr(attribVariablePtr, name);
+		AttributeInitializer<UserModel, TableName, AttribType> initr(attribVariablePtr, name);
 		return initr;
 	}
 
@@ -80,8 +89,10 @@ public:
 		
 };
 
-template<class UserModel>
-TableSchema Model<UserModel>::columnDefs;
+template<class UserModel, const char* TableName>
+TableSchema Model<UserModel, TableName>::columnDefs;
+template<class UserModel, const char*  TableName>
+const char* Model<UserModel, TableName>::tableName = TableName;
 }
 
 #endif MODEL_H

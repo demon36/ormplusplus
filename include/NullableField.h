@@ -12,7 +12,7 @@
 namespace ORMPlusPlus{
 
 class ModelBase;
-template<class UserModel, class AttribType>
+template<class UserModel, const char* TableName, class AttribType>
 class AttributeInitializer;
 
 class NullableFieldBase{

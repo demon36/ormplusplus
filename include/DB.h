@@ -22,7 +22,7 @@ using namespace Poco::Data::Keywords;
 
 namespace ORMPlusPlus{
 
-template<class UserModel>
+template<class UserModel, const char* TableName>
 class Model;
 
 class DB{
@@ -30,9 +30,11 @@ private:
 	static std::unique_ptr<Session> session;
 public:
 	//make sure template parameter is a child of Model<UserModel>
+	//FIXME: this function has no effect since UserModel is no longer a child of ModelBase
 	template <class UserModel>
 	static void assertClassIsUserModel(){
-		if(!std::is_base_of<Model<UserModel>, UserModel>::value){
+		return;
+		if(!std::is_base_of<ModelBase, UserModel>::value){
 			throw std::runtime_error("used class that is not a legitimate child of Model<class UserModel>");
 		}
 	}
