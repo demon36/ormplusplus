@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 - [x] table creation
 - [x] assert table exists with schema comparison
 - [x] DB session abstraction
-- [ ] put DB supported types in one place
+- [x] put DB supported types in one place
 - [ ] single/multi instance select
 - [ ] single instance save
 - [ ] single instance delete

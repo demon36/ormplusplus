@@ -21,10 +21,10 @@ QueryCondition::QueryCondition(string columnName, string operator_, int value)
 	this->value = new Integer(value);
 }
 
-QueryCondition::QueryCondition(string columnName, string operator_, NullableFieldBase value)
+QueryCondition::QueryCondition(string columnName, string operator_, Null value)
 : QueryCondition(columnName, operator_)
 {
-	this->value = new NullableFieldBase;
+	this->value = new Null(value);
 }
 
 string QueryCondition::getColumnName(){ return columnName; };

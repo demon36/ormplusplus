@@ -8,12 +8,6 @@
 
 namespace ORMPlusPlus{
 
-enum DataType{
-	_Integer,
-	_String,
-	_UnsupportedType,
-};
-
 class TableColumn{
 private:
 	static std::vector<std::string> DataTypeNames;

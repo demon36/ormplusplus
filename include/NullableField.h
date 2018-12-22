@@ -4,7 +4,34 @@
 #include <string>
 #include <sstream>
 
+#include <Poco/DateTime.h>
+
 namespace ORMPlusPlus{
+
+template<class PrimitiveType>
+class NullableField;
+
+typedef NullableField<int> Integer;
+typedef NullableField<long> Long;
+typedef NullableField<float> Float;
+typedef NullableField<double> Double;
+typedef NullableField<std::string> String;
+typedef NullableField<Poco::DateTime> DateTime;
+typedef NullableField<nullptr_t> Null;
+
+//needed for using NullableField<nullptr_t>
+std::ostream& operator<<(std::ostream& outstream, nullptr_t value){
+	return outstream;
+}
+
+enum DataType{
+	_Integer,
+	_Long,
+	_Float,
+	_Double,
+	_String,
+	_DateTime,
+};
 
 class NullableFieldBase{
 protected:
@@ -23,7 +50,27 @@ protected:
 	}
 
 public:
-	virtual std::string toString(){ return ""; };
+	template<class AttribType>
+	static DataType deduceDataType(){
+		if (std::is_same<AttribType, Integer>::value) {
+			return DataType::_Integer;
+		}else if(std::is_same<AttribType, Long>::value){
+			return DataType::_Long;
+		}else if(std::is_same<AttribType, Float>::value){
+			return DataType::_Float;
+		}else if(std::is_same<AttribType, Double>::value){
+			return DataType::_Double;
+		}else if(std::is_same<AttribType, String>::value){
+			return DataType::_String;
+		}else if(std::is_same<AttribType, DateTime>::value){
+			return DataType::_DateTime;
+		}else{
+			throw std::runtime_error("Data type not supported");
+		}
+	}
+
+	virtual std::string toString() = 0;
+
 	bool isNull() const {
 		return !hasValue;
 	}
@@ -36,7 +83,6 @@ private:
 	bool requireQuotes = true;
 
 public:
-
 	NullableField(){}
 
 	NullableField(PrimitiveType value){
@@ -161,10 +207,8 @@ public:
 	}
 };
 
-typedef NullableField<std::string> String;
-typedef NullableField<int> Integer;
+const Null NullValue(nullptr);
 
-const NullableFieldBase NullValue;
 }
 
 

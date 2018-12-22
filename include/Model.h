@@ -29,19 +29,8 @@ private:
 	static TableSchema schema;
 
 	template<class AttribType>
-	static DataType deduceDataType(){
-		if (std::is_same<AttribType, String>::value) {
-			return DataType::_String;
-		}else if(std::is_same<AttribType, Integer>::value){
-			return DataType::_Integer;
-		}else{
-			throw std::runtime_error("Attribute type not supported");
-		}
-	}
-
-	template<class AttribType>
 	static void addColumnIfNotExists(std::string name){
-		DataType columnType = deduceDataType<AttribType>();
+		DataType columnType = NullableFieldBase::deduceDataType<AttribType>();
 		if(!columnExists(name)){
 			schema.insert({name, TableColumn(name, columnType)});
 		}
@@ -49,7 +38,7 @@ private:
 
 	template<class AttribType>
 	AttribType* addAttributeVariable(std::string name){
-		deduceDataType<AttribType>();	//called to make sure AttribType is supported
+		NullableFieldBase::deduceDataType<AttribType>();	//called to make sure AttribType is supported
 		attributes[name].reset(new AttribType());
 		return (AttribType*)attributes[name].get();
 	}

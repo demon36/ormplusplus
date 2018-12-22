@@ -16,7 +16,7 @@ private:
 public:
 	QueryCondition(std::string columnName, std::string operator_, std::string value);
 	QueryCondition(std::string columnName, std::string operator_, int value);
-	QueryCondition(std::string columnName, std::string operator_, NullableFieldBase value);
+	QueryCondition(std::string columnName, std::string operator_, Null value);
 
 	std::string getColumnName();
 	std::string getOperator();
