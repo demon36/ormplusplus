@@ -5,39 +5,22 @@
 
 #include "NullableField.h"
 
-using namespace std;
-
 namespace ORMPlusPlus{
 
 class QueryCondition{
-	string columnName;
-	string operator_;
+private:
+	std::string columnName;
+	std::string operator_;
 	NullableFieldBase* value = nullptr;
-	QueryCondition(string columnName, string operator_){
-		this->columnName = columnName;
-		this->operator_ = operator_;
-	}
+	QueryCondition(std::string columnName, std::string operator_);
 public:
-	string getColumnName(){ return columnName; };
-	string getOperator(){ return operator_; };
-	NullableFieldBase* getValue(){ return value; };
-	QueryCondition(string columnName, string operator_, string value)
-	: QueryCondition(columnName, operator_)
-	{
-		this->value = new String(value);
-	}
+	QueryCondition(std::string columnName, std::string operator_, std::string value);
+	QueryCondition(std::string columnName, std::string operator_, int value);
+	QueryCondition(std::string columnName, std::string operator_, NullableFieldBase value);
 
-	QueryCondition(string columnName, string operator_, int value)
-	: QueryCondition(columnName, operator_)
-	{
-		this->value = new Integer(value);
-	}
-
-	QueryCondition(string columnName, string operator_, NullableFieldBase value)
-	: QueryCondition(columnName, operator_)
-	{
-		this->value = new NullableFieldBase;
-	}
+	std::string getColumnName();
+	std::string getOperator();
+	NullableFieldBase* getValue();
 };
 
 }

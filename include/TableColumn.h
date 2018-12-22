@@ -1,6 +1,9 @@
 #ifndef INCLUDE_TABLECOLUMN_H_
 #define INCLUDE_TABLECOLUMN_H_
 
+#include <vector>
+#include <map>
+
 #include "NullableField.h"
 
 namespace ORMPlusPlus{

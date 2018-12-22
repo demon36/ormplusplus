@@ -1,52 +1,43 @@
 ORM todo:
-enable using NULL
-let loadMany take a limit parameter
-use loadMany without taking Class as parameter
-implement saveMany
-use eloquent like where (decorator design pattern)
-add order by
-check if column exist before executing the query 
+check if column exists before executing the query 
 check database models are copy-able
 assert condition fields are available at current model
-assert column exists in result
 retrieve only columns declared by user
 check column types at retrieval and insertion
-implement Model::createTable()
-use const by ref where possible
-allow creating a data base if requested one does not exist
+use const ref where possible
+allow creating a database if requested one does not exist
 start writing unit tests
 start commenting out code
 allow using .async() on a query
-show descriptive exception message
+show descriptive exception messages
+thread safety (db session, model instance)?
+db session connection pool ?
 
-when user tries to select where, he will have to type column name in snake case
+when user tries to select where, he will have to type column name in snake case??
 any better practice to that ?
 
 watch this notation that is used by laravel's Eloquent:
 
-	class CreateMigrationStatisticsTable extends Migration
-	{
-		public function up()
-		{
-			Schema::create('migration_statistics', function (Blueprint $table) {
-				$table->increments('id');
-				$table->integer('s3_migration_id')->unsigned()->index();
-
-for the problem of trying to access this inside the declaration scope of the user model
-without letting the user notice
-instead of using macros
-we might just call a static function in another class that is implemented in Model.h
-that stores all model tables
-once other advantage is that we can check if a specific model is already tied to a table
+	Schema::create('migration_statistics', function (Blueprint $table) {
+		$table->increments('id');
+		$table->integer('s3_migration_id')->unsigned()->index();
 
 check if Poco::Nullable can be used ?
-
-check that poco sessions are thread safe
-check that poco sessions have connection pools
 
 what should user do if he wants to connect to multiple databases and migrate objects from one to another for example
 	use two modes of implementation
 		send DB instance to model
 		set default context DB to DB class and use it when user does not specify a db when creating a model instance 
 	send database object when constructing a model instance
-	create function DB::createObjects(vector<DBModel>), DB::deleteObjects(vector<DBModel>)
+
+might support this syntax in the future:
+
+sqliteSession.select<Client>().where({}).findFirst();	//returns Client
+vector<Client> clients = sqliteSession.select<Client>().where({}).get()		//returns vector<Client>
+clients[0].age = 23;
+sqliteSession.save(c1);
+sqliteSession.saveMany(clients);
+sqliteSession.delete(c1);
+sqliteSession.update(c1).where({}).set({});
+sqliteSession.updateMany(clients).where({}).set({});
+DB::defaultSession().saveMany(clients);

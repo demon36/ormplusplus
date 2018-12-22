@@ -3,8 +3,6 @@
 
 #include <string>
 #include <sstream>
-#include <iostream>
-#include <memory>
 
 namespace ORMPlusPlus{
 
@@ -47,22 +45,6 @@ public:
 
 typedef NullableField<std::string> String;
 typedef NullableField<int> Integer;
-
-//class String : public NullableField<string>{
-//	using NullableField::NullableField;
-//public:
-//	static DataType getTypeName(){
-//		return DataType::_String;
-//	}
-//};
-
-//class Integer : public NullableField<int>{
-//	using NullableField::NullableField;
-//public:
-//	static DataType getTypeName(){
-//		return DataType::_Integer;
-//	}
-//};
 
 const NullableFieldBase NullValue;
 }

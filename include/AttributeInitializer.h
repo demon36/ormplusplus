@@ -1,10 +1,6 @@
 #ifndef INCLUDE_ATTRIBUTEINITIALIZER_H_
 #define INCLUDE_ATTRIBUTEINITIALIZER_H_
 
-#include <string>
-#include <type_traits>
-#include <exception>
-
 #include "ModelBase.h"
 #include "TableColumn.h"
 

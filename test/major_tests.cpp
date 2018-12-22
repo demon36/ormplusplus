@@ -1,4 +1,3 @@
-#include <iostream>
 #include "ormplusplus.h"
 
 using namespace std;
@@ -19,7 +18,8 @@ BOUND_MODEL(Client, "client_info")
 public:
 	DEFINE_ATTRIB(String, name).withDefault(string("nameless"));
 	DEFINE_ATTRIB(Integer, age).withDefault(5);
-	DEFINE_ATTRIB(Integer, height);
+//	DEFINE_ATTRIB(Integer, height);
+	Integer& height = initializeAttrib<Integer>("height");
 };
 
 template<class U>
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 		TEST(c.height.get() == 4, false);
 		TEST(Client::columnExists("name"), true);
 		TEST(Client::columnExists("age"), true);
-		DB::initialize("localhost", "ormplusplus", "root", "root");
+		DB::setDefaultSession(make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root"));
 		TEST(assertClassIsUserModel<Client>(), true);
 		TEST(assertClassIsUserModel<Integer>(), false);
 		DB::dropTable<Client>();

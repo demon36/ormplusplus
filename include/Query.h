@@ -1,69 +1,36 @@
 #ifndef INCLUDE_QUERY_H_
 #define INCLUDE_QUERY_H_
 
-#include <string>
-#include <sstream>
-
-#include <Poco/Data/MySQL/MySQL.h>
-#include <Poco/Data/MySQL/Connector.h>
-#include <Poco/Data/Session.h>
-#include <Poco/Data/RecordSet.h>
-
-#include "QueryCondition.h"
-#include "DB.h"
-
-using Poco::Data::Session;
-using Poco::Data::Statement;
-using namespace std;
-using namespace Poco::Data;
-using namespace Poco::Data::Keywords;
-
+#include "QueryBase.h"
 
 namespace ORMPlusPlus{
 
 template<class UserModel>
-class Query{
-	stringstream whereClause;
+class Query : public QueryBase{
+
 public:
-	Query(){}
-	Query(std::vector<QueryCondition> conditions){
-		whereClause << " WHERE ";
-		for(int i = 0; i < conditions.size(); i++){
-			whereClause << conditions[i].getColumnName() << " "
-					<< conditions[i].getOperator() << " "
-					<< conditions[i].getValue()->toString() << " ";
-			if(i < conditions.size() - 1){
-				whereClause << " AND ";
-			}else{
-				whereClause << ";";
-			}
-		}
+	Query() : QueryBase(UserModel::getTableName()) {}
+	Query(const Query& query) : QueryBase(query) {}
+	Query(std::vector<QueryCondition>& conditions) : QueryBase(UserModel::getTableName()){
+		where(conditions);
 	}
 
 	std::vector<UserModel> get(){
-		stringstream queryStream;
-		//todo: select specific columns before additional error check
-		queryStream << "SELECT * FROM " << UserModel::getTableName() << whereClause.str();
-		Statement select(DB::getSession());
-
 		std::vector<UserModel> modelsList;
-		//use select variable instead of creating new stream queryStream
-		select << queryStream.str();
-		select.execute();
-		RecordSet rs(select);
-		int x;
-		rs[""].convert<int>(x);
-		while (!select.done())
-		{
-			select.execute();
-		}
-
+//		Poco::Data::RecordSet rs = select();
+//		int x;
+//		rs[""].convert<int>(x);
+		return modelsList;
 	}
 
-	void remove();
-	Query& update(std::vector<string>);
+//	operator std::vector<UserModel>(){
+//		std::vector<UserModel> modelsList;
+//		return modelsList;
+//	}
 
-	void set(std::vector<string>);
+	void remove();
+	Query& update(std::vector<std::string>);
+	void set(std::vector<std::string>);
 	long long count();
 	long long sum();
 };

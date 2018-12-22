@@ -1,7 +1,7 @@
-# ormplusplus
+# ormplusplus (pre-alpha)
 A basic ORM for C++11 that does not precompile your code
 
-Currently MySQL only is supported but the ORM is based on Poco libraries so it should not be hard to add support for SQLite, Redis or Mongodb.
+Targeting MySQL support, SQLite and others can be supported in the future
 
 ### Usage example
 ```cpp
@@ -15,36 +15,47 @@ public:
 
 int main(int argc, char** argv)
 {
-	DB::initialize("localhost", "ormplusplus", "root", "root");
-	Client c;
+	DB::setDefaultSession(make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root"));
+	
 	if(!DB::tableExists<Client>()){
 		DB::createTable<Client>();
 	}
+
 	std::vector<Client> allClients = Client::get();
 	std::vector<Client> youngClients = Client::where({
 		{"age", "<", 45},
 		{"name", "=", NullValue},
-	}).get();
+	}).orderBy({
+		{"age", SortDir::Asc},
+		{"height", SortDir::Desc}
+	}).limit(100).get();
 	
+	Client c0 = Client::where({"id", 542}).findFirst();
+	Client c1;
+	c1.name = "myname";
+	c1.age = 25;
+	c1.save();
+
 	return 0;
 }
 ```
-### Implemented features
-- defining a model
-- create table
-- assert table exists with schema comparison
-### todo features
-- single instance save/load/delete
-- model load many with conditions
-- model delete many, update many
-- relational models (maybe?)
-
-#### plan:
-- use CRTP pattern for returning instances of child class from parent class (findMany, removeMany, ..)
-- use macros to facilitate user model definitions
-- use decorator pattern for conditioned queries:  `model::where({loc_id, 20})->orderBy({id, age})->limit(100)->get();`
-- use camelCase for model user defined members and snake_case for column bindings
-- use nullable data types
+### TODO
+- [x] model definition
+- [x] table creation
+- [x] assert table exists with schema comparison
+- [x] DB session abstraction
+- [ ] put DB supported types in one place
+- [ ] single/multi instance select
+- [ ] single instance save
+- [ ] single instance delete
+- [ ] single instance update
+- [ ] save many
+- [ ] delete many
+- [ ] update many
+- [ ] query order by, limit
+- [ ] store attribute names in database in snake_case
+- [ ] relational models (maybe?)
+- [ ] transactions (maybe?)
 
 ### build instructions
 - install poco libraries

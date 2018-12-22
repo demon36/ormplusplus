@@ -68,8 +68,7 @@ public:
 	}
 
 	static Query<UserModel> where(std::vector<QueryCondition> conditions){
-		Query<UserModel> query;
-		return query;
+		return Query<UserModel>(conditions);
 	}
 				
 	template<typename AttribType>
