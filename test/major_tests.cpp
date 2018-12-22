@@ -3,13 +3,14 @@
 using namespace std;
 using namespace ORMPlusPlus;
 
-#define TEST(expression, expectedValue) printTestResult(string("expression \"")+#expression+"\" yielded "+(expectedValue?"true":"false"), expression, expectedValue)
+#define TEST(expression, expectedValue) printTestResult(#expression ,expression, expectedValue)
 
 void printTestResult(string expression, bool result, bool expectedValue){
+	string temp = "expression `"+expression+"` yielded "+ (result ? "true" : "false");
 	if(result == expectedValue){
-		cout<<expression<<" ---------------- success"<<endl;
+		cout<<temp<<" ---------------- success"<<endl;
 	}else{
-		cerr<<expression<<" ---------------- failure"<<endl;
+		cerr<<temp<<" ---------------- failure"<<endl;
 	}
 }
 
@@ -36,9 +37,9 @@ int main(int argc, char** argv)
 {
 	try{
 		Client c;
-		TEST(c.name.get() == "nameless", true);
-		TEST(c.age.get() == 5, true);
-		TEST(c.height.get() == 4, false);
+		TEST(c.name == "nameless", true);
+		TEST(c.age == 5, true);
+		TEST(c.height == 4, false);
 		TEST(Client::columnExists("name"), true);
 		TEST(Client::columnExists("age"), true);
 		DB::setDefaultSession(make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root"));
