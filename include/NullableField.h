@@ -12,7 +12,7 @@
 namespace ORMPlusPlus{
 
 class ModelBase;
-template<class UserModel, const char* TableName, class AttribType>
+template<class UserModel, class TableName, class AttribType>
 class AttributeInitializer;
 
 class NullableFieldBase{
@@ -41,39 +41,9 @@ public:
 		return *this;
 	}
 
-	//attach to model
-//		template<class UserModel>
-//	NullableField(Model<UserModel>* OwnerModel, string attributeName){
-//		this->columnName = attributeName;
-//		modelPtr = OwnerModel;
-//	}
-
-//	DerivedType& withColumnName(string customColumnName){
-//		if(modelPtr == nullptr){
-//			throw runtime_error("NullableField is not bound to model");
-//		}
-//		columnName = customColumnName;
-//		return static_cast<DerivedType&>(*this);
-//	}
-
-//	DerivedType& asPrimaryKey(){
-////		modelPtr->columns[columnName].setAsPrimaryKey();
-//		return static_cast<DerivedType&>(*this);
-//	}
-
-//	DerivedType& setToNull(){
-//		isNull = true;
-//		return static_cast<DerivedType&>(*this);
-//	}
-
 	PrimitiveType& get(){
 		return primitiveValue;
 	}
-
-//	DerivedType& withDefault(PrimitiveType value){
-//		primitiveValue = value;
-//		return static_cast<DerivedType&>(*this);
-//	}
 
 	std::string toString(){
 		std::stringstream ss;

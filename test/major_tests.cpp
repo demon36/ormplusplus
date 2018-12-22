@@ -14,8 +14,6 @@ void printTestResult(string expression, bool result, bool expectedValue){
 	}
 }
 
-
-//TODO: send table name as template parameter
 BOUND_MODEL(Client, "client_info")
 {
 public:

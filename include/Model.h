@@ -5,25 +5,27 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include "typestring.hh"
 
 #include "ModelBase.h"
 #include "AttributeInitializer.h"
 #include "Query.h"
 
+//macro overloading
 #define GET_MACRO(_1,_2,NAME,...) NAME
 #define BOUND_MODEL(...) GET_MACRO(__VA_ARGS__, BOUND_MODEL_2, BOUND_MODEL_1)(__VA_ARGS__)
 
-#define BOUND_MODEL_1(CLASS_NAME) char CLASS_NAME##__ [] = #CLASS_NAME; class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME, CLASS_NAME##__>
-#define BOUND_MODEL_2(CLASS_NAME, TABLE_NAME) char CLASS_NAME##__ [] = TABLE_NAME; class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME, CLASS_NAME##__>
+#define BOUND_MODEL_1(CLASS_NAME) class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME, typestring_is(#CLASS_NAME)>
+#define BOUND_MODEL_2(CLASS_NAME, TABLE_NAME) class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME, typestring_is(TABLE_NAME)>
 #define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE& NAME = initializeAttrib<DATATYPE>(#NAME)
 
 namespace ORMPlusPlus{
 
-template<class UserModel, const char* TableName>
+template<class UserModel, class TableName>
 class Model
 {
 private:
-	static const char* tableName;
+	static std::string tableName;
 	static TableSchema columnDefs;
 	std::map<std::string, unique_ptr<NullableFieldBase>> attributes;
 
@@ -89,10 +91,10 @@ public:
 		
 };
 
-template<class UserModel, const char* TableName>
+template<class UserModel, class TableName>
 TableSchema Model<UserModel, TableName>::columnDefs;
-template<class UserModel, const char*  TableName>
-const char* Model<UserModel, TableName>::tableName = TableName;
+template<class UserModel, class TableName>
+std::string Model<UserModel, TableName>::tableName = TableName::data();
 }
 
 #endif MODEL_H

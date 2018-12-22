@@ -22,7 +22,7 @@ using namespace Poco::Data::Keywords;
 
 namespace ORMPlusPlus{
 
-template<class UserModel, const char* TableName>
+template<class UserModel, class TableName>
 class Model;
 
 class DB{
