@@ -22,12 +22,11 @@
 namespace ORMPlusPlus{
 
 template<class UserModel, class TableName>
-class Model
+class Model : public ModelBase
 {
 private:
 	static std::string tableName;
-	static TableSchema columnDefs;
-	std::map<std::string, unique_ptr<NullableFieldBase>> attributes;
+	static TableSchema schema;
 
 	template<class AttribType>
 	static DataType deduceDataType(){
@@ -44,7 +43,7 @@ private:
 	static void addColumnIfNotExists(std::string name){
 		DataType columnType = deduceDataType<AttribType>();
 		if(!columnExists(name)){
-			columnDefs.insert({name, TableColumn(name, columnType)});
+			schema.insert({name, TableColumn(name, columnType)});
 		}
 	}
 
@@ -57,7 +56,7 @@ private:
 
 public:
 
-	Model<UserModel, TableName>(){};
+	Model<UserModel, TableName>() : ModelBase(schema, tableName){};
 	Model<UserModel, TableName>(Model<UserModel, TableName>& model) = delete;
 	static std::vector<UserModel> get(){
 		Query<UserModel> query;
@@ -74,25 +73,25 @@ public:
 	}
 				
 	template<typename AttribType>
-	AttributeInitializer<UserModel, TableName, AttribType> initializeAttrib(std::string name){
+	AttributeInitializer<AttribType> initializeAttrib(std::string name){
 		addColumnIfNotExists<AttribType>(name);
 		AttribType* attribVariablePtr = addAttributeVariable<AttribType>(name);
-		AttributeInitializer<UserModel, TableName, AttribType> initr(attribVariablePtr, name);
+		AttributeInitializer<AttribType> initr(attribVariablePtr, name);
 		return initr;
 	}
 
 	static bool columnExists(std::string name){
-		return columnDefs.find(name) != columnDefs.end();
+		return schema.find(name) != schema.end();
 	}
 
-	static TableSchema getColumnDefs(){
-		return columnDefs;
+	static TableSchema getDBSchema(){
+		return schema;
 	}
 		
 };
 
 template<class UserModel, class TableName>
-TableSchema Model<UserModel, TableName>::columnDefs;
+TableSchema Model<UserModel, TableName>::schema;
 template<class UserModel, class TableName>
 std::string Model<UserModel, TableName>::tableName = TableName::data();
 }

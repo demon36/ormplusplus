@@ -24,16 +24,15 @@ namespace ORMPlusPlus{
 
 template<class UserModel, class TableName>
 class Model;
+class ModelBase;
 
 class DB{
 private:
 	static std::unique_ptr<Session> session;
 public:
 	//make sure template parameter is a child of Model<UserModel>
-	//FIXME: this function has no effect since UserModel is no longer a child of ModelBase
 	template <class UserModel>
 	static void assertClassIsUserModel(){
-		return;
 		if(!std::is_base_of<ModelBase, UserModel>::value){
 			throw std::runtime_error("used class that is not a legitimate child of Model<class UserModel>");
 		}
@@ -60,7 +59,7 @@ public:
 		assertClassIsUserModel<UserModel>();
 		Statement query(getSession());
 		query << "CREATE TABLE IF NOT EXISTS `%s`(", UserModel::getTableName();
-		TableSchema schema = UserModel::getColumnDefs();
+		TableSchema schema = UserModel::getDBSchema();
 		std::vector<TableColumn> columnsList;
 	    for( TableSchema::iterator it = schema.begin(); it != schema.end(); ++it ) {
 	    	columnsList.push_back( it->second );
@@ -149,7 +148,7 @@ public:
 	static bool tableExists(bool checkSchema = false){
 		assertClassIsUserModel<UserModel>();
 		std::string tableName = UserModel::getTableName();
-		TableSchema providedSchema = UserModel::getColumnDefs();
+		TableSchema providedSchema = UserModel::getDBSchema();
 		if(checkSchema){
 			auto foundSchema = getTableSchema(tableName);
 			for(auto& column : providedSchema){

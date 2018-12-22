@@ -5,19 +5,18 @@
 #include <type_traits>
 #include <exception>
 
+#include "ModelBase.h"
 #include "TableColumn.h"
 
 namespace ORMPlusPlus{
 
 class NullableFieldBase;
-template<class UserModel, class TableName>
-class Model;
 
-template<class UserModel, class TableName, class AttribType>
+template<class AttribType>
 class AttributeInitializer{
 protected:
 	AttribType* fieldPtr;
-	Model<UserModel, TableName>* modelInstance;
+	ModelBase* modelInstance;
 public:
 	AttributeInitializer(AttributeInitializer& that){
 		this->fieldPtr = that.fieldPtr;

@@ -6,14 +6,7 @@
 #include <iostream>
 #include <memory>
 
-#include "ModelBase.h"
-#include "AttributeInitializer.h"
-
 namespace ORMPlusPlus{
-
-class ModelBase;
-template<class UserModel, class TableName, class AttribType>
-class AttributeInitializer;
 
 class NullableFieldBase{
 public:
