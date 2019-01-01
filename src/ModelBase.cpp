@@ -17,8 +17,15 @@ namespace ORMPlusPlus{
 //	return _columns;
 //}
 
-ModelBase::ModelBase(TableSchema& schema, const string& tableName)
-: schemaRef(schema), tableNameRef(tableName) {}
+ModelBase::ModelBase(const string& tableName, TableSchema& schema)
+: tableNameRef(tableName), schemaRef(schema) {}
 
+ModelBase::ModelBase(const ModelBase& that)
+: ModelBase(that.tableNameRef, that.schemaRef)
+{
+	for(auto& element : that.attributes){
+		this->attributes.emplace(element.first, element.second);
+	}
+}
 
 }

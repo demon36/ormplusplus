@@ -17,7 +17,7 @@ void QueryBase::where(std::vector<QueryCondition>& conditions){
 	for(int i = 0; i < conditions.size(); i++){
 		whereClause << conditions[i].getColumnName() << " "
 				<< conditions[i].getOperator() << " "
-				<< conditions[i].getValue()->toString() << " ";
+				<< conditions[i].getValueString() << " ";
 		if(i < conditions.size() - 1){
 			whereClause << " AND ";
 		}else{

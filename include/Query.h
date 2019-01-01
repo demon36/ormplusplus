@@ -17,6 +17,7 @@ public:
 
 	std::vector<UserModel> get(){
 		std::vector<UserModel> modelsList;
+		UserModel test();
 //		Poco::Data::RecordSet rs = select();
 //		int x;
 //		rs[""].convert<int>(x);

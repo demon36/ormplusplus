@@ -14,9 +14,10 @@ private:
 	TableSchema& schemaRef;
 	const std::string& tableNameRef;
 protected:
-	std::map<std::string, std::unique_ptr<NullableFieldBase>> attributes;
+	std::map<std::string, NullableFieldBase> attributes;
 public:
-	ModelBase(TableSchema& schema, const std::string& tableName);
+	ModelBase(const std::string& tableName, TableSchema& schema);
+	ModelBase(const ModelBase& that);
 //	std::map<std::string, NullableFieldBase*> fieldValues;
 //	static std::vector<TableColumn> getColumns();
 //	static void addColumn(std::string name, DataType type);

@@ -1,213 +1,189 @@
 #ifndef INCLUDE_NULLABLEFIELD_H_
 #define INCLUDE_NULLABLEFIELD_H_
 
-#include <string>
-#include <sstream>
-
-#include <Poco/DateTime.h>
+#include "NullableFieldBase.h"
 
 namespace ORMPlusPlus{
 
+class AttributeInitializerBase;
+
+/**
+ * this class can be used either as a shell for a NullableFieldBase that exists some where else <br>
+ * or as a container for NullableFieldBase
+ */
 template<class PrimitiveType>
-class NullableField;
-
-typedef NullableField<int> Integer;
-typedef NullableField<long> Long;
-typedef NullableField<float> Float;
-typedef NullableField<double> Double;
-typedef NullableField<std::string> String;
-typedef NullableField<Poco::DateTime> DateTime;
-typedef NullableField<nullptr_t> Null;
-
-//needed for using NullableField<nullptr_t>
-std::ostream& operator<<(std::ostream& outstream, nullptr_t value){
-	return outstream;
-}
-
-enum DataType{
-	_Integer,
-	_Long,
-	_Float,
-	_Double,
-	_String,
-	_DateTime,
-};
-
-class NullableFieldBase{
-protected:
-	bool hasValue = false;
-
-	static void assertLHSNotNull(const NullableFieldBase& lhs){
-		if(lhs.isNull()){
-			throw std::runtime_error("comparing with null left hand operand");
- 		}
-	}
-
-	static void assertRHSNotNull(const NullableFieldBase& rhs){
-		if(rhs.isNull()){
-			throw std::runtime_error("comparing with null left hand operand");
- 		}
-	}
-
-public:
-	template<class AttribType>
-	static DataType deduceDataType(){
-		if (std::is_same<AttribType, Integer>::value) {
-			return DataType::_Integer;
-		}else if(std::is_same<AttribType, Long>::value){
-			return DataType::_Long;
-		}else if(std::is_same<AttribType, Float>::value){
-			return DataType::_Float;
-		}else if(std::is_same<AttribType, Double>::value){
-			return DataType::_Double;
-		}else if(std::is_same<AttribType, String>::value){
-			return DataType::_String;
-		}else if(std::is_same<AttribType, DateTime>::value){
-			return DataType::_DateTime;
-		}else{
-			throw std::runtime_error("Data type not supported");
-		}
-	}
-
-	virtual std::string toString() = 0;
-
-	bool isNull() const {
-		return !hasValue;
-	}
-};
-
-template<class PrimitiveType>
-class NullableField : public NullableFieldBase{
+class NullableField{
 private:
-	PrimitiveType primitiveValue;
-	bool requireQuotes = true;
-
+	NullableFieldBase* NFBasePtr = nullptr;
+	bool isPtrOwner = false;//should be false if used as shell
 public:
-	NullableField(){}
-
-	NullableField(PrimitiveType value){
-		setValue(value);
+	static const std::type_info& getPrimitiveType(){
+		return typeid(PrimitiveType);
 	}
 
-	NullableField& operator=(const NullableField& that) // copy assignment
+	NullableField() : isPtrOwner(true)
 	{
-		setValue(that.primitiveValue);
+		NFBasePtr = new NullableFieldBase(typeid(PrimitiveType));
+	}
+
+	NullableField(const NullableField<PrimitiveType>& that) : isPtrOwner(true)
+	{
+		NFBasePtr = new NullableFieldBase(*that.NFBasePtr);
+	}
+
+	NullableField(const NullableField<PrimitiveType>&& that) : isPtrOwner(true)
+	{
+		NFBasePtr = new NullableFieldBase(std::move(*that.NFBasePtr));
+	}
+
+	NullableField(NullableFieldBase& nullableFieldBase) : isPtrOwner(false)
+	{
+		NFBasePtr = &nullableFieldBase;
+	}
+
+	NullableField(const AttributeInitializerBase& attribInitializer)
+	: NullableField(attribInitializer.getNullableFieldBaseRef())
+	{
+
+	}
+
+	NullableField(const PrimitiveType& value) : NullableField()
+	{
+		NFBasePtr->setValue<PrimitiveType>(value);
+	}
+
+	NullableField& operator=(const NullableField& that)
+	{
+		NFBasePtr->setValue<PrimitiveType>(that.getValueRef());
 		return *this;
 	}
 
-	NullableField& operator=(const PrimitiveType& value) // copy assignment
+	NullableField& operator=(const PrimitiveType& value)
 	{
-		setValue(value);
+		NFBasePtr->setValue<PrimitiveType>(value);
 		return *this;
 	}
 
-	bool operator==(const NullableField& that) // copy assignment
+	bool operator==(const NullableField& that)
 	{
 		if(this->isNull() && that.isNull()){
 			return true;
 		}else if(this->isNull() || that.isNull()){
 			return false;
 		}else{
-			return this->primitiveValue == that.primitiveValue;
+			return this->getValueRef() == that.getValueRef();
 		}
 	}
 
-	bool operator==(const PrimitiveType& value) // copy assignment
+	bool operator==(const PrimitiveType& value)
 	{
 		if(this->isNull()){
 			return false;
 		}else{
-			return this->primitiveValue == value;
+			return this->getValueRef() == value;
 		}
 	}
 
-	bool operator!=(const NullableField& that) // copy assignment
+	bool operator!=(const NullableField& that)
 	{
-		return !operator==(that.primitiveValue);
+		return !operator==(that.getValueRef());
 	}
 
-	bool operator!=(const PrimitiveType& value) // copy assignment
+	bool operator!=(const PrimitiveType& value)
 	{
-		return !operator==(primitiveValue == value);
+		return !operator==(getValueRef() == value);
 	}
 
-	bool operator>(const NullableField& that) // copy assignment
+	bool operator>(const NullableField& that)
 	{
 		assertLHSNotNull(*this);
 		assertRHSNotNull(that);
-		return this->primitiveValue > that.primitiveValue;
+		return this->getValueRef() > that.getValueRef();
 	}
 
-	bool operator>(const PrimitiveType& value) // copy assignment
+	bool operator>(const PrimitiveType& value)
 	{
 		assertLHSNotNull(*this);
-		return this->primitiveValue > value;
+		return this->getValueRef() > value;
 	}
 
-	bool operator>=(const NullableField& that) // copy assignment
-	{
-		assertLHSNotNull(*this);
-		assertRHSNotNull(that);
-		return this->primitiveValue >= that.primitiveValue;
-	}
-
-	bool operator>=(const PrimitiveType& value) // copy assignment
-	{
-		assertLHSNotNull(*this);
-		return this->primitiveValue >= value;
-	}
-
-	bool operator<(const NullableField& that) // copy assignment
+	bool operator>=(const NullableField& that)
 	{
 		assertLHSNotNull(*this);
 		assertRHSNotNull(that);
-		return this->primitiveValue < that.primitiveValue;
+		return this->getValueRef() >= that.getValueRef();
 	}
 
-	bool operator<(const PrimitiveType& value) // copy assignment
+	bool operator>=(const PrimitiveType& value)
 	{
 		assertLHSNotNull(*this);
-		return this->primitiveValue < value;
+		return this->getValueRef() >= value;
 	}
 
-	bool operator<=(const NullableField& that) // copy assignment
+	bool operator<(const NullableField& that)
 	{
 		assertLHSNotNull(*this);
 		assertRHSNotNull(that);
-		return this->primitiveValue <= that.primitiveValue;
+		return this->getValueRef() < that.getValueRef();
 	}
 
-	bool operator<=(const PrimitiveType& value) // copy assignment
+	bool operator<(const PrimitiveType& value)
 	{
 		assertLHSNotNull(*this);
-		return this->primitiveValue <= value;
+		return this->getValueRef() < value;
+	}
+
+	bool operator<=(const NullableField& that)
+	{
+		assertLHSNotNull(*this);
+		assertRHSNotNull(that);
+		return this->getValueRef() <= that.getValueRef();
+	}
+
+	bool operator<=(const PrimitiveType& value)
+	{
+		assertLHSNotNull(*this);
+		return this->getValueRef() <= value;
 	}
 
 	operator PrimitiveType&(){
-		return primitiveValue;
+		return getValueRef();
 	}
 
 	operator PrimitiveType(){
-		return primitiveValue;
-	}
-
-	PrimitiveType& get(){
-		return primitiveValue;
-	}
-
-	void setValue(const PrimitiveType& value){
-		primitiveValue = value;
-		hasValue = true;
+		return getValueRef();
 	}
 
 	std::string toString(){
+		//TODO: move this to NullableFieldBase
 		std::stringstream ss;
-		ss << primitiveValue;
+		ss << getValueRef();
 		return ss.str();
 	}
+
+	~NullableField<PrimitiveType>(){
+		if(isPtrOwner && NFBasePtr != nullptr){
+			delete NFBasePtr;
+		}
+	}
+
+	const PrimitiveType& getValueRef() const{
+		return NFBasePtr->getValueRef<PrimitiveType>();
+	}
+
+	NullableFieldBase& getBaseRef(){
+		return *NFBasePtr;
+	}
+
+	bool isNull(){
+		return NFBasePtr->isNull();
+	}
+
 };
 
-const Null NullValue(nullptr);
+//TODO: replace by an empty constructor in NullableField
+//to be used like if x == Null() -maybe?-
+//extern const Null NullValue(nullptr);
 
 }
 

@@ -1,46 +1,42 @@
 #ifndef INCLUDE_ATTRIBUTEINITIALIZER_H_
 #define INCLUDE_ATTRIBUTEINITIALIZER_H_
 
-#include "ModelBase.h"
-#include "TableColumn.h"
+#include "AttributeInitializerBase.h"
 
 namespace ORMPlusPlus{
 
-class NullableFieldBase;
-
 template<class AttribType>
-class AttributeInitializer{
-protected:
-	AttribType* fieldPtr;
-	ModelBase* modelInstance;
+class AttributeInitializer : public AttributeInitializerBase{
+private:
+	AttribType nullableField;
 public:
-	AttributeInitializer(AttributeInitializer& that){
-		this->fieldPtr = that.fieldPtr;
-		this->modelInstance = that.modelInstance;
+	AttributeInitializer(AttributeInitializer& that)
+	: AttributeInitializerBase(that), nullableField(that.nullableField)
+	{
 	}
 
-	AttributeInitializer(AttribType* attribVariablePtr, std::string attributeName){
-		this->modelInstance = modelInstance;
-		fieldPtr = attribVariablePtr;
+	AttributeInitializer(NullableFieldBase& NFBase, ModelBase& modelInstance, const std::string& attributeName)
+	: AttributeInitializerBase(NFBase, modelInstance, attributeName), nullableField(NFBase)
+	{
 	}
 
 	AttributeInitializer& withDefault(AttribType value){
-		*fieldPtr = value;
+		//TODO: check operator= is implemented correctly
+		nullableField = value;
 		return *this;
 	}
 
-	//fns that might be needed
-
-	//TODO: make sure there is only one primary
+	//TODO: make sure there is only one primary -maybe?-
 	AttributeInitializer& asPrimary();//change columnDefs
 	AttributeInitializer& asIndex();//change columnDefs, does it apply on numerical types only?
 
 	~AttributeInitializer(){
 	}
 
-	operator AttribType&(){
-		return *fieldPtr;
-	}
+//	operator AttribType&&(){
+//		//FIXME: which recipient ctor will be called here ?
+//		return std::move(nullableField);
+//	}
 };
 
 }

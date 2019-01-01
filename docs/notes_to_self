@@ -41,3 +41,22 @@ sqliteSession.delete(c1);
 sqliteSession.update(c1).where({}).set({});
 sqliteSession.updateMany(clients).where({}).set({});
 DB::defaultSession().saveMany(clients);
+
+select
+	tableName
+	where
+	orderBy
+	limit
+
+delete
+	tableName
+	where
+
+update
+	tableName
+	where
+	set
+
+insert
+	tableName
+	values

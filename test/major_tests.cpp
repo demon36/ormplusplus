@@ -19,8 +19,8 @@ BOUND_MODEL(Client, "client_info")
 public:
 	DEFINE_ATTRIB(String, name).withDefault(string("nameless"));
 	DEFINE_ATTRIB(Integer, age).withDefault(5);
-//	DEFINE_ATTRIB(Integer, height);
-	Integer& height = initializeAttrib<Integer>("height");
+	DEFINE_ATTRIB(Integer, height);
+//	Integer height = initializeAttrib<Integer>("height");
 };
 
 template<class U>

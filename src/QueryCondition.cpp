@@ -4,31 +4,23 @@ using namespace std;
 
 namespace ORMPlusPlus{
 
-QueryCondition::QueryCondition(string columnName, string operator_){
-	this->columnName = columnName;
-	this->operator_ = operator_;
-}
-
 QueryCondition::QueryCondition(string columnName, string operator_, string value)
-: QueryCondition(columnName, operator_)
+: columnName(columnName), operator_(operator_), value(NullableFieldBase::create<string>(value))
 {
-	this->value = new String(value);
 }
 
 QueryCondition::QueryCondition(string columnName, string operator_, int value)
-: QueryCondition(columnName, operator_)
+: columnName(columnName), operator_(operator_), value(NullableFieldBase::create<int>(value))
 {
-	this->value = new Integer(value);
 }
 
 QueryCondition::QueryCondition(string columnName, string operator_, Null value)
-: QueryCondition(columnName, operator_)
+: columnName(columnName), operator_(operator_), value(NullableFieldBase::create<nullptr_t>(nullptr))
 {
-	this->value = new Null(value);
 }
 
 string QueryCondition::getColumnName(){ return columnName; };
 string QueryCondition::getOperator(){ return operator_; };
-NullableFieldBase* QueryCondition::getValue(){ return value; };
+string QueryCondition::getValueString(){ return value.toString(); };
 
 }
