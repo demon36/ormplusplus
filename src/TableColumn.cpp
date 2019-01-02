@@ -5,18 +5,12 @@
 
 namespace ORMPlusPlus{
 
-//TODO: this info should be moved to type itself
-std::map<std::type_index, std::string> TableColumn::DataTypeNames = {
-		{typeid(Integer), "INT"},
-		{typeid(String), "VARCHAR"},
-};
-
 TableColumn::TableColumn()
-: type(typeid(nullptr))
+: typeHash(typeid(nullptr).hash_code())//TODO: check the consequences
 {}
 
-TableColumn::TableColumn(const std::string& name_, const std::type_info& type_, int length, int precision, bool isNullable, const std::string& defaultValue, bool isPrimaryKey)
-: type(type_), name(name_)//TODO: add more
+TableColumn::TableColumn(const std::string& name_, const std::size_t typeHash_, int length, int precision, bool isNullable, const std::string& defaultValue, bool isPrimaryKey)
+: name(name_), typeHash(typeHash_)//TODO: add more
 {
 	this->length = length;
 	this->precision = precision;
@@ -25,32 +19,41 @@ TableColumn::TableColumn(const std::string& name_, const std::type_info& type_, 
 	this->isPrimaryKey = isPrimaryKey;
 }
 
-TableColumn::TableColumn(const std::string& name_, const std::type_info& type_)
-: type(type_), name(name_)
+TableColumn::TableColumn(const std::string& name_, const std::size_t typeHash_)
+: name(name_), typeHash(typeHash_)
 {
-	if(type == typeid(Integer)){
+	if(isIntegral()){
 		length = 0;
 		precision = DEFAULT_NUM_PRECISION;
-	}else if(type == typeid(String)){
+	}else if(isText()){
 		length = DEFAULT_STRING_LENGTH;
 		precision = 0;
 	}
 }
 
 std::string TableColumn::getName(){ return name; }
-const std::type_info& TableColumn::getType(){ return type; }
-std::string TableColumn::getTypeName(){ return DataTypeNames[type]; }
+const std::size_t& TableColumn::getTypeHash(){ return typeHash; }
+std::string TableColumn::getDBTypeName(){ return NullableFieldBase::typeInfoMap.at(typeHash).DBName; }
 int TableColumn::getLength(){ return length; }
 int TableColumn::getPrecision(){ return precision; }
 bool TableColumn::isPrimary(){ return isPrimaryKey; }
 
+bool TableColumn::isIntegral(){
+	//TODO: check key exists
+	return NullableFieldBase::typeInfoMap.at(typeHash).isIntegral;
+}
+
+bool TableColumn::isText(){
+	return NullableFieldBase::typeInfoMap.at(typeHash).isText;
+}
+
 bool TableColumn::operator==(const TableColumn& that){
 	if(
-			this->name == that.name &&
-			this->type == that.type &&
-			this->isNullable == that.isNullable &&
-			this->defaultValue == that.defaultValue &&
-			this->isPrimaryKey == that.isPrimaryKey
+		this->name == that.name &&
+		this->typeHash == that.typeHash &&
+		this->isNullable == that.isNullable &&
+		this->defaultValue == that.defaultValue &&
+		this->isPrimaryKey == that.isPrimaryKey
 	){
 		return true;
 	}else{

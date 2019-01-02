@@ -7,6 +7,9 @@
 
 #include "NullableFieldBase.h"
 
+class NullableFieldBase;
+
+
 namespace ORMPlusPlus{
 
 class AttributeInitializerBase;
@@ -39,12 +42,12 @@ public:
 		NFBasePtr = new NullableFieldBase(typeid(PrimitiveType));
 	}
 
-	NullableField(const NullableField<PrimitiveType>& that) : isPtrOwner(true)
+	NullableField(const NullableField& that) : isPtrOwner(true)
 	{
 		NFBasePtr = new NullableFieldBase(*that.NFBasePtr);
 	}
 
-	NullableField(const NullableField<PrimitiveType>&& that) : isPtrOwner(true)
+	NullableField(const NullableField&& that) : isPtrOwner(true)
 	{
 		NFBasePtr = new NullableFieldBase(std::move(*that.NFBasePtr));
 	}
@@ -174,7 +177,7 @@ public:
 		return ss.str();
 	}
 
-	~NullableField<PrimitiveType>(){
+	~NullableField(){
 		if(isPtrOwner && NFBasePtr != nullptr){
 			delete NFBasePtr;
 		}
@@ -193,6 +196,17 @@ public:
 	}
 
 };
+
+//remember to add the necessary item to typeInfoMap at adding new specializations
+typedef NullableField<int> Integer;
+typedef NullableField<long> Long;
+typedef NullableField<float> Float;
+typedef NullableField<double> Double;
+typedef NullableField<std::string> String;
+typedef NullableField<Poco::DateTime> DateTime;
+//TODO: is this specialization essential ?
+typedef NullableField<nullptr_t> Null;
+
 
 //TODO: replace by an empty constructor in NullableField
 //to be used like if x == Null() -maybe?-

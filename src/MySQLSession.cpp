@@ -46,20 +46,11 @@ TableSchema MySQLSession::getTableSchema(const string& name){
 	query.execute();
 	TableSchema schema;
 	for(auto& columnTuple : rawSchema){
-		type_index test = typeid(int);
-		//TODO: is this safe ?
-		const type_info* typeIdxPtr = nullptr;
 		string DBColumnType = columnTuple.get<1>();
-		if(DBColumnType == "int"){
-			typeIdxPtr = &typeid(int);
-		}else if(DBColumnType == "varchar"){
-			typeIdxPtr = &typeid(String);
-		}else{
-			throw runtime_error("unsupported database type");
-		}
+		size_t typeHash = NullableFieldBase::getTypeHash(DBColumnType);
 		TableColumn tempColumn(
 				columnTuple.get<0>(),	//COLUMN_NAME
-				*typeIdxPtr,				//DATA_TYPE
+				typeHash,				//DATA_TYPE
 				columnTuple.get<2>(),	//CHARACTER_MAXIMUM_LENGTH
 				columnTuple.get<3>(),	//NUMERIC_PRECISION
 				columnTuple.get<4>(), 	//IS_NULLABLE

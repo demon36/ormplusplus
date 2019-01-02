@@ -31,7 +31,7 @@ private:
 	template<class AttribType>
 	static void addColumnIfNotExists(std::string name){
 		if(!columnExists(name)){
-			schema.insert({name, TableColumn(name, typeid(AttribType))});
+			schema.insert({name, TableColumn(name, typeid(AttribType).hash_code())});
 		}
 	}
 

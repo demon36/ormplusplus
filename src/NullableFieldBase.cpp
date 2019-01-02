@@ -1,20 +1,44 @@
 #include "NullableFieldBase.h"
+#include "NullableField.h"
+#include <algorithm>
+
+using namespace std;
 
 namespace ORMPlusPlus {
 
-std::ostream& operator<<(std::ostream& outstream, nullptr_t value){
+ostream& operator<<(ostream& outstream, nullptr_t value){
 	return outstream;
+}
+
+//key: type_info hash
+const map<size_t, TypeInfo> NullableFieldBase::typeInfoMap({
+	{typeid(Integer).hash_code(), {true, false, "INT"}},
+	{typeid(Long).hash_code(), {true, false, "BIGINT"}},
+	{typeid(Float).hash_code(), {true, false, "FLOAT"}},
+	{typeid(Double).hash_code(), {true, false, "DOUBLE"}},
+	{typeid(String).hash_code(), {false, true, "VARCHAR"}},
+	{typeid(DateTime).hash_code(), {false, false, "DATETIME"}},
+});
+
+size_t NullableFieldBase::getTypeHash(string TypeDBName){
+	std::transform(TypeDBName.begin(), TypeDBName.end(), TypeDBName.begin(), ::toupper);
+	for(auto& typeInfo : typeInfoMap){
+		if(typeInfo.second.DBName == TypeDBName){
+			return typeInfo.first;
+		}
+	}
+	throw runtime_error("type not found");
 }
 
 void NullableFieldBase::assertLHSNotNull(const NullableFieldBase& lhs){
 	if(lhs.isNull()){
-		throw std::runtime_error("comparing with null left hand operand");
+		throw runtime_error("comparing with null left hand operand");
 	}
 }
 
 void NullableFieldBase::assertRHSNotNull(const NullableFieldBase& rhs){
 	if(rhs.isNull()){
-		throw std::runtime_error("comparing with null left hand operand");
+		throw runtime_error("comparing with null left hand operand");
 	}
 }
 
@@ -22,10 +46,9 @@ NullableFieldBase::NullableFieldBase()
 : m_type(typeid(nullptr_t))
 {}
 
-NullableFieldBase::NullableFieldBase(const std::type_info& type)
+NullableFieldBase::NullableFieldBase(const type_info& type)
 : m_type(type)
 {
-	std::cerr<<"NullableFieldBase type ctor"<<type.name()<<std::endl;
 	if(m_type == typeid(int)){
 		primitiveValuePtr = new int;
 	}else if(m_type == typeid(long)){
@@ -34,15 +57,15 @@ NullableFieldBase::NullableFieldBase(const std::type_info& type)
 		primitiveValuePtr = new float;
 	}else if(m_type == typeid(double)){
 		primitiveValuePtr = new double;
-	}else if(m_type == typeid(std::string)){
-		primitiveValuePtr = new std::string;
+	}else if(m_type == typeid(string)){
+		primitiveValuePtr = new string;
 	}else if(m_type == typeid(Poco::DateTime)){
 		primitiveValuePtr = new Poco::DateTime;
 	}else if(m_type == typeid(nullptr_t)){
 		//is this the best way to do it ?
 		primitiveValuePtr = new nullptr_t();
 	}else{
-		throw std::runtime_error("unsupported data type at NullableFieldBase construction");
+		throw runtime_error("unsupported data type at NullableFieldBase construction");
 	}
 }
 
@@ -52,7 +75,6 @@ NullableFieldBase::NullableFieldBase(const NullableFieldBase& that)
 	if(isNull()){
 		return;
 	}
-	std::cerr<<"NullableFieldBase copy ctor"<<that.m_type.name()<<std::endl;
 	if(that.m_type == typeid(int)){
 		primitiveValuePtr = new int(that.getValueRef<int>());
 	}else if(that.m_type == typeid(long)){
@@ -61,8 +83,8 @@ NullableFieldBase::NullableFieldBase(const NullableFieldBase& that)
 		primitiveValuePtr = new float(that.getValueRef<float>());
 	}else if(that.m_type == typeid(double)){
 		primitiveValuePtr = new double(that.getValueRef<double>());
-	}else if(that.m_type == typeid(std::string)){
-		primitiveValuePtr = new std::string(that.getValueRef<std::string>());
+	}else if(that.m_type == typeid(string)){
+		primitiveValuePtr = new string(that.getValueRef<string>());
 	}else if(that.m_type == typeid(Poco::DateTime)){
 		primitiveValuePtr = new Poco::DateTime(that.getValueRef<Poco::DateTime>());
 	}else if(that.m_type == typeid(nullptr_t)){
@@ -82,12 +104,12 @@ bool NullableFieldBase::isNull() const {
 	return !hasValue;
 }
 
-std::string NullableFieldBase::toString()
+string NullableFieldBase::toString()
 {
 	if(isNull()){
 		return "";
 	}
-	std::stringstream tempStream;
+	stringstream tempStream;
 	if(m_type == typeid(int)){
 		tempStream << *(int*)primitiveValuePtr;
 	}else if(m_type == typeid(long)){
@@ -96,8 +118,8 @@ std::string NullableFieldBase::toString()
 		tempStream << *(float*)primitiveValuePtr;
 	}else if(m_type == typeid(double)){
 		tempStream << *(double*)primitiveValuePtr;
-	}else if(m_type == typeid(std::string)){
-		tempStream << *(std::string*)primitiveValuePtr;
+	}else if(m_type == typeid(string)){
+		tempStream << *(string*)primitiveValuePtr;
 	}else if(m_type == typeid(Poco::DateTime)){
 		Poco::DateTime& date = *(Poco::DateTime*)primitiveValuePtr;
 		tempStream << Poco::DateTimeFormatter::format(date, "%Y-%m-%d %h:%M:%S");
@@ -120,8 +142,8 @@ NullableFieldBase::~NullableFieldBase(){
 		delete (float*)primitiveValuePtr;
 	}else if(m_type == typeid(double)){
 		delete (double*)primitiveValuePtr;
-	}else if(m_type == typeid(std::string)){
-		delete (std::string*)primitiveValuePtr;
+	}else if(m_type == typeid(string)){
+		delete (string*)primitiveValuePtr;
 	}else if(m_type == typeid(Poco::DateTime)){
 		delete (Poco::DateTime*)primitiveValuePtr;
 	}else if(m_type == typeid(nullptr_t)){

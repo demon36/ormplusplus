@@ -11,10 +11,8 @@ namespace ORMPlusPlus{
 
 class TableColumn{
 private:
-	//TODO: should use type_info hash instead ?
-	static std::map<std::type_index, std::string> DataTypeNames;
 	std::string name;
-	const std::type_info& type;
+	const std::size_t typeHash;
 	int length = 0;
 	int precision = 0;
 	bool isNullable = false;
@@ -22,15 +20,17 @@ private:
 	bool isPrimaryKey = false;
 public:
 	TableColumn();
-	TableColumn(const std::string& name, const std::type_info& type, int length, int precision, bool isNullable, const std::string& defaultValue, bool isPrimaryKey);
-	TableColumn(const std::string& name, const std::type_info& type);
+	TableColumn(const std::string& name, const std::size_t typeHash, int length, int precision, bool isNullable, const std::string& defaultValue, bool isPrimaryKey);
+	TableColumn(const std::string& name, const std::size_t typeHash);
 
 	std::string getName();
-	const std::type_info& getType();
-	std::string getTypeName();
+	const std::size_t& getTypeHash();
+	std::string getDBTypeName();
 	int getLength();
 	int getPrecision();
 	bool isPrimary();
+	bool isIntegral();
+	bool isText();
 
 	bool operator==(const TableColumn& that);
 	bool operator!=(const TableColumn& that);

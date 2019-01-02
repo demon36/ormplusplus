@@ -4,25 +4,24 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <typeindex>
+#include <map>
 
 #include <Poco/DateTime.h>
 #include <Poco/DateTimeFormatter.h>
 
 namespace ORMPlusPlus {
 
-template<class PrimitiveType>
-class NullableField;
-
-typedef NullableField<int> Integer;
-typedef NullableField<long> Long;
-typedef NullableField<float> Float;
-typedef NullableField<double> Double;
-typedef NullableField<std::string> String;
-typedef NullableField<Poco::DateTime> DateTime;
-typedef NullableField<nullptr_t> Null;
-
 //needed for using NullableField<nullptr_t>
 std::ostream& operator<<(std::ostream& outstream, nullptr_t value);
+
+//some type information
+struct TypeInfo
+{
+	const bool isIntegral;
+	const bool isText;
+	const std::string DBName;
+};
 
 class NullableFieldBase{
 
@@ -36,6 +35,12 @@ protected:
 	static void assertRHSNotNull(const NullableFieldBase& rhs);
 
 public:
+
+	//key: type_info hash
+	//TODO: add getter for the map
+	static const std::map<std::size_t, TypeInfo> typeInfoMap;
+	static std::size_t getTypeHash(std::string TypeDBName);
+
 	template<class PrimitiveType>
 	static NullableFieldBase create(const PrimitiveType& value){
 		NullableFieldBase instance(typeid(PrimitiveType));
