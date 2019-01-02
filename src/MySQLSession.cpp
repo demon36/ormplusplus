@@ -1,5 +1,7 @@
 #include "MySQLSession.h"
 
+#include <typeindex>
+
 #include <Poco/Data/MySQL/MySQL.h>
 #include <Poco/Data/MySQL/Connector.h>
 #include <Poco/Tuple.h>
@@ -44,18 +46,20 @@ TableSchema MySQLSession::getTableSchema(const string& name){
 	query.execute();
 	TableSchema schema;
 	for(auto& columnTuple : rawSchema){
-		DataType tempType;
+		type_index test = typeid(int);
+		//TODO: is this safe ?
+		const type_info* typeIdxPtr = nullptr;
 		string DBColumnType = columnTuple.get<1>();
 		if(DBColumnType == "int"){
-			tempType = DataType::_Integer;
+			typeIdxPtr = &typeid(int);
 		}else if(DBColumnType == "varchar"){
-			tempType = DataType::_String;
+			typeIdxPtr = &typeid(String);
 		}else{
-			tempType = DataType::_UnsupportedType;
+			throw runtime_error("unsupported database type");
 		}
 		TableColumn tempColumn(
 				columnTuple.get<0>(),	//COLUMN_NAME
-				tempType,				//DATA_TYPE
+				*typeIdxPtr,				//DATA_TYPE
 				columnTuple.get<2>(),	//CHARACTER_MAXIMUM_LENGTH
 				columnTuple.get<3>(),	//NUMERIC_PRECISION
 				columnTuple.get<4>(), 	//IS_NULLABLE

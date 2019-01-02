@@ -1,6 +1,10 @@
 #ifndef INCLUDE_NULLABLEFIELD_H_
 #define INCLUDE_NULLABLEFIELD_H_
 
+//TODO: if gcc only
+#include <cxxabi.h>
+#define quote(x) #x
+
 #include "NullableFieldBase.h"
 
 namespace ORMPlusPlus{
@@ -19,6 +23,15 @@ private:
 public:
 	static const std::type_info& getPrimitiveType(){
 		return typeid(PrimitiveType);
+	}
+
+	static std::string getDemangledName(){
+		//TODO: error check
+		int status;
+		char* demangled = abi::__cxa_demangle(typeid(PrimitiveType).name(),0,0,&status);
+		std::string demangledStr(demangled);
+		free(demangled);
+		return demangledStr;
 	}
 
 	NullableField() : isPtrOwner(true)

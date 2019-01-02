@@ -27,7 +27,8 @@ void DBSessionBase::createTable(const string& name, const TableSchema& schema){
 			primaryKeys += columnsList[i].getName();
 		}
 		queryStream << "`"<< columnsList[i].getName() <<"` " <<  columnsList[i].getTypeName();
-		if(columnsList[i].getType() == DataType::_String){
+		//TODO: add attribute isTextType to nullableType instead
+		if(columnsList[i].getType() == typeid(String)){
 			queryStream << "(" << columnsList[i].getLength() << ")";
 		}
 		if(i < columnsList.size()-1){
@@ -55,11 +56,13 @@ bool DBSessionBase::tableExists(const std::string& name, TableSchema& schema){
 		if(column.second != foundColumn){
 			return false;
 		}
-		if(column.second.getType() == DataType::_Integer &&
+		//TODO: add attribute isIntegral to nullableType instead
+		if(column.second.getType() == typeid(Integer) &&
 			column.second.getPrecision() > foundColumn.getPrecision()){
 			return false;
 		}
-		if(column.second.getType() == DataType::_String &&
+		//TODO: add attribute isTextType to nullableType instead
+		if(column.second.getType() == typeid(String) &&
 			column.second.getLength() > foundColumn.getLength()){
 			return false;
 		}

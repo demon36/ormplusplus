@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <typeindex>
 
 #include "NullableField.h"
 
@@ -10,9 +11,10 @@ namespace ORMPlusPlus{
 
 class TableColumn{
 private:
-	static std::vector<std::string> DataTypeNames;
+	//TODO: should use type_info hash instead ?
+	static std::map<std::type_index, std::string> DataTypeNames;
 	std::string name;
-	DataType type;
+	const std::type_info& type;
 	int length = 0;
 	int precision = 0;
 	bool isNullable = false;
@@ -20,11 +22,11 @@ private:
 	bool isPrimaryKey = false;
 public:
 	TableColumn();
-	TableColumn(std::string name, DataType type, int length, int precision, bool isNullable, std::string defaultValue, bool isPrimaryKey);
-	TableColumn(std::string name, DataType type);
+	TableColumn(const std::string& name, const std::type_info& type, int length, int precision, bool isNullable, const std::string& defaultValue, bool isPrimaryKey);
+	TableColumn(const std::string& name, const std::type_info& type);
 
 	std::string getName();
-	DataType getType();
+	const std::type_info& getType();
 	std::string getTypeName();
 	int getLength();
 	int getPrecision();

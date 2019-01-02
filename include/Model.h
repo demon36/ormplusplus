@@ -30,9 +30,8 @@ private:
 
 	template<class AttribType>
 	static void addColumnIfNotExists(std::string name){
-		DataType columnType = NullableFieldBase::deduceDataType<AttribType>();
 		if(!columnExists(name)){
-			schema.insert({name, TableColumn(name, columnType)});
+			schema.insert({name, TableColumn(name, typeid(AttribType))});
 		}
 	}
 
