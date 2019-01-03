@@ -12,6 +12,9 @@ class NullableFieldBase;
 
 namespace ORMPlusPlus{
 
+/**
+ * Facilitates interaction with the nullable field
+ */
 class AttributeInitializerBase;
 
 /**
@@ -60,7 +63,6 @@ public:
 	NullableField(const AttributeInitializerBase& attribInitializer)
 	: NullableField(attribInitializer.getNullableFieldBaseRef())
 	{
-
 	}
 
 	NullableField(const PrimitiveType& value) : NullableField()

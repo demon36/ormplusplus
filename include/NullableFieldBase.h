@@ -23,6 +23,9 @@ struct TypeInfo
 	const std::string DBName;
 };
 
+/**
+ * Encapsulates the nullable field data
+ */
 class NullableFieldBase{
 
 private:

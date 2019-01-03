@@ -8,7 +8,7 @@ Targeting MySQL support, SQLite and others can be supported in the future
 BOUND_MODEL(Client, "client_info")
 {
 public:
-	DEFINE_ATTRIB(String, name).withDefault(string("nameless"));
+	DEFINE_ATTRIB(String, name).withDefault("nameless");
 	DEFINE_ATTRIB(Integer, age).withDefault(5);
 	DEFINE_ATTRIB(Integer, height);
 };

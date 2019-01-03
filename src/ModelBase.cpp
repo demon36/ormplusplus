@@ -18,7 +18,9 @@ namespace ORMPlusPlus{
 //}
 
 ModelBase::ModelBase(const string& tableName, TableSchema& schema)
-: tableNameRef(tableName), schemaRef(schema) {}
+: tableNameRef(tableName), schemaRef(schema)
+{
+}
 
 ModelBase::ModelBase(const ModelBase& that)
 : ModelBase(that.tableNameRef, that.schemaRef)
@@ -26,6 +28,18 @@ ModelBase::ModelBase(const ModelBase& that)
 	for(auto& element : that.attributes){
 		this->attributes.emplace(element.first, element.second);
 	}
+}
+
+void ModelBase::addColumn(const std::string& name, std::size_t typeHash){
+	schemaRef.emplace(name, TableColumn(name, typeHash));
+}
+
+TableColumn& ModelBase::getColumnRef(const std::string& name){
+	auto column = schemaRef.find(name);
+	if(column == schemaRef.end()){
+		throw runtime_error("column not found");
+	}
+	return (*column).second;
 }
 
 }

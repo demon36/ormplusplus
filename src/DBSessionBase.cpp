@@ -7,7 +7,6 @@ namespace ORMPlusPlus {
 
 DBSessionBase::DBSessionBase() {
 	// TODO Auto-generated constructor stub
-
 }
 
 void DBSessionBase::createTable(const string& name, const TableSchema& schema){

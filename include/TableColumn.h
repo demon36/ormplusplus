@@ -11,26 +11,35 @@ namespace ORMPlusPlus{
 
 class TableColumn{
 private:
-	std::string name;
+	const std::string name;
 	const std::size_t typeHash;
 	int length = 0;
 	int precision = 0;
-	bool isNullable = false;
+	bool nullable = false;
+	bool autoIncrement = false;
 	std::string defaultValue;
 	bool isPrimaryKey = false;
 public:
 	TableColumn();
-	TableColumn(const std::string& name, const std::size_t typeHash, int length, int precision, bool isNullable, const std::string& defaultValue, bool isPrimaryKey);
-	TableColumn(const std::string& name, const std::size_t typeHash);
+	TableColumn(const std::string& name, std::size_t typeHash, int length, int precision, bool isNullable, const std::string& defaultValue, bool isPrimaryKey);
+	TableColumn(const std::string& name, std::size_t typeHash);
 
 	std::string getName();
-	const std::size_t& getTypeHash();
+	std::size_t getTypeHash();
 	std::string getDBTypeName();
 	int getLength();
 	int getPrecision();
+	bool isNullable();
+	bool isAutoIncrement();
 	bool isPrimary();
 	bool isIntegral();
 	bool isText();
+
+	void setLength(int value);
+	void setPrecision(int value);
+	void setPrimary(bool value);
+	void setNullable(bool value);
+	void setAutoIncrement(bool value);
 
 	bool operator==(const TableColumn& that);
 	bool operator!=(const TableColumn& that);

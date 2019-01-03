@@ -28,13 +28,6 @@ private:
 	static std::string tableName;
 	static TableSchema schema;
 
-	template<class AttribType>
-	static void addColumnIfNotExists(std::string name){
-		if(!columnExists(name)){
-			schema.insert({name, TableColumn(name, typeid(AttribType).hash_code())});
-		}
-	}
-
 //	template<class AttribType>
 //	AttribType* addAttributeVariable(std::string name){
 //		NullableFieldBase::deduceDataType<AttribType>();	//called to make sure AttribType is supported
@@ -46,7 +39,8 @@ public:
 
 	Model<UserModel, TableName>()
 	: ModelBase(tableName, schema)
-	{}
+	{
+	}
 
 	Model<UserModel, TableName>(const Model<UserModel, TableName>& that) = delete;
 	Model<UserModel, TableName>(Model<UserModel, TableName>&& that) = default;
@@ -90,14 +84,32 @@ public:
 	static Query<UserModel> where(QueryCondition condition){
 		return Query<UserModel>({condition});
 	}
-				
+
+	//TODO: add another variant that takes no template parameters and performs the withDefault() check in runtime
+	//		this will eliminate the need for macros
 	template<typename AttribType>
-	AttributeInitializer<AttribType> initializeAttrib(std::string name){
-		addColumnIfNotExists<AttribType>(name);
-//		AttribType* attribVariablePtr = addAttributeVariable<AttribType>(name);
-		attributes.emplace(name, NullableFieldBase(AttribType::getPrimitiveType()));
-		AttributeInitializer<AttribType> initr(attributes[name], *this, name);
-		return initr;
+	AttributeInitializer<AttribType> initializeAttrib(const std::string& name){
+		bool columnAlreadyAdded = !addColumnIfNotExists(name, typeid(AttribType).hash_code());
+		//TODO: move logic to ModelBase
+		NullableFieldBase& field = attributes.emplace(name, NullableFieldBase(AttribType::getPrimitiveType())).first->second;
+		if(columnAlreadyAdded){
+			return {field, nullptr};
+		}else{
+			return {field, &schema[name]};
+		}
+	}
+
+	/**
+	 * adds a column to model schema
+	 * @return true at success, false if already exists
+	 */
+	static bool addColumnIfNotExists(const std::string& name, std::size_t typeHash){
+		if(columnExists(name)){
+			return false;
+		}else{
+			schema.emplace(name, TableColumn(name, typeHash));
+			return true;
+		}
 	}
 
 	static bool columnExists(std::string name){

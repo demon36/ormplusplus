@@ -11,13 +11,15 @@ namespace ORMPlusPlus{
 
 class ModelBase{
 private:
-	TableSchema& schemaRef;
+	TableSchema& schemaRef;//owner is always Model<T, U>
 	const std::string& tableNameRef;
 protected:
 	std::map<std::string, NullableFieldBase> attributes;
 public:
 	ModelBase(const std::string& tableName, TableSchema& schema);
 	ModelBase(const ModelBase& that);
+	void addColumn(const std::string& name, std::size_t typeHash);
+	TableColumn& getColumnRef(const std::string& name);
 //	std::map<std::string, NullableFieldBase*> fieldValues;
 //	static std::vector<TableColumn> getColumns();
 //	static void addColumn(std::string name, DataType type);

@@ -2,21 +2,42 @@
 
 namespace ORMPlusPlus {
 
-AttributeInitializerBase::AttributeInitializerBase(const AttributeInitializerBase& that)
-: NFBase(that.NFBase), modelInstance(that.modelInstance), columnName(that.columnName)
+AttributeInitializerBase::AttributeInitializerBase(NullableFieldBase& NFBase, TableColumn* associatedColumn)
+: NFBase(NFBase), propertyColumnPtr(associatedColumn), skipColumnSetup(associatedColumn == nullptr)
 {
 }
 
-AttributeInitializerBase::AttributeInitializerBase(NullableFieldBase& NFBase, ModelBase& modelInstance, const std::string& attributeName)
-: NFBase(NFBase), modelInstance(modelInstance), columnName(attributeName)
+NullableFieldBase& AttributeInitializerBase::getNullableFieldBaseRef() const
 {
-}
-
-NullableFieldBase& AttributeInitializerBase::getNullableFieldBaseRef() const{
 	return NFBase;
 }
 
-AttributeInitializerBase::~AttributeInitializerBase() {
+AttributeInitializerBase& AttributeInitializerBase::asPrimary(){
+	if(!skipColumnSetup){
+		propertyColumnPtr->setPrimary(true);
+	}
+	return *this;
+}
+
+//AttributeInitializerBase& asIndex();//change columnDefs, does it apply on numerical types only?
+
+AttributeInitializerBase& AttributeInitializerBase::nullable(bool value){
+	if(!skipColumnSetup){
+		propertyColumnPtr->setNullable(true);
+	}
+	return *this;
+}
+
+AttributeInitializerBase& AttributeInitializerBase::autoIncrement(){
+	//TODO: check the type is numeric here too
+	if(!skipColumnSetup){
+		propertyColumnPtr->setAutoIncrement(true);
+	}
+	return *this;
+}
+
+AttributeInitializerBase::~AttributeInitializerBase()
+{
 }
 
 } /* namespace ORMPlusPlus */
