@@ -12,6 +12,7 @@
 
 namespace ORMPlusPlus {
 
+//TODO: remove this after removing NullableField<nullptr_t>
 //needed for using NullableField<nullptr_t>
 std::ostream& operator<<(std::ostream& outstream, nullptr_t value);
 
@@ -55,9 +56,20 @@ public:
 	NullableFieldBase(const std::type_info& type);
 	NullableFieldBase(const NullableFieldBase& that);
 	NullableFieldBase(NullableFieldBase&& that);
+	NullableFieldBase& operator=(const NullableFieldBase);
 
 	template<class PrimitiveType>
-	const PrimitiveType& getValueRef() const{
+	NullableFieldBase& operator=(const PrimitiveType& value){
+		//TODO: add fn assert type ?
+		if(typeid(PrimitiveType) != m_type){//FIXME: assertion done twice
+			throw std::runtime_error("trying to assign nullable field to non-compatible type value");
+		}
+		getValueRef<PrimitiveType>() = value;
+		hasValue = true;
+	}
+
+	template<class PrimitiveType>
+	PrimitiveType& getValueRef() const{
 		//TODO: assert not null
 		if(typeid(PrimitiveType) == m_type){
 			return *(PrimitiveType*)primitiveValuePtr;
@@ -78,8 +90,10 @@ public:
 	}
 
 	bool isNull() const;
-	std::string toString();
+	std::string toString() const;
+	const std::type_info& getType() const;
 
+	//TODO: support bypassing to streams
 	~NullableFieldBase();
 };
 

@@ -72,9 +72,6 @@ NullableFieldBase::NullableFieldBase(const type_info& type)
 NullableFieldBase::NullableFieldBase(const NullableFieldBase& that)
 : m_type(that.m_type), hasValue(that.hasValue)
 {
-	if(isNull()){
-		return;
-	}
 	if(that.m_type == typeid(int)){
 		primitiveValuePtr = new int(that.getValueRef<int>());
 	}else if(that.m_type == typeid(long)){
@@ -100,11 +97,36 @@ NullableFieldBase::NullableFieldBase(NullableFieldBase&& that)
 	that.primitiveValuePtr = nullptr;
 }
 
+NullableFieldBase& NullableFieldBase::operator=(const NullableFieldBase that){
+	if(this->m_type != that.m_type){
+		throw runtime_error("calling NullableFieldBase::operator= with non-equal nullable field types");
+	}else{
+		this->hasValue = that.hasValue;
+		if(that.m_type == typeid(int)){
+			this->getValueRef<int>() = that.getValueRef<int>();
+		}else if(that.m_type == typeid(long)){
+			this->getValueRef<long>() = that.getValueRef<long>();
+		}else if(that.m_type == typeid(float)){
+			this->getValueRef<float>() = that.getValueRef<float>();
+		}else if(that.m_type == typeid(double)){
+			this->getValueRef<double>() = that.getValueRef<double>();
+		}else if(that.m_type == typeid(string)){
+			this->getValueRef<string>() = that.getValueRef<string>();
+		}else if(that.m_type == typeid(Poco::DateTime)){
+			this->getValueRef<Poco::DateTime>() = that.getValueRef<Poco::DateTime>();
+		}else if(that.m_type == typeid(nullptr_t)){
+			//is this the best way to do it ?
+			this->getValueRef<nullptr_t>() = that.getValueRef<nullptr_t>();
+		}
+		return *this;
+	}
+}
+
 bool NullableFieldBase::isNull() const {
 	return !hasValue;
 }
 
-string NullableFieldBase::toString()
+string NullableFieldBase::toString() const
 {
 	if(isNull()){
 		return "";
@@ -127,6 +149,10 @@ string NullableFieldBase::toString()
 		tempStream << *(nullptr_t*)primitiveValuePtr;
 	}
 	return tempStream.str();
+}
+
+const std::type_info& NullableFieldBase::getType() const{
+	return m_type;
 }
 
 NullableFieldBase::~NullableFieldBase(){
