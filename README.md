@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 		{"name", "=", NullValue},
 	}).orderBy({
 		{"age", SortDir::Asc},
-		{"height", SortDir::Desc}
+		{"height", SortDir::Desc},
 	}).limit(100).get();
 	
 	Client c0 = Client::where({"id", 542}).findFirst();
@@ -45,7 +45,10 @@ int main(int argc, char** argv)
 - [x] assert table exists with schema comparison
 - [x] DB session abstraction
 - [x] put DB supported types in one place
-- [ ] single/multi instance select
+- [ ] use logging
+- [ ] write unit tests
+- [ ] single instance select
+- [ ] multi instance select
 - [ ] single instance save
 - [ ] single instance delete
 - [ ] single instance update
@@ -53,7 +56,14 @@ int main(int argc, char** argv)
 - [ ] delete many
 - [ ] update many
 - [ ] query order by, limit
+- [ ] query group by, having
+- [ ] get rid of dependency on Poco
+- [ ] autosave
+- [ ] nested where conditions
+- [ ] aggregate fns (AVG, COUNT, SUM, MAX, MIN)
 - [ ] store attribute names in database in snake_case
+- [ ] add support for sqlite
+- [ ] add support for mongodb
 - [ ] relational models (maybe?)
 - [ ] transactions (maybe?)
 
@@ -63,3 +73,12 @@ int main(int argc, char** argv)
 sudo apt-get install libpoco-dev
 ``
 - run make
+
+### guidelines
+- no using in header files
+- target least number of includes in header files
+- use tabs for indents
+- use enum classes instead of plain enums
+- use override, final, const where possible
+- favor compile-time checks over runtime
+- if there is a logic in a template class that is more than a few lines, move to a template-less base class if possible
