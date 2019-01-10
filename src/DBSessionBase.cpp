@@ -65,22 +65,6 @@ bool DBSessionBase::tableExists(const std::string& name, TableSchema& schema){
 	return true;
 }
 
-std::map<std::string, std::unique_ptr<NullableFieldBase>> DBSessionBase::select(const QueryBase& query){
-	stringstream queryStream;
-	//todo: select specific columns before additional error check
-//	queryStream << "SELECT * FROM " << m_tableName << whereClause.str();
-//	Statement select(DB::getSession());
-
-	//use select variable instead of creating new stream queryStream
-//	select << queryStream.str();
-//	select.execute();
-//	while (!select.done())
-//	{
-//		select.execute();
-//	}
-//	return RecordSet(select);
-}
-
 DBSessionBase::~DBSessionBase() {
 	// TODO Auto-generated destructor stub
 }

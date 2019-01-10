@@ -3,31 +3,32 @@
 
 namespace ORMPlusPlus {
 
-QueryBase::QueryBase(std::string tableName)
-: m_tableName(tableName), whereClause("")
+QueryBase::QueryBase(std::string _tableName, const TableSchema& _schema)
+: tableName(_tableName), schema(_schema)
 {
 }
 
-QueryBase::QueryBase(const QueryBase& queryBase)
-: m_tableName(queryBase.m_tableName), whereClause(queryBase.whereClause.str())
-{}
-
-void QueryBase::where(std::vector<QueryCondition>& conditions){
-	whereClause << " WHERE ";
-	for(int i = 0; i < conditions.size(); i++){
-		whereClause << conditions[i].getColumnName() << " "
-				<< conditions[i].getOperator() << " "
-				<< conditions[i].getValueString() << " ";
-		if(i < conditions.size() - 1){
-			whereClause << " AND ";
-		}else{
-			whereClause << ";";
-		}
-	}
+std::string QueryBase::getTableName() const{
+	return tableName;
 }
 
-QueryBase::~QueryBase() {
-	// TODO Auto-generated destructor stub
+QueryType QueryBase::getType() const{
+	return type;
+}
+
+const std::vector<QueryCondition>& QueryBase::getConditionsRef() const{
+	return conditions;
+}
+
+int QueryBase::getLimit() const{
+	return limit;
+}
+
+const std::vector<OrderRule>& QueryBase::getOrderRulesRef() const{
+	return orderRules;
+}
+
+QueryBase::~QueryBase(){
 }
 
 } /* namespace ORMPlusPlus */

@@ -7,15 +7,47 @@
 
 #include "QueryCondition.h"
 
+//TODO: use override where possible
 namespace ORMPlusPlus {
 
+//use enum classes
+enum class QueryType{
+	_Null,
+	_Select,
+	_Update,
+	_Insert,
+	_Delete,
+};
+
+enum class OrderType{
+	Asc,
+	Desc,
+};
+
+struct OrderRule{
+	const std::string column;
+	const OrderType type;
+};
+
 class QueryBase {
-	const std::string m_tableName;
-	std::stringstream whereClause;
+protected:
+	const std::string tableName;
+	const TableSchema& schema;//used to assert query against
+	QueryType type = QueryType::_Null;
+	std::vector<QueryCondition> conditions;
+	int limit = 0;
+	std::vector<OrderRule> orderRules;
+
 public:
-	QueryBase(std::string tableName);
-	QueryBase(const QueryBase& queryBase);
-	void where(std::vector<QueryCondition>& conditions);
+	//TODO: add const wherever it is possible
+	QueryBase() = delete;
+	QueryBase(std::string _tableName, const TableSchema& _schema);
+	QueryBase(const QueryBase& queryBase) = default;
+	std::string getTableName() const;
+	QueryType getType() const;
+	const std::vector<QueryCondition>& getConditionsRef() const;
+	int getLimit() const;
+	const std::vector<OrderRule>& getOrderRulesRef() const;
 	virtual ~QueryBase();
 };
 

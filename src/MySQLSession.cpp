@@ -41,6 +41,7 @@ TableSchema MySQLSession::getTableSchema(const string& name){
 			> DBColumnData;
 	std::vector<DBColumnData> rawSchema;
 	Statement query(*sessionPtr);
+	//TODO: use an ORM class for this ?
 	query << "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, IS_NULLABLE, COLUMN_DEFAULT, COLUMN_KEY "
 			"FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%s';", into(rawSchema), name;
 	query.execute();
@@ -62,10 +63,11 @@ TableSchema MySQLSession::getTableSchema(const string& name){
 	return schema;
 }
 
-void MySQLSession::execute(const string& queryString){
+RecordSet MySQLSession::execute(const string& queryString){
 	Statement query(*sessionPtr);
 	query << queryString;
 	query.execute();
+	return RecordSet(query);
 }
 
 MySQLSession::~MySQLSession() {
