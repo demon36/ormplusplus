@@ -11,12 +11,11 @@
 
 namespace ORMPlusPlus {
 
-class MySQLSession: public DBSessionBase {
+class MySQLSession : public DBSessionBase {
 private:
 	Poco::Data::Session* sessionPtr;
 public:
 	MySQLSession(const std::string& host, const std::string& database, const std::string& user, const std::string& password, int port = MYSQL_DEFAULT_PORT);
-	void execute(const std::string& query);
 	bool tableExists(const std::string& name);
 	TableSchema getTableSchema(const std::string& name);
 	virtual ~MySQLSession();

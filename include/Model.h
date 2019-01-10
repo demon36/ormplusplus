@@ -17,6 +17,10 @@
 
 #define BOUND_MODEL_1(CLASS_NAME) class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME, typestring_is(#CLASS_NAME)>
 #define BOUND_MODEL_2(CLASS_NAME, TABLE_NAME) class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME, typestring_is(TABLE_NAME)>
+//TODO: facilitate writing conditions using sth like:
+//#define DEFINE_ATTRIB(DATATYPE, NAME) static std::string _ ## NAME(){static std::string _s = #NAME; return _s;}; DATATYPE NAME = initializeAttrib<DATATYPE>(#NAME)
+//or a static reference that is initialized to a schema entry
+//this is better static const TableColumn& ID_(){ return schema[""]; };
 #define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE NAME = initializeAttrib<DATATYPE>(#NAME)
 
 namespace ORMPlusPlus{
@@ -25,8 +29,11 @@ template<class UserModel, class TableName>
 class Model : public ModelBase
 {
 private:
+protected:
 	static std::string tableName;
 	static TableSchema schema;
+	//set to true after first instance get created
+	static bool schemaBuilt;
 
 //	template<class AttribType>
 //	AttribType* addAttributeVariable(std::string name){
@@ -40,13 +47,14 @@ public:
 	Model<UserModel, TableName>()
 	: ModelBase(tableName, schema)
 	{
+		schemaBuilt = true;
 	}
 
 	Model<UserModel, TableName>(const Model<UserModel, TableName>& that) = delete;
 	Model<UserModel, TableName>(Model<UserModel, TableName>&& that) = default;
 
 	static void copy(const Model<UserModel, TableName>& src, UserModel& dest){
-		dest.attributes = src.attributes;
+		dest.setAttributes(src.attributes);
 	}
 
 	UserModel clone(){
@@ -77,6 +85,7 @@ public:
 		return tableName;
 	}
 
+	//TODO: implement nested conditions
 	static Query<UserModel> where(std::vector<QueryCondition> conditions){
 		return Query<UserModel>(conditions);
 	}
@@ -87,6 +96,7 @@ public:
 
 	//TODO: add another variant that takes no template parameters and performs the withDefault() check in runtime
 	//		this will eliminate the need for macros
+	//TODO: should this fn be renamed to bindAttribute ?
 	template<typename AttribType>
 	AttributeInitializer<AttribType> initializeAttrib(const std::string& name){
 		bool columnAlreadyAdded = !addColumnIfNotExists(name, typeid(AttribType).hash_code());
@@ -116,8 +126,12 @@ public:
 		return schema.find(name) != schema.end();
 	}
 
-	static TableSchema getDBSchema(){
+	static const TableSchema& getSchema(){
 		return schema;
+	}
+
+	static bool hasBuiltSchema(){
+		return schemaBuilt;
 	}
 		
 };
@@ -126,6 +140,8 @@ template<class UserModel, class TableName>
 TableSchema Model<UserModel, TableName>::schema;
 template<class UserModel, class TableName>
 std::string Model<UserModel, TableName>::tableName = TableName::data();
+template<class UserModel, class TableName>
+bool Model<UserModel, TableName>::schemaBuilt = false;
 
 }
 

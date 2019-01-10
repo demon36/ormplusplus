@@ -24,6 +24,7 @@ private:
 
 public:
 	//make sure template parameter is a child of Model<UserModel>
+	//TODO: check at compile time
 	template <class UserModel>
 	static void assertClassIsUserModel(){
 		if(!std::is_base_of<ModelBase, UserModel>::value){
@@ -52,7 +53,7 @@ public:
 	template <class UserModel>
 	static void createTable(){
 		assertClassIsUserModel<UserModel>();
-		getDefaultSession().createTable(UserModel::getTableName(), UserModel::getDBSchema());
+		getDefaultSession().createTable(UserModel::getTableName(), UserModel::getSchema());
 	}
 
 	template <class UserModel>
@@ -63,7 +64,7 @@ public:
 	template <class UserModel>
 	static bool tableExists(bool checkSchema = false){
 		assertClassIsUserModel<UserModel>();
-		TableSchema schema = UserModel::getDBSchema();
+		TableSchema schema = UserModel::getSchema();
 		if(checkSchema){
 			return getDefaultSession().tableExists(UserModel::getTableName(), schema);
 		}else{

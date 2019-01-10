@@ -14,14 +14,15 @@ private:
 	NullableFieldBase value;
 //	QueryCondition(std::string columnName, std::string operator_);
 public:
-	QueryCondition(std::string columnName, std::string operator_, const char* value);
-	QueryCondition(std::string columnName, std::string operator_, std::string value);
-	QueryCondition(std::string columnName, std::string operator_, int value);
-	QueryCondition(std::string columnName, std::string operator_, Null value);
+	QueryCondition(const std::string& columnName, const std::string& operator_, const char* value);
+	QueryCondition(const std::string& columnName, const std::string& operator_, std::string value);
+	QueryCondition(const std::string& columnName, const std::string& operator_, int value);
+	QueryCondition(const std::string& columnName, const std::string& operator_, Null value);
 
-	std::string getColumnName();
-	std::string getOperator();
-	std::string getValueString();
+	std::string getColumnName() const;
+	std::string getOperator() const;
+	std::string getValueString() const;
+	QueryCondition& operator=(const QueryCondition& that);
 };
 
 }

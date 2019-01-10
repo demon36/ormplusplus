@@ -7,9 +7,6 @@
 
 #include "NullableFieldBase.h"
 
-class NullableFieldBase;
-
-
 namespace ORMPlusPlus{
 
 /**
@@ -25,6 +22,7 @@ template<class PrimitiveType>
 class NullableField{
 private:
 	NullableFieldBase* NFBasePtr = nullptr;
+	PrimitiveType& valueRef;//useful at debugging
 	bool isPtrOwner = false;//should be false if used as shell
 public:
 	static const std::type_info& getPrimitiveType(){
@@ -40,24 +38,32 @@ public:
 		return demangledStr;
 	}
 
-	NullableField() : isPtrOwner(true)
+	NullableField()
+	: NFBasePtr(new NullableFieldBase(typeid(PrimitiveType))),
+	  isPtrOwner(true),
+	  valueRef(NFBasePtr->getValueRef<PrimitiveType>())
 	{
-		NFBasePtr = new NullableFieldBase(typeid(PrimitiveType));
 	}
 
-	NullableField(const NullableField& that) : isPtrOwner(true)
+	NullableField(const NullableField& that)
+	: NFBasePtr(new NullableFieldBase(*that.NFBasePtr)),
+	  isPtrOwner(true),
+	  valueRef(NFBasePtr->getValueRef<PrimitiveType>())
 	{
-		NFBasePtr = new NullableFieldBase(*that.NFBasePtr);
 	}
 
-	NullableField(const NullableField&& that) : isPtrOwner(true)
+	NullableField(const NullableField&& that)
+	: NFBasePtr(new NullableFieldBase(std::move(*that.NFBasePtr))),
+	  isPtrOwner(true),
+	  valueRef(NFBasePtr->getValueRef<PrimitiveType>())
 	{
-		NFBasePtr = new NullableFieldBase(std::move(*that.NFBasePtr));
 	}
 
-	NullableField(NullableFieldBase& nullableFieldBase) : isPtrOwner(false)
+	NullableField(NullableFieldBase& nullableFieldBase)
+	: NFBasePtr(&nullableFieldBase),
+	  isPtrOwner(false),
+	  valueRef(NFBasePtr->getValueRef<PrimitiveType>())
 	{
-		NFBasePtr = &nullableFieldBase;
 	}
 
 	NullableField(const AttributeInitializerBase& attribInitializer)

@@ -42,4 +42,9 @@ TableColumn& ModelBase::getColumnRef(const std::string& name){
 	return (*column).second;
 }
 
+void ModelBase::setAttributes(const AttributesMap& values){
+	for(auto& attribEntry : this->attributes){
+		attribEntry.second = values.at(attribEntry.first);
+	}
+}
 }

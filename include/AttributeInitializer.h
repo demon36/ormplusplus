@@ -25,6 +25,10 @@ public:
 	{
 	}
 
+	//TODO: since this is the only thing that implied making this class a template class
+	//		we can just make 2 variants of it, a safe variant with template argument
+	//		and another unsafe variant, this will -probably- eliminate the need for
+	//		making this class a template class
 	template<class primitiveType>
 	AttributeInitializer& withDefault(primitiveType value){
 		//TODO: check operator= is implemented correctly
