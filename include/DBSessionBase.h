@@ -14,7 +14,7 @@ namespace ORMPlusPlus {
 class DBSessionBase {
 public:
 	DBSessionBase();
-	void createTable(const std::string& name, const TableSchema& schema);
+	virtual void createTable(const std::string& name, const TableSchema& schema) = 0;
 	void dropTable(const std::string& name);
 	virtual bool tableExists(const std::string& name) = 0;
 	bool tableExists(const std::string& name, TableSchema& schema);
@@ -29,10 +29,6 @@ public:
 	 */
 	template<class UserModel>
 	std::vector<UserModel> execute(const QueryBase& query){
-		//built schema by creating a model instance before processing the query
-		if(!UserModel::hasBuiltSchema()){
-			UserModel dummyInstance;
-		}
 		std::stringstream queryStream;
 		std::string tableName = UserModel::getTableName();
 		const TableSchema& schema = UserModel::getSchema();

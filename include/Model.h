@@ -21,6 +21,7 @@
 //#define DEFINE_ATTRIB(DATATYPE, NAME) static std::string _ ## NAME(){static std::string _s = #NAME; return _s;}; DATATYPE NAME = initializeAttrib<DATATYPE>(#NAME)
 //or a static reference that is initialized to a schema entry
 //this is better static const TableColumn& ID_(){ return schema[""]; };
+//so that queries can like where({MyModel::_ID(), "=", 3})
 #define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE NAME = initializeAttrib<DATATYPE>(#NAME)
 
 namespace ORMPlusPlus{
@@ -35,13 +36,18 @@ protected:
 	//set to true after first instance get created
 	static bool schemaBuilt;
 
-//	template<class AttribType>
-//	AttribType* addAttributeVariable(std::string name){
-//		NullableFieldBase::deduceDataType<AttribType>();	//called to make sure AttribType is supported
-//		attributes[name].reset(new AttribType());
-//		return (AttribType*)attributes[name].get();
-//	}
-
+	/**
+	 * adds a column to model schema
+	 * @return true at success, false if already exists
+	 */
+	static bool addColumnIfNotExists(const std::string& name, std::size_t typeHash){
+		if(columnExists(name)){
+			return false;
+		}else{
+			schema.emplace(name, TableColumn(name, typeHash));
+			return true;
+		}
+	}
 public:
 
 	Model<UserModel, TableName>()
@@ -109,29 +115,16 @@ public:
 		}
 	}
 
-	/**
-	 * adds a column to model schema
-	 * @return true at success, false if already exists
-	 */
-	static bool addColumnIfNotExists(const std::string& name, std::size_t typeHash){
-		if(columnExists(name)){
-			return false;
-		}else{
-			schema.emplace(name, TableColumn(name, typeHash));
-			return true;
-		}
-	}
-
 	static bool columnExists(std::string name){
-		return schema.find(name) != schema.end();
+		return getSchema().find(name) != getSchema().end();
 	}
 
 	static const TableSchema& getSchema(){
+		//built schema by creating a model instance before processing the query
+		if(!schemaBuilt){
+			UserModel dummyInstance;
+		}
 		return schema;
-	}
-
-	static bool hasBuiltSchema(){
-		return schemaBuilt;
 	}
 		
 };
