@@ -29,10 +29,13 @@ public:
 	//		we can just make 2 variants of it, a safe variant with template argument
 	//		and another unsafe variant, this will -probably- eliminate the need for
 	//		making this class a template class
+	//TODO: get rid of the need to supply a template parameter to this function
+	//		since the attribute type is already provided
 	template<class primitiveType>
 	AttributeInitializer& withDefault(primitiveType value){
 		//TODO: check operator= is implemented correctly
 		nullableField = value;
+		AttributeInitializerBase::withDefault(nullableField.toString());
 		return *this;
 	}
 
@@ -41,6 +44,16 @@ public:
 	           class = typename std::enable_if<std::is_same<T, Integer>::value>::type>//only allow auto increment with integers -at least for now-
 	AttributeInitializer& autoIncrement() {
 		AttributeInitializerBase::autoIncrement();
+		return *this;
+	}
+
+	AttributeInitializer& asPrimary(){
+		AttributeInitializerBase::asPrimary();
+		return *this;
+	}
+
+	AttributeInitializer& asNullable(bool value = true){
+		AttributeInitializerBase::asNullable();
 		return *this;
 	}
 

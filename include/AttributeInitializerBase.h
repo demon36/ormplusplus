@@ -20,10 +20,13 @@ public:
 	//TODO: use TableColumn& + bool or TableColumn*
 	AttributeInitializerBase(NullableFieldBase& NFBase, TableColumn* associatedColumn);
 	NullableFieldBase& getNullableFieldBaseRef() const;
+	AttributeInitializerBase& withDefault(const std::string& value);
 	//TODO: make sure there is only one primary -maybe?-
+	//TODO: make sure that primary keys are not nullable
 	AttributeInitializerBase& asPrimary();//change columnDefs
-	AttributeInitializerBase& asIndex();//change columnDefs, does it apply on numerical types only?
-	AttributeInitializerBase& nullable(bool value = true);
+	//TODO: add support for non primary key index columns
+//	AttributeInitializerBase& asIndex();//change columnDefs, does it apply on numerical types only?
+	AttributeInitializerBase& asNullable(bool value = true);
 	AttributeInitializerBase& autoIncrement();
 	virtual ~AttributeInitializerBase();
 };

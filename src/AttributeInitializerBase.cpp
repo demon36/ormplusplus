@@ -12,6 +12,15 @@ NullableFieldBase& AttributeInitializerBase::getNullableFieldBaseRef() const
 	return NFBase;
 }
 
+//TODO: when you enable using this class directly you would have to create more overloads for this
+//		function and/or parse string value to int/float/etc.. and set the NFBase value as well
+AttributeInitializerBase& AttributeInitializerBase::withDefault(const std::string& value){
+	if(!skipColumnSetup){
+		propertyColumnPtr->setDefaultValue(value);
+	}
+	return *this;
+}
+
 AttributeInitializerBase& AttributeInitializerBase::asPrimary(){
 	if(!skipColumnSetup){
 		propertyColumnPtr->setPrimary(true);
@@ -21,7 +30,7 @@ AttributeInitializerBase& AttributeInitializerBase::asPrimary(){
 
 //AttributeInitializerBase& asIndex();//change columnDefs, does it apply on numerical types only?
 
-AttributeInitializerBase& AttributeInitializerBase::nullable(bool value){
+AttributeInitializerBase& AttributeInitializerBase::asNullable(bool value){
 	if(!skipColumnSetup){
 		propertyColumnPtr->setNullable(true);
 	}
