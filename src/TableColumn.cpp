@@ -11,7 +11,7 @@ TableColumn::TableColumn()
 : typeHash(typeid(nullptr).hash_code())//TODO: check the consequences
 {}
 
-TableColumn::TableColumn(const string& name_, size_t typeHash_, int length, int precision, bool isNullable, const string& defaultValue, bool isPrimaryKey)
+TableColumn::TableColumn(const string& name_, size_t typeHash_, int length, int precision, bool isNullable, const string& defaultValue, bool isPrimaryKey, bool autoIncrement)
 : name(name_), typeHash(typeHash_)
 {
 	this->length = length;
@@ -19,6 +19,7 @@ TableColumn::TableColumn(const string& name_, size_t typeHash_, int length, int 
 	this->nullable = isNullable;
 	this->defaultValue = defaultValue;
 	this->isPrimaryKey = isPrimaryKey;
+	this->autoIncrement = autoIncrement;
 }
 
 TableColumn::TableColumn(const string& name_, size_t typeHash_)
@@ -33,14 +34,15 @@ TableColumn::TableColumn(const string& name_, size_t typeHash_)
 	}
 }
 
-string TableColumn::getName(){ return name; }
-size_t TableColumn::getTypeHash(){ return typeHash; }
-string TableColumn::getDBTypeName(){ return NullableFieldBase::typeInfoMap.at(typeHash).DBName; }
-int TableColumn::getLength(){ return length; }
-int TableColumn::getPrecision(){ return precision; }
-bool TableColumn::isNullable(){ return nullable; }
-bool TableColumn::isAutoIncrement(){ return autoIncrement; }
-bool TableColumn::isPrimary(){ return isPrimaryKey; }
+string TableColumn::getName() const { return name; }
+size_t TableColumn::getTypeHash() const { return typeHash; }
+string TableColumn::getDBTypeName() const { return NullableFieldBase::typeInfoMap.at(typeHash).DBName; }
+int TableColumn::getLength() const { return length; }
+int TableColumn::getPrecision() const { return precision; }
+bool TableColumn::isNullable() const { return nullable; }
+std::string TableColumn::getDefaultValue() const { return defaultValue; }
+bool TableColumn::isAutoIncrement() const { return autoIncrement; }
+bool TableColumn::isPrimary() const { return isPrimaryKey; }
 
 void TableColumn::setLength(int value){
 	if(!isText()){
@@ -65,18 +67,22 @@ void TableColumn::setNullable(bool value){
 	nullable = value;
 }
 
+void TableColumn::setDefaultValue(const std::string& value){
+	defaultValue = value;
+}
+
 void TableColumn::setAutoIncrement(bool value){
 	autoIncrement = value;
 }
 
-bool TableColumn::isIntegral(){
+bool TableColumn::isIntegral() const {
 	//TODO: check key exists
 	//TODO: maybe instead of using TypeInfo struct we need to some sets
 	//		each set contains ids for types holding some property
 	return NullableFieldBase::typeInfoMap.at(typeHash).isIntegral;
 }
 
-bool TableColumn::isText(){
+bool TableColumn::isText() const {
 	return NullableFieldBase::typeInfoMap.at(typeHash).isText;
 }
 
@@ -87,7 +93,10 @@ bool TableColumn::operator==(const TableColumn& that){
 		this->typeHash == that.typeHash &&
 		this->nullable == that.nullable &&
 		this->defaultValue == that.defaultValue &&
-		this->isPrimaryKey == that.isPrimaryKey
+		this->isPrimaryKey == that.isPrimaryKey &&
+		this->autoIncrement == that.autoIncrement &&
+		this->length == that.length &&
+		this->precision == that.precision
 	){
 		return true;
 	}else{

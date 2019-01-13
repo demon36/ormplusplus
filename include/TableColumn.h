@@ -16,29 +16,31 @@ private:
 	int length = 0;
 	int precision = 0;
 	bool nullable = false;
-	bool autoIncrement = false;
 	std::string defaultValue;
 	bool isPrimaryKey = false;
+	bool autoIncrement = false;
 public:
 	TableColumn();
-	TableColumn(const std::string& name, std::size_t typeHash, int length, int precision, bool isNullable, const std::string& defaultValue, bool isPrimaryKey);
+	TableColumn(const std::string& name, std::size_t typeHash, int length, int precision, bool isNullable, const std::string& defaultValue, bool isPrimaryKey, bool autoIncrement);
 	TableColumn(const std::string& name, std::size_t typeHash);
 
-	std::string getName();
-	std::size_t getTypeHash();
-	std::string getDBTypeName();
-	int getLength();
-	int getPrecision();
-	bool isNullable();
-	bool isAutoIncrement();
-	bool isPrimary();
-	bool isIntegral();
-	bool isText();
+	std::string getName() const;
+	std::size_t getTypeHash() const;
+	std::string getDBTypeName() const;
+	int getLength() const;
+	int getPrecision() const;
+	bool isNullable() const;
+	std::string getDefaultValue() const;
+	bool isPrimary() const;
+	bool isAutoIncrement() const;
+	bool isIntegral() const;
+	bool isText() const;
 
 	void setLength(int value);
 	void setPrecision(int value);
 	void setPrimary(bool value);
 	void setNullable(bool value);
+	void setDefaultValue(const std::string& value);
 	void setAutoIncrement(bool value);
 
 	bool operator==(const TableColumn& that);
