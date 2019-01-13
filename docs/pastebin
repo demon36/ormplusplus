@@ -1,41 +1,33 @@
-
-struct Person
-{
-	std::string name;
-	std::string address;
-	int		 age;
-};
-
-void testConnection(){
-	Poco::Data::MySQL::Connector::registerConnector();
-	Session session("MySQL", "host=localhost;port=3306;db=ormplusplus;user=root;password=root;compress=true;auto-reconnect=true");
-	session << "DROP TABLE IF EXISTS Person", now;
-	session << "CREATE TABLE Person (Name VARCHAR(30), Address VARCHAR(20), Age INTEGER(3))", now;
-	Person person =
-	{
-		"Bart Simpson",
-		"Springfield",
-		12
-	};
-	Statement insert(session);
-	insert << "INSERT INTO Person VALUES(?, ?, ?)",
-		use(person.name),
-		use(person.address),
-		use(person.age);
-	insert.execute();
-	person.name	= "Lisa Simpson";
-	person.address = "Springfield";
-	person.age = 10;
-	insert.execute();
-	Statement select(session);
-	select << "SELECT Name, Address, Age FROM Person",
-		into(person.name),
-		into(person.address),
-		into(person.age),
-		range(0, 1); //  iterate over result set one row at a time
-	while (!select.done())
-	{
-		select.execute();
-		std::cout << person.name << " " << person.address << " " << person.age << std::endl;
+//this creates primary keys in the sqlite way
+void MySQLSession::createTable(const string& name, const TableSchema& schema){
+	stringstream queryStream;
+	queryStream << "CREATE TABLE IF NOT EXISTS `"<< name <<"`(";
+	std::vector<TableColumn> columnsList;
+	for(auto& columnEntry : schema ) {
+		columnsList.push_back( columnEntry.second );
 	}
+
+	string primaryKeys;
+	for(int i = 0; i < columnsList.size(); i++){
+		if(columnsList[i].isPrimary()){
+			if(!primaryKeys.empty()){
+				primaryKeys += ",";
+			}
+			primaryKeys += columnsList[i].getName();
+		}
+		queryStream << "`"<< columnsList[i].getName() <<"` " <<  columnsList[i].getDBTypeName();
+		if(columnsList[i].isText()){
+			queryStream << "(" << columnsList[i].getLength() << ")";
+		}
+		if(i < columnsList.size()-1){
+			queryStream << ", ";
+		}
+	}
+
+	if(!primaryKeys.empty()){
+		queryStream << " PRIMARY KEY (`" << primaryKeys << "`) ";
+	}
+	queryStream << ");";
+
+	execute(queryStream.str());
 }

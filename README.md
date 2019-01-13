@@ -45,8 +45,8 @@ int main(int argc, char** argv)
 - [x] assert table exists with schema comparison
 - [x] DB session abstraction
 - [x] put DB supported types in one place
+- [x] update tests
 - [ ] use logging
-- [ ] write unit tests
 - [ ] single instance select
 - [ ] multi instance select
 - [ ] single instance save
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 - [ ] update many
 - [ ] query order by, limit
 - [ ] query group by, having
-- [ ] get rid of dependency on Poco
+- [ ] get rid of Poco dependency
 - [ ] autosave
 - [ ] nested where conditions
 - [ ] aggregate fns (AVG, COUNT, SUM, MAX, MIN)

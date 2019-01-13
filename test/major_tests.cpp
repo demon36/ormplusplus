@@ -16,25 +16,43 @@ void printTestResult(const string& expression, bool result){
 BOUND_MODEL(Client, "client_info")
 {
 public:
-	DEFINE_ATTRIB(Integer, id).autoIncrement();
+	DEFINE_ATTRIB(Integer, id).autoIncrement().asPrimary();
 	DEFINE_ATTRIB(String, name).withDefault("nameless");
-	DEFINE_ATTRIB(Integer, age).withDefault(5);
+	DEFINE_ATTRIB(Integer, age).withDefault(5).asNullable();
 	DEFINE_ATTRIB(Integer, height);
 //	DEFINE_ATTRIB(DateTime, dob).withDefault(3);
 //	Integer height = initializeAttrib<Integer>("height");
 };
 
 void testModelDefinition(){
+	ASSERT(DB::isUserModelClass<Client>());
+	ASSERT(!DB::isUserModelClass<Integer>());
+
 	Client c;
+	ASSERT(c.id.isNull());
 	ASSERT(c.name == "nameless");
 	ASSERT(c.age == 5);
-	ASSERT(c.height != 4);
-	ASSERT(Client::columnExists("name"));
-	ASSERT(Client::columnExists("age"));
-	ASSERT(DB::isUserModelClass<Client>());
-	ASSERT(DB::isUserModelClass<Integer>() == false);
+	ASSERT(c.height.isNull());
+
+	const TableSchema& schema = Client::getSchema();
+	ASSERT(schema.at("id").isAutoIncrement());
+	ASSERT(schema.at("id").isPrimary());
+	ASSERT(schema.at("name").getDefaultValue() == "nameless");
+	ASSERT(schema.at("name").isText());
+	ASSERT(!schema.at("name").isIntegral());
+	ASSERT(schema.at("age").getDefaultValue() == "5");
+	ASSERT(schema.at("age").isNullable());
+	ASSERT(!schema.at("height").isAutoIncrement());
+	ASSERT(!schema.at("height").isNullable());
+	ASSERT(schema.at("height").isIntegral());
+	ASSERT(schema.at("height").getDefaultValue().empty());
+	ASSERT(!schema.at("height").isPrimary());
+	ASSERT(!schema.at("height").isText());
+}
+
+void assertTableCreation(){
 	DB::dropTable<Client>();
-	ASSERT(DB::tableExists<Client>() == false);
+	ASSERT(!DB::tableExists<Client>());
 	DB::createTable<Client>();
 	ASSERT(DB::tableExists<Client>());
 	ASSERT(DB::tableExists<Client>(true));
@@ -45,15 +63,6 @@ void testInsertAndSelect(){
 	vector<Client> c0 = Client::where({
 		{"id", "=", 542}
 	}).select();
-
-	if(!c0.empty()){
-		cerr<<Poco::format("\tid:%s\n\tname:%s\n\tage:%s\n\theight:%s\n\t",
-				c0[0].id.toString(),
-				c0[0].name.toString(),
-				c0[0].age.toString(),
-				c0[0].height.toString()
-				);
-	}
 }
 
 int main(int argc, char** argv)
@@ -61,6 +70,7 @@ int main(int argc, char** argv)
 	try{
 		DB::setDefaultSession(make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root"));
 		testModelDefinition();
+		assertTableCreation();
 		testInsertAndSelect();
 	}catch(Poco::Exception& ex){
 		cerr<<ex.displayText()<<endl;
