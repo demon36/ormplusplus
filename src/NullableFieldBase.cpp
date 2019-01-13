@@ -50,17 +50,17 @@ NullableFieldBase::NullableFieldBase(const type_info& type)
 : m_type(type)
 {
 	if(m_type == typeid(int)){
-		primitiveValuePtr = new int;
+		primitiveValuePtr = new int(0);
 	}else if(m_type == typeid(long)){
-		primitiveValuePtr = new long;
+		primitiveValuePtr = new long(0);
 	}else if(m_type == typeid(float)){
-		primitiveValuePtr = new float;
+		primitiveValuePtr = new float(0);
 	}else if(m_type == typeid(double)){
-		primitiveValuePtr = new double;
+		primitiveValuePtr = new double(0);
 	}else if(m_type == typeid(string)){
-		primitiveValuePtr = new string;
+		primitiveValuePtr = new string("");
 	}else if(m_type == typeid(Poco::DateTime)){
-		primitiveValuePtr = new Poco::DateTime;
+		primitiveValuePtr = new Poco::DateTime();
 	}else if(m_type == typeid(nullptr_t)){
 		//is this the best way to do it ?
 		primitiveValuePtr = new nullptr_t();

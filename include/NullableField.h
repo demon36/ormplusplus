@@ -14,6 +14,14 @@ namespace ORMPlusPlus{
  */
 class AttributeInitializerBase;
 
+template <class PrimitiveType>
+class NullableField;
+
+template<class PrimitiveType>
+std::ostream& operator<<(std::ostream&, const NullableField<PrimitiveType>&);
+template<class PrimitiveType>
+std::istream& operator>>(std::istream&, const NullableField<PrimitiveType>&);
+
 /**
  * this class can be used either as a shell for a NullableFieldBase that exists some where else <br>
  * or as a container for NullableFieldBase
@@ -203,7 +211,24 @@ public:
 		return NFBasePtr->isNull();
 	}
 
+	friend std::ostream& operator<< <>(std::ostream&, const NullableField&);
+	friend std::istream& operator>> <>(std::istream&, const NullableField&);
+
 };
+
+template<class PrimitiveType>
+std::ostream& operator<<(std::ostream& os, const NullableField<PrimitiveType>& field)
+{
+	os << field.getValueRef();
+    return os;
+}
+
+template<class PrimitiveType>
+std::istream& operator>>(std::istream& is, const NullableField<PrimitiveType>& field)
+{
+	is >> field.getValueRef();
+    return is;
+}
 
 //remember to add the necessary item to typeInfoMap at adding new specializations
 typedef NullableField<int> Integer;
