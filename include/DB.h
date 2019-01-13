@@ -25,9 +25,14 @@ private:
 public:
 	//make sure template parameter is a child of Model<UserModel>
 	//TODO: check at compile time
-	template <class UserModel>
+	template <class T>
+	static bool isUserModelClass(){
+		return std::is_base_of<ModelBase, T>::value;
+	}
+
+	template <class T>
 	static void assertClassIsUserModel(){
-		if(!std::is_base_of<ModelBase, UserModel>::value){
+		if(!isUserModelClass<T>()){
 			throw std::runtime_error("template parameter is not a legitimate child of ModelBase");
 		}
 	}

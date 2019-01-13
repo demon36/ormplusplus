@@ -1,58 +1,71 @@
 #include "ormplusplus.h"
 
+#include <iomanip>
+
 using namespace std;
 using namespace ORMPlusPlus;
 
-#define TEST(expression, expectedValue) printTestResult(#expression ,expression, expectedValue)
+#define ASSERT(expression) printTestResult(#expression, expression)
 
-void printTestResult(string expression, bool result, bool expectedValue){
-	string temp = "expression `"+expression+"` yielded "+ (result ? "true" : "false");
-	if(result == expectedValue){
-		cout<<temp<<" ---------------- success"<<endl;
-	}else{
-		cerr<<temp<<" ---------------- failure"<<endl;
-	}
+void printTestResult(const string& expression, bool result){
+	ostream& targetStream = result ? cout : cerr ;
+	targetStream << "assertion `" << left << setw(60) << expression + "` ";
+	targetStream << " >>>>>>> " << right << setw(20) << (result ? "succeeded" : "failed") << endl;
 }
 
 BOUND_MODEL(Client, "client_info")
 {
 public:
-	DEFINE_ATTRIB(Integer, ID).autoIncrement();
-	DEFINE_ATTRIB(String, name).withDefault("nameless");//TODO: assert "nameless" gets set correctly
+	DEFINE_ATTRIB(Integer, id).autoIncrement();
+	DEFINE_ATTRIB(String, name).withDefault("nameless");
 	DEFINE_ATTRIB(Integer, age).withDefault(5);
 	DEFINE_ATTRIB(Integer, height);
+//	DEFINE_ATTRIB(DateTime, dob).withDefault(3);
 //	Integer height = initializeAttrib<Integer>("height");
 };
 
-template<class U>
-bool assertClassIsUserModel(){
-	try{
-		DB::assertClassIsUserModel<U>();
-		return true;
-	}catch(std::runtime_error& err){
-		return false;
+void testModelDefinition(){
+	Client c;
+	ASSERT(c.name == "nameless");
+	ASSERT(c.age == 5);
+	ASSERT(c.height != 4);
+	ASSERT(Client::columnExists("name"));
+	ASSERT(Client::columnExists("age"));
+	ASSERT(DB::isUserModelClass<Client>());
+	ASSERT(DB::isUserModelClass<Integer>() == false);
+	DB::dropTable<Client>();
+	ASSERT(DB::tableExists<Client>() == false);
+	DB::createTable<Client>();
+	ASSERT(DB::tableExists<Client>());
+	ASSERT(DB::tableExists<Client>(true));
+}
+
+void testInsertAndSelect(){
+	//TODO: test with datetime
+	vector<Client> c0 = Client::where({
+		{"id", "=", 542}
+	}).select();
+
+	if(!c0.empty()){
+		cerr<<Poco::format("\tid:%s\n\tname:%s\n\tage:%s\n\theight:%s\n\t",
+				c0[0].id.toString(),
+				c0[0].name.toString(),
+				c0[0].age.toString(),
+				c0[0].height.toString()
+				);
 	}
 }
 
 int main(int argc, char** argv)
 {
 	try{
-		Client c;
-		TEST(c.name == "nameless", true);
-		TEST(c.age == 5, true);
-		TEST(c.height == 4, false);
-		TEST(Client::columnExists("name"), true);
-		TEST(Client::columnExists("age"), true);
 		DB::setDefaultSession(make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root"));
-		TEST(assertClassIsUserModel<Client>(), true);
-		TEST(assertClassIsUserModel<Integer>(), false);
-		DB::dropTable<Client>();
-		TEST(DB::tableExists<Client>(), false);
-		DB::createTable<Client>();
-		TEST(DB::tableExists<Client>(), true);
-		TEST(DB::tableExists<Client>(true), true);
+		testModelDefinition();
+		testInsertAndSelect();
 	}catch(Poco::Exception& ex){
 		cerr<<ex.displayText()<<endl;
+	}catch(exception& ex){
+		cerr<<ex.what()<<endl;
 	}
 	return 0;
 }
