@@ -7,6 +7,8 @@
 #include <Poco/Data/MySQL/Connector.h>
 #include <Poco/Tuple.h>
 
+#include "Logger.h"
+
 using namespace std;
 using Poco::Data::Session;
 using Poco::Data::Statement;
@@ -20,6 +22,7 @@ MySQLSession::MySQLSession(const string& host, const string& database, const str
 	string connectionString = Poco::format("host=%s;port=%d;db=%s;user=%s;password=%s;compress=true;auto-reconnect=true",
 			host, port, database, user, password);
 	sessionPtr = new Session("MySQL", connectionString);
+	ORMLOG(Logger::Lv::INFO, "connected to mysql server " + host + ":" + to_string(port));
 }
 
 bool MySQLSession::tableExists(const string& name){
@@ -108,6 +111,7 @@ TableSchema MySQLSession::getTableSchema(const string& name){
 }
 
 RecordSet MySQLSession::execute(const string& queryString){
+	ORMLOG(Logger::Lv::DEBUG, "executing query : " + queryString);
 	Statement query(*sessionPtr);
 	query << queryString;
 	query.execute();
@@ -115,6 +119,7 @@ RecordSet MySQLSession::execute(const string& queryString){
 }
 
 MySQLSession::~MySQLSession() {
+	ORMLOG(Logger::Lv::INFO, "disconnected from mysql server ");
 	delete sessionPtr;
 }
 

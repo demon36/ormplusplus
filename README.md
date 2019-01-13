@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 - [x] DB session abstraction
 - [x] put DB supported types in one place
 - [x] update tests
-- [ ] use logging
+- [x] use logging
 - [ ] single instance select
 - [ ] multi instance select
 - [ ] single instance save
@@ -64,6 +64,7 @@ int main(int argc, char** argv)
 - [ ] store attribute names in database in snake_case
 - [ ] add support for sqlite
 - [ ] add support for mongodb
+- [ ] check thread safety
 - [ ] relational models (maybe?)
 - [ ] transactions (maybe?)
 

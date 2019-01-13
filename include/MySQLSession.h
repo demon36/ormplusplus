@@ -6,6 +6,7 @@
 #include <Poco/Data/Session.h>
 
 #include "DBSessionBase.h"
+#include "Logger.h"
 
 #define MYSQL_DEFAULT_PORT 3306
 

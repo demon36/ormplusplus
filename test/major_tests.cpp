@@ -67,6 +67,7 @@ void testInsertAndSelect(){
 
 int main(int argc, char** argv)
 {
+	Logger::setLevel(Logger::Lv::DEBUG);
 	try{
 		DB::setDefaultSession(make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root"));
 		testModelDefinition();
