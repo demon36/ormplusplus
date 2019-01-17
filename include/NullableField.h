@@ -187,10 +187,7 @@ public:
 	}
 
 	std::string toString(){
-		//TODO: move this to NullableFieldBase
-		std::stringstream ss;
-		ss << getValueRef();
-		return ss.str();
+		return NFBasePtr->toString();
 	}
 
 	~NullableField(){

@@ -131,24 +131,22 @@ string NullableFieldBase::toString() const
 	if(isNull()){
 		return "";
 	}
-	stringstream tempStream;
 	if(m_type == typeid(int)){
-		tempStream << *(int*)primitiveValuePtr;
+		return to_string(*(int*)primitiveValuePtr);
 	}else if(m_type == typeid(long)){
-		tempStream << *(long*)primitiveValuePtr;
+		return to_string(*(long*)primitiveValuePtr);
 	}else if(m_type == typeid(float)){
-		tempStream << *(float*)primitiveValuePtr;
+		return to_string(*(float*)primitiveValuePtr);
 	}else if(m_type == typeid(double)){
-		tempStream << *(double*)primitiveValuePtr;
+		return to_string(*(double*)primitiveValuePtr);
 	}else if(m_type == typeid(string)){
-		tempStream << *(string*)primitiveValuePtr;
+		return *(string*)primitiveValuePtr;
 	}else if(m_type == typeid(Poco::DateTime)){
 		Poco::DateTime& date = *(Poco::DateTime*)primitiveValuePtr;
-		tempStream << Poco::DateTimeFormatter::format(date, "%Y-%m-%d %h:%M:%S");
+		return Poco::DateTimeFormatter::format(date, "%Y-%m-%d %h:%M:%S");
 	}else if(m_type == typeid(nullptr_t)){
-		tempStream << *(nullptr_t*)primitiveValuePtr;
+		return "";
 	}
-	return tempStream.str();
 }
 
 const std::type_info& NullableFieldBase::getType() const{
