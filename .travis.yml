@@ -1,0 +1,11 @@
+dist: xenial
+language: cpp
+compiler:
+  - gcc
+addons:
+  apt:
+    update: true
+    packages:
+    - libpoco-dev
+script:
+  - make
