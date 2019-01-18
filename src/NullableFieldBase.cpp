@@ -122,6 +122,31 @@ NullableFieldBase& NullableFieldBase::operator=(const NullableFieldBase that){
 	}
 }
 
+bool NullableFieldBase::equals(const NullableFieldBase& that) const{
+	if(this->m_type != that.m_type){
+		return false;
+	}
+
+	if(that.m_type == typeid(int)){
+		return this->getValueRef<int>() == that.getValueRef<int>();
+	}else if(that.m_type == typeid(long)){
+		return this->getValueRef<long>() == that.getValueRef<long>();
+	}else if(that.m_type == typeid(float)){
+		return this->getValueRef<float>() == that.getValueRef<float>();
+	}else if(that.m_type == typeid(double)){
+		return this->getValueRef<double>() == that.getValueRef<double>();
+	}else if(that.m_type == typeid(string)){
+		return this->getValueRef<string>() == that.getValueRef<string>();
+	}else if(that.m_type == typeid(Poco::DateTime)){
+		return this->getValueRef<Poco::DateTime>() == that.getValueRef<Poco::DateTime>();
+	}else if(that.m_type == typeid(nullptr_t)){
+		return this->getValueRef<nullptr_t>() == that.getValueRef<nullptr_t>();
+	}else{
+		throw runtime_error("called NullableFieldBase::equals() with unsupported type");
+	}
+
+}
+
 bool NullableFieldBase::isNull() const {
 	return !hasValue;
 }

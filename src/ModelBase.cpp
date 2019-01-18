@@ -1,5 +1,7 @@
 #include "ModelBase.h"
 
+#include "DB.h"
+
 using namespace std;
 
 namespace ORMPlusPlus{
@@ -34,7 +36,7 @@ void ModelBase::addColumn(const std::string& name, std::size_t typeHash){
 	schemaRef.emplace(name, TableColumn(name, typeHash));
 }
 
-TableColumn& ModelBase::getColumnRef(const std::string& name){
+TableColumn& ModelBase::getColumnRef(const std::string& name) const{
 	auto column = schemaRef.find(name);
 	if(column == schemaRef.end()){
 		throw runtime_error("column not found");
@@ -47,4 +49,18 @@ void ModelBase::setAttributes(const AttributesMap& values){
 		attribEntry.second = values.at(attribEntry.first);
 	}
 }
+
+bool ModelBase::equals(const ModelBase& that) const{
+	for(auto& attribEntry : this->attributes){
+		if(attribEntry.second.equals(that.attributes.at(attribEntry.first))){
+			return false;
+		}
+	}
+	return true;
+}
+
+void ModelBase::save(){
+//	DB::getDefaultSession().save(*this);
+}
+
 }

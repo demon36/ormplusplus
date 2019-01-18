@@ -8,6 +8,7 @@
 #include <typeindex>
 #include <map>
 
+
 #include <Poco/DateTime.h>
 #include <Poco/DateTimeFormatter.h>
 
@@ -90,6 +91,7 @@ public:
 		}
 	}
 
+	bool equals(const NullableFieldBase& that) const;
 	bool isNull() const;
 	std::string toString() const;
 	const std::type_info& getType() const;
