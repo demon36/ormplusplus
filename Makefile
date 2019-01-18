@@ -11,15 +11,20 @@ TESTS_DIR := ./test
 TEST_SRC_FILES := $(wildcard $(TESTS_DIR)/*.cpp)
 TEST_BIN_FILES := $(patsubst $(TESTS_DIR)/%.cpp,$(BIN_DIR)/%,$(TEST_SRC_FILES))
 
-CFLAGS= -w -Wall -g -std=c++0x -I$(INC_DIR)
-LIBS= -std=c++0x -lPocoUtil -lPocoXML -lPocoJSON -lPocoNet -lPocoFoundation -lPocoData -lPocoDataSQLite -lPocoDataMySQL
+#create needed directories if they do not exist
+$(shell mkdir -p ./build)
+$(shell mkdir -p ./bin)
+$(shell mkdir -p ./lib)
+
+CFLAGS= -w -Wall -g -std=c++11 -I$(INC_DIR)
+LIBS= -std=c++11 -lPocoUtil -lPocoXML -lPocoJSON -lPocoNet -lPocoFoundation -lPocoData -lPocoDataSQLite -lPocoDataMySQL
 EXEC_LIBS=$(LIBS) -L$(LIB_DIR) -l$(LIB_NAME)
 LDOPTIONS= -Wl,-rpath='$$ORIGIN/../lib'
 
 all: $(LIB_NAME) tests
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
-	$(CC) -fPIC -c -o $@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $<
 
 tests: $(TEST_BIN_FILES)
 	

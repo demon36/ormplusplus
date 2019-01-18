@@ -2,7 +2,7 @@
 #define INCLUDE_ATTRIBUTEINITIALIZERBASE_H_
 
 #include "TableColumn.h"
-#include "NullableField.h"
+#include "NullableFieldBase.h"
 
 namespace ORMPlusPlus {
 

@@ -5,8 +5,6 @@
 #include <map>
 #include <typeindex>
 
-#include "NullableField.h"
-
 namespace ORMPlusPlus{
 
 class TableColumn{

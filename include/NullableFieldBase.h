@@ -1,6 +1,7 @@
 #ifndef INCLUDE_NULLABLEFIELDBASE_H_
 #define INCLUDE_NULLABLEFIELDBASE_H_
 
+#include <cstddef>
 #include <string>
 #include <sstream>
 #include <iostream>

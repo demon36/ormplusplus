@@ -2,6 +2,7 @@
 #define INCLUDE_ATTRIBUTEINITIALIZER_H_
 
 #include "AttributeInitializerBase.h"
+#include "NullableField.h"
 
 namespace ORMPlusPlus{
 
@@ -47,6 +48,7 @@ public:
 		return *this;
 	}
 
+	//TODO: throw exception if a decorator got called twice
 	AttributeInitializer& asPrimary(){
 		AttributeInitializerBase::asPrimary();
 		return *this;

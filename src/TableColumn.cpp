@@ -1,5 +1,7 @@
 #include "TableColumn.h"
 
+#include "NullableFieldBase.h"
+
 #define DEFAULT_STRING_LENGTH 1024
 #define DEFAULT_NUM_PRECISION 10
 

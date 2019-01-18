@@ -6,13 +6,13 @@
 #define quote(x) #x
 
 #include "NullableFieldBase.h"
+#include "AttributeInitializerBase.h"
 
 namespace ORMPlusPlus{
 
 /**
  * Facilitates interaction with the nullable field
  */
-class AttributeInitializerBase;
 
 template <class PrimitiveType>
 class NullableField;

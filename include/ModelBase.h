@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "TableColumn.h"
+#include "NullableFieldBase.h"
 
 namespace ORMPlusPlus{
 
@@ -22,9 +23,15 @@ public:
 	ModelBase(const std::string& tableName, TableSchema& schema);
 	ModelBase(const ModelBase& that);
 	void addColumn(const std::string& name, std::size_t typeHash);
-	TableColumn& getColumnRef(const std::string& name);
+	TableColumn& getColumnRef(const std::string& name) const;
 	void setAttributes(const AttributesMap& values);
-//	std::map<std::string, NullableFieldBase*> fieldValues;
+	bool equals(const ModelBase& that) const;
+	/**
+	 * inserts a new row or updates existing
+	 */
+	void save();
+	void insert();
+	void update();
 //	static std::vector<TableColumn> getColumns();
 //	static void addColumn(std::string name, DataType type);
 	//TODO: implement
