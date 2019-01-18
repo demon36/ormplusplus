@@ -17,9 +17,9 @@ $(shell mkdir -p ./bin)
 $(shell mkdir -p ./lib)
 
 CFLAGS= -w -Wall -g -std=c++11 -I$(INC_DIR)
-LIBS= -std=c++11 -lPocoUtil -lPocoXML -lPocoJSON -lPocoNet -lPocoFoundation -lPocoData -lPocoDataSQLite -lPocoDataMySQL
+LIBS= -std=c++11 -lPocoFoundation -lPocoData -lPocoDataMySQL
 EXEC_LIBS=$(LIBS) -L$(LIB_DIR) -l$(LIB_NAME)
-LDOPTIONS= -Wl,-rpath='$$ORIGIN/../lib'
+LDOPTIONS= -Wl,-zdefs,-rpath='$$ORIGIN/../lib'
 
 all: $(LIB_NAME) tests
 
@@ -32,7 +32,7 @@ $(BIN_DIR)/%: $(TESTS_DIR)/%.cpp $(wildcard $(INC_DIR)/*.h)
 	$(CC) -g $< -o $@ $(CFLAGS) $(EXEC_LIBS) $(LDOPTIONS)
 
 $(LIB_NAME): $(OBJ_FILES)
-	$(CC) -shared -g -o $(LIB_DIR)/lib$@.so $^ $(LIBS)
+	$(CC) -shared -g -o $(LIB_DIR)/lib$@.so $^ $(LDOPTIONS) $(LIBS)
 
 .phony: all clean
 
