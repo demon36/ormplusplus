@@ -47,23 +47,35 @@ TableColumn& ModelBase::getColumnRef(const std::string& name) const{
 	return (*column).second;
 }
 
+std::string ModelBase::getTableName() const{
+	return tableNameRef;
+}
+
+const TableSchema& ModelBase::getSchema() const{
+	return schemaRef;
+}
+
 void ModelBase::setAttributes(const AttributesMap& values){
 	for(auto& attribEntry : this->attributes){
 		attribEntry.second = values.at(attribEntry.first);
 	}
 }
 
+const AttributesMap& ModelBase::getAttributes() const{
+	return attributes;
+}
+
 bool ModelBase::equals(const ModelBase& that) const{
 	for(auto& attribEntry : this->attributes){
-		if(attribEntry.second.equals(that.attributes.at(attribEntry.first))){
+		if(!attribEntry.second.equals(that.attributes.at(attribEntry.first))){
 			return false;
 		}
 	}
 	return true;
 }
 
-void ModelBase::save(){
-//	DB::getDefaultSession().save(*this);
+void ModelBase::insert(){
+	DB::getDefaultSession().insert(*this);
 }
 
 string ModelBase::getTypeName(const std::type_info& type){

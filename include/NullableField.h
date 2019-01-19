@@ -165,10 +165,6 @@ public:
 		return this->getValueRef() <= value;
 	}
 
-	operator PrimitiveType&(){
-		return getValueRef();
-	}
-
 	operator PrimitiveType(){
 		return getValueRef();
 	}

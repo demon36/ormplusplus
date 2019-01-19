@@ -74,12 +74,14 @@ void testInsertAndSelect(){
 	c0.name = "robert";
 	c0.height = 167;
 	c0.dob = Poco::DateTime();
-	c0.save();
+	c0.insert();
 
 	Client c1 = Client::where({
 		{"id", "=", 13}
 	}).selectOne();
 
+	DateTime x = c0.dob;
+	DateTime y = c0.dob;
 	ASSERT(c0.equals(c1));
 }
 
