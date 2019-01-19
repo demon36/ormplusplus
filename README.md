@@ -3,6 +3,9 @@ A basic ORM for C++11 that does not precompile your code
 
 Targeting MySQL support, SQLite and others can be supported in the future
 
+[![Build Status](https://travis-ci.org/demon36/ormplusplus.svg?branch=master)](https://travis-ci.org/demon36/ormplusplus)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
 ### Usage example
 ```cpp
 BOUND_MODEL(Client, "client_info")
