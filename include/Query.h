@@ -24,12 +24,16 @@ public:
 		//TODO: assert schema is not empty for type
 		type = QueryType::_Select;
 		return DB::getDefaultSession().execute<UserModel>(*this);
-//		std::vector<UserModel> modelsList;
-//		UserModel test();
-//		Poco::Data::RecordSet rs = select();
-//		int x;
-//		rs[""].convert<int>(x);
-//		return modelsList;
+	}
+
+	UserModel selectOne(){
+		this->limit = 1;
+		std::vector<UserModel> objects = select();
+		if(objects.empty()){
+			throw std::runtime_error("Calling selectOne() on a query that returned zero elements");
+		}else{
+			return objects[0].clone();
+		}
 	}
 
 //	operator std::vector<UserModel>(){
@@ -37,6 +41,7 @@ public:
 //		return modelsList;
 //	}
 
+	//TODO: throw exception if a decorator got called twice
 //	void remove();
 //	Query& update(std::vector<std::string>);
 //	void set(std::vector<std::string>);
