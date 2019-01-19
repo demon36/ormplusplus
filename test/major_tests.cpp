@@ -13,18 +13,27 @@ void printTestResult(const string& expression, bool result){
 	targetStream << " >>>>>>> " << right << setw(20) << (result ? "succeeded" : "failed") << endl;
 }
 
-BOUND_MODEL(Client, "client_info")
+class Client : public Model<Client>
 {
 public:
 	DEFINE_ATTRIB(Integer, id).autoIncrement().asPrimary();
 	DEFINE_ATTRIB(String, name).withDefault("nameless");
 	DEFINE_ATTRIB(Integer, age).withDefault(5).asNullable();
 	DEFINE_ATTRIB(Integer, height);
-//	DEFINE_ATTRIB(DateTime, dob).withDefault(3);
-//	Integer height = initializeAttrib<Integer>("height");
+	DEFINE_ATTRIB(DateTime, dob).withDefault(DateTime()).asNullable(false);
 };
 
+class MiniBus : public Model<MiniBus, _("minibuses")>
+{
+public:
+	DEFINE_ATTRIB(Integer, id).autoIncrement().asPrimary();
+	DEFINE_ATTRIB(String, model).withDefault("myVan");
+};
+
+
 void testModelDefinition(){
+	ASSERT(MiniBus::getTableName() == "minibuses");
+	ASSERT(Client::getTableName() == "Client");
 	ASSERT(DB::isUserModelClass<Client>());
 	ASSERT(!DB::isUserModelClass<Integer>());
 
@@ -59,10 +68,19 @@ void assertTableCreation(){
 }
 
 void testInsertAndSelect(){
-	//TODO: test with datetime
-	vector<Client> c0 = Client::where({
-		{"id", "=", 542}
-	}).select();
+	Client c0;
+	c0.id = 13;
+	c0.age = 15;
+	c0.name = "robert";
+	c0.height = 167;
+	c0.dob = Poco::DateTime();
+	c0.save();
+
+	Client c1 = Client::where({
+		{"id", "=", 13}
+	}).selectOne();
+
+	ASSERT(c0.equals(c1));
 }
 
 int main(int argc, char** argv)

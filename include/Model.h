@@ -11,12 +11,16 @@
 #include "AttributeInitializer.h"
 #include "Query.h"
 
+//TODO: get rid of model binding macros
 //macro overloading
 #define GET_MACRO(_1,_2,NAME,...) NAME
 #define BOUND_MODEL(...) GET_MACRO(__VA_ARGS__, BOUND_MODEL_2, BOUND_MODEL_1)(__VA_ARGS__)
 
 #define BOUND_MODEL_1(CLASS_NAME) class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME, typestring_is(#CLASS_NAME)>
 #define BOUND_MODEL_2(CLASS_NAME, TABLE_NAME) class CLASS_NAME : public ORMPlusPlus::Model<CLASS_NAME, typestring_is(TABLE_NAME)>
+
+//creates a set of template parameters from a string literal
+#define _ typestring_is
 //TODO: facilitate writing conditions using sth like:
 //#define DEFINE_ATTRIB(DATATYPE, NAME) static std::string _ ## NAME(){static std::string _s = #NAME; return _s;}; DATATYPE NAME = initializeAttrib<DATATYPE>(#NAME)
 //or a static reference that is initialized to a schema entry
@@ -26,7 +30,7 @@
 
 namespace ORMPlusPlus{
 
-template<class UserModel, class TableName>
+template<class UserModel, class TableName = typestring_is("")>
 class Model : public ModelBase
 {
 private:
@@ -131,11 +135,16 @@ public:
 
 template<class UserModel, class TableName>
 TableSchema Model<UserModel, TableName>::schema;
+
 template<class UserModel, class TableName>
-std::string Model<UserModel, TableName>::tableName = TableName::data();
+std::string Model<UserModel, TableName>::tableName =
+		std::string(TableName::data()).empty() ?
+		ModelBase::getTypeName(typeid(UserModel)) : TableName::data();
 template<class UserModel, class TableName>
 bool Model<UserModel, TableName>::schemaBuilt = false;
 
 }
+
+
 
 #endif MODEL_H
