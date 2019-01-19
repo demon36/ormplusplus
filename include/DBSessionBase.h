@@ -8,6 +8,7 @@
 
 #include "TableColumn.h"
 #include "QueryBase.h"
+#include "ModelBase.h"
 
 namespace ORMPlusPlus {
 
@@ -20,6 +21,13 @@ public:
 	bool tableExists(const std::string& name, TableSchema& schema);
 	virtual TableSchema getTableSchema(const std::string& name) = 0;
 
+	/**
+	 * inserts the provided model or updates it if exists
+	 */
+//	virtual void save(const ModelBase& model) = 0;
+	virtual void insert(const ModelBase& model) = 0;
+//	virtual void update(const ModelBase& model) = 0;
+
 	//TODO: find a soln for the following issue:
 	//		this function should be marked as virtual in order to get overridden
 	//		by different database sessions, but c++ prohibits virtual template fns
@@ -31,7 +39,6 @@ public:
 	std::vector<UserModel> execute(const QueryBase& query){
 		std::stringstream queryStream;
 		std::string tableName = UserModel::getTableName();
-		const TableSchema& schema = UserModel::getSchema();
 		const std::vector<QueryCondition>& conditions = query.getConditionsRef();
 		const std::vector<OrderRule>& orderRules = query.getOrderRulesRef();
 		int limit = query.getLimit();
@@ -41,17 +48,8 @@ public:
 		if(query.getType() == QueryType::_Null){
 			throw std::runtime_error("try to execute a query with null type");
 		}else if(query.getType() == QueryType::_Select){
-			queryStream << "select";
-
-			for(auto it = schema.begin(); it != schema.end(); ++it){
-				queryStream << " " << it->first;
-				if(std::next(it) == schema.end()){
-					queryStream << " ";
-				}else{
-					queryStream << ",";
-				}
-			}
-
+			queryStream << "select ";
+			printColumnNames(queryStream, UserModel::getSchema());
 			queryStream << " from " << tableName;
 			if(!conditions.empty()){
 				queryStream << " WHERE ";
@@ -85,11 +83,11 @@ public:
 			}
 
 			queryStream<<";";
-			std::cerr<<queryStream.str()<<std::endl;
 
 			Poco::Data::RecordSet result = execute(queryStream.str());
 			for(auto it = result.begin(); it != result.end(); ++it){
 				UserModel obj;
+				//TODO: no getter here ?
 				std::map<std::string, NullableFieldBase>& objAttribs = obj.attributes;
 				for(auto& attribElement : objAttribs){
 					const std::string& attribName = attribElement.first;
@@ -127,7 +125,25 @@ public:
 	}
 
 	virtual Poco::Data::RecordSet execute(const std::string& query) = 0;
+
+	/**
+	 * @return # rows affected
+	 */
+	virtual std::size_t executeNonQuery(const std::string& queryString) = 0;
 	virtual ~DBSessionBase();
+protected:
+	//TODO: move to modelBase OR create class schema instead of typedef and override << for it
+	/**
+	 * prints comma separated schema map keys ex: "`c1`, `c2` ,..." to specified stream
+	 */
+	static void printColumnNames(std::ostream& stream, const TableSchema& schema);
+
+	/**
+	 * prints comma separated model attribute values ex: "v1,v2,..." to specified stream<br>
+	 * schema is needed for type checking
+	 */
+	//TODO: commas needed
+	static void printAttribValues(std::ostream& stream, const TableSchema& schema, const AttributesMap& attribs);
 };
 
 } /* namespace ORMPlusPlus */

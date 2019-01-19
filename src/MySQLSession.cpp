@@ -110,12 +110,35 @@ TableSchema MySQLSession::getTableSchema(const string& name){
 	return schema;
 }
 
+void MySQLSession::insert(const ModelBase& model){
+	stringstream queryStream;
+	const TableSchema schema = model.getSchema();
+	queryStream << "INSERT INTO " << model.getTableName();
+	queryStream << " ( ";
+	//will rely on map internal order, same with attribute values
+	printColumnNames(queryStream, model.getSchema());
+	queryStream << " ) VALUES ( ";
+	printAttribValues(queryStream, model.getSchema(), model.getAttributes());
+	queryStream << " ); ";
+	if(executeNonQuery(queryStream.str()) != 1){
+		throw runtime_error("failed to insert model");
+	}
+	return;
+}
+
 RecordSet MySQLSession::execute(const string& queryString){
 	ORMLOG(Logger::Lv::DEBUG, "executing query : " + queryString);
 	Statement query(*sessionPtr);
 	query << queryString;
 	query.execute();
 	return RecordSet(query);
+}
+
+std::size_t MySQLSession::executeNonQuery(const std::string& queryString){
+	ORMLOG(Logger::Lv::DEBUG, "executing query : " + queryString);
+	Statement query(*sessionPtr);
+	query << queryString;
+	return query.execute();
 }
 
 MySQLSession::~MySQLSession() {

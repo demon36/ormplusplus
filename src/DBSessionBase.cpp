@@ -36,4 +36,27 @@ DBSessionBase::~DBSessionBase() {
 	// TODO Auto-generated destructor stub
 }
 
+void DBSessionBase::printColumnNames(std::ostream& stream, const TableSchema& schema){
+	for(auto columnIt = schema.begin(); columnIt != schema.end(); ++columnIt){
+		stream << " `" << columnIt->first << "`";
+		if(std::next(columnIt) != schema.end()){
+			stream << ",";
+		}
+	}
+}
+
+void DBSessionBase::printAttribValues(std::ostream& stream, const TableSchema& schema, const AttributesMap& attribs){
+	for(auto columnIt = schema.begin(); columnIt != schema.end(); ++columnIt){
+		//TODO: override operatpr << for nullable field base
+		if(!columnIt->second.isIntegral()){
+			stream << " '" << attribs.at(columnIt->first).toString() << "'";
+		}else{
+			stream << " " << attribs.at(columnIt->first).toString();
+		}
+		if(std::next(columnIt) != schema.end()){
+			stream << ",";
+		}
+	}
+}
+
 } /* namespace ORMPlusPlus */
