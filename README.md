@@ -4,6 +4,7 @@ A basic ORM for C++11 that does not precompile your code
 Targeting MySQL support, SQLite and others can be supported in the future
 
 [![Build Status](https://travis-ci.org/demon36/ormplusplus.svg?branch=master)](https://travis-ci.org/demon36/ormplusplus)
+[![codecov](https://codecov.io/gh/demon36/ormplusplus/branch/master/graph/badge.svg)](https://codecov.io/gh/demon36/ormplusplus)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 ### Usage example
@@ -50,12 +51,12 @@ int main(int argc, char** argv)
 - [x] put DB supported types in one place
 - [x] update tests
 - [x] use logging
-- [ ] single instance select
-- [ ] multi instance select
-- [ ] single instance save
-- [ ] single instance delete
-- [ ] single instance update
-- [ ] save many
+- [ ] insert one
+- [ ] select one
+- [ ] insert many
+- [ ] select many
+- [ ] delete one
+- [ ] update one
 - [ ] delete many
 - [ ] update many
 - [ ] query order by, limit
@@ -64,7 +65,7 @@ int main(int argc, char** argv)
 - [ ] autosave
 - [ ] nested where conditions
 - [ ] aggregate fns (AVG, COUNT, SUM, MAX, MIN)
-- [ ] store attribute names in database in snake_case
+- [ ] insert or update if exists
 - [ ] add support for sqlite
 - [ ] add support for mongodb
 - [ ] check thread safety
@@ -79,7 +80,7 @@ sudo apt-get install libpoco-dev
 - run make
 
 ### guidelines
-- no using in header files
+- no `using` in header files
 - target least number of includes in header files
 - use tabs for indents
 - use enum classes instead of plain enums
