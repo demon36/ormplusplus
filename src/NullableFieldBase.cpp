@@ -1,6 +1,7 @@
+#include <algorithm>
+
 #include "NullableFieldBase.h"
 #include "NullableField.h"
-#include <algorithm>
 
 using namespace std;
 
@@ -154,7 +155,7 @@ bool NullableFieldBase::isNull() const {
 string NullableFieldBase::toString() const
 {
 	if(isNull()){
-		return "";
+		return "NULL";
 	}
 	if(m_type == typeid(int)){
 		return to_string(*(int*)primitiveValuePtr);
@@ -170,8 +171,9 @@ string NullableFieldBase::toString() const
 		Poco::DateTime& date = *(Poco::DateTime*)primitiveValuePtr;
 		return Poco::DateTimeFormatter::format(date, "%Y-%m-%d %h:%M:%S");
 	}else if(m_type == typeid(nullptr_t)){
-		return "";
+		return "NULL";
 	}
+	throw runtime_error("unresolved type");
 }
 
 const std::type_info& NullableFieldBase::getType() const{

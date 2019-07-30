@@ -1,6 +1,7 @@
 build/
 lib/
 bin/
+dep/
 test/experimentation.cpp
 .settings/
 /nbproject

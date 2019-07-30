@@ -41,7 +41,7 @@ void MySQLSession::createTable(const string& name, const TableSchema& schema){
 		columnsList.push_back( columnEntry.second );
 	}
 
-	for(int i = 0; i < columnsList.size(); i++){
+	for(size_t i = 0; i < columnsList.size(); i++){
 		queryStream << "`"<< columnsList[i].getName() <<"` " <<  columnsList[i].getDBTypeName();
 		if(columnsList[i].isText()){
 			queryStream << "(" << columnsList[i].getLength() << ")";
@@ -110,7 +110,7 @@ TableSchema MySQLSession::getTableSchema(const string& name){
 	return schema;
 }
 
-void MySQLSession::insert(const ModelBase& model){
+void MySQLSession::insert(ModelBase& model, bool updateAutoIncPKey){
 	stringstream queryStream;
 	const TableSchema schema = model.getSchema();
 	queryStream << "INSERT INTO " << model.getTableName();
@@ -119,9 +119,16 @@ void MySQLSession::insert(const ModelBase& model){
 	printColumnNames(queryStream, model.getSchema());
 	queryStream << " ) VALUES ( ";
 	printAttribValues(queryStream, model.getSchema(), model.getAttributes());
-	queryStream << " ); ";
+	queryStream << " );";
 	if(executeNonQuery(queryStream.str()) != 1){
 		throw runtime_error("failed to insert model");
+	}
+
+	if(updateAutoIncPKey && model.autoIncPkeyColumnExists()){
+		RecordSet result = execute("SELECT LAST_INSERT_ID();");
+		//const char* test = result.begin()->get(0).type().name();
+		long lastInsertId = result.begin()->get(0).convert<long>();
+		model.setAutoIncPKey(lastInsertId);
 	}
 	return;
 }

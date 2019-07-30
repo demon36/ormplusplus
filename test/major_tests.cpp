@@ -20,7 +20,7 @@ public:
 	DEFINE_ATTRIB(String, name).withDefault("nameless");
 	DEFINE_ATTRIB(Integer, age).withDefault(5).asNullable();
 	DEFINE_ATTRIB(Integer, height);
-	DEFINE_ATTRIB(DateTime, dob).withDefault(DateTime()).asNullable(false);
+	DEFINE_ATTRIB(DateTime, dob).asNullable(false);
 };
 
 class MiniBus : public Model<MiniBus, _("minibuses")>
@@ -67,22 +67,23 @@ void assertTableCreation(){
 	ASSERT(DB::tableExists<Client>(true));
 }
 
-void testInsertAndSelect(){
+void testSingleInsertAndSelect(){
 	Client c0;
-	c0.id = 13;
 	c0.age = 15;
 	c0.name = "robert";
 	c0.height = 167;
-	c0.dob = Poco::DateTime();
-	c0.insert();
+	c0.dob = Poco::DateTime(2018, 9, 30, 5, 20, 21);
+	c0.insert(true);
 
 	Client c1 = Client::where({
-		{"id", "=", 13}
+		{"id", "=", c0.id}
 	}).selectOne();
 
-	DateTime x = c0.dob;
-	DateTime y = c0.dob;
 	ASSERT(c0.equals(c1));
+}
+
+void testMultiInsertAndSelect(){
+	std::vector<Client> clients(10);
 }
 
 int main(int argc, char** argv)
@@ -92,7 +93,7 @@ int main(int argc, char** argv)
 		DB::setDefaultSession(make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root"));
 		testModelDefinition();
 		assertTableCreation();
-		testInsertAndSelect();
+		testSingleInsertAndSelect();
 	}catch(Poco::Exception& ex){
 		cerr<<ex.displayText()<<endl;
 	}catch(exception& ex){

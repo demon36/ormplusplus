@@ -18,7 +18,7 @@ A_FILE := $(LIB_DIR)/$(PROJECT_NAME).a
 EXEC_FILE := $(BIN_DIR)/$(PROJECT_NAME)
 TEST_FILE := $(BIN_DIR)/main_test
 
-CFLAGS := -w -Wall -g -std=c++11 -I$(INC_DIR)
+CFLAGS := -Wall -Wconversion -Werror -g -std=c++11 -I$(INC_DIR)
 LIBS := -lPocoFoundation -lPocoData -lPocoDataMySQL
 VERSION := 0.1
 LIB_LDFLAGS := -shared -Wl,-zdefs,-soname,$(PROJECT_NAME).so.$(VERSION)

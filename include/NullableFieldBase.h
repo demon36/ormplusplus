@@ -68,6 +68,7 @@ public:
 		}
 		getValueRef<PrimitiveType>() = value;
 		hasValue = true;
+		return *this;
 	}
 
 	template<class PrimitiveType>
@@ -83,6 +84,7 @@ public:
 	template<class PrimitiveType>
 	void setValue(const PrimitiveType& value){
 		//TODO: assert not null
+		//TODO: use enable if
 		if(typeid(PrimitiveType) == m_type){
 			*(PrimitiveType*)primitiveValuePtr = value;
 			hasValue = true;

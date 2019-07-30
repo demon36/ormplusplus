@@ -25,7 +25,13 @@ public:
 	 * inserts the provided model or updates it if exists
 	 */
 //	virtual void save(const ModelBase& model) = 0;
-	virtual void insert(const ModelBase& model) = 0;
+	//non const ModelBase ref since auto increment pkey might be altered
+	/**
+	 * insert a new row for provided model
+	 * @param updateAutoIncPKey whether or not make additional query
+	 * for extracting inserted row id and updating provided model
+	 */
+	virtual void insert(ModelBase& model, bool updateAutoIncPKey = false) = 0;
 //	virtual void update(const ModelBase& model) = 0;
 
 	//TODO: find a soln for the following issue:
@@ -122,6 +128,7 @@ public:
 		}if(query.getType() == QueryType::_Update){
 			throw std::runtime_error("unimplemented");
 		}
+		throw std::runtime_error("unsupported QueryType");
 	}
 
 	virtual Poco::Data::RecordSet execute(const std::string& query) = 0;

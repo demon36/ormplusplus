@@ -66,7 +66,7 @@ const AttributesMap& ModelBase::getAttributes() const{
 }
 
 bool ModelBase::equals(const ModelBase& that) const{
-	for(auto& attribEntry : this->attributes){
+	for(const auto& attribEntry : this->attributes){
 		if(!attribEntry.second.equals(that.attributes.at(attribEntry.first))){
 			return false;
 		}
@@ -74,8 +74,45 @@ bool ModelBase::equals(const ModelBase& that) const{
 	return true;
 }
 
-void ModelBase::insert(){
-	DB::getDefaultSession().insert(*this);
+bool ModelBase::autoIncPkeyColumnExists() const{
+	for(const auto& column : schemaRef){
+		if(column.second.isAutoIncrement() && column.second.isPrimary()){
+			return true;
+		}
+	}
+	return false;
+}
+
+void ModelBase::setAutoIncPKey(long value){
+	TableColumn* columnPtr = nullptr;
+	for(auto& column : schemaRef){
+		if(column.second.isAutoIncrement() && column.second.isPrimary()){
+			//TODO: check for multiple auto increment primary keys
+			columnPtr = &column.second;
+			break;
+		}
+	}
+	if(columnPtr == nullptr){
+		throw runtime_error("not auto increment primary key found");
+	}else{
+		//TODO: think of a cleaner way
+		//TODO: add tests for all types
+		if(columnPtr->getTypeHash() == typeid(Integer).hash_code()){
+			attributes.at(columnPtr->getName()).setValue<int>((int)value);
+		}else if(columnPtr->getTypeHash() == typeid(Long).hash_code()){
+			attributes.at(columnPtr->getName()).setValue<long>((long)value);
+		}else if(columnPtr->getTypeHash() == typeid(Float).hash_code()){
+			attributes.at(columnPtr->getName()).setValue<float>((float)value);
+		}else if(columnPtr->getTypeHash() == typeid(Double).hash_code()){
+			attributes.at(columnPtr->getName()).setValue<double>((double)value);
+		}else{
+			throw runtime_error("unsupported data type used for auto increment primary key");
+		}
+	}
+}
+
+void ModelBase::insert(bool updateAutoIncPKey){
+	DB::getDefaultSession().insert(*this, updateAutoIncPKey);
 }
 
 string ModelBase::getTypeName(const std::type_info& type){

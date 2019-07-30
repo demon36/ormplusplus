@@ -140,6 +140,7 @@ template<class UserModel, class TableName>
 std::string Model<UserModel, TableName>::tableName =
 		std::string(TableName::data()).empty() ?
 		ModelBase::getTypeName(typeid(UserModel)) : TableName::data();
+
 template<class UserModel, class TableName>
 bool Model<UserModel, TableName>::schemaBuilt = false;
 
@@ -147,4 +148,4 @@ bool Model<UserModel, TableName>::schemaBuilt = false;
 
 
 
-#endif MODEL_H
+#endif //MODEL_H

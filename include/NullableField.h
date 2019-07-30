@@ -26,8 +26,8 @@ template<class PrimitiveType>
 class NullableField{
 private:
 	NullableFieldBase* NFBasePtr = nullptr;
-	PrimitiveType& valueRef;//useful at debugging
 	bool isPtrOwner = false;//should be false if used as shell
+	PrimitiveType& valueRef;//useful at debugging
 public:
 	static const std::type_info& getPrimitiveType(){
 		return typeid(PrimitiveType);

@@ -84,6 +84,8 @@ sudo apt-get install libpoco-dev
 - target least number of includes in header files
 - use tabs for indents
 - use enum classes instead of plain enums
-- use override, final, const where possible
+- use override, final, const& where possible
 - favor compile-time checks over runtime
 - if there is a logic in a template class that is more than a few lines, move to a template-less base class if possible
+- disable implicit casting via `-Wconversion -Werror`
+- either mark as final or define a virtual destructor

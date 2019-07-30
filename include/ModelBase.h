@@ -15,8 +15,8 @@ typedef std::map<std::string, NullableFieldBase> AttributesMap;
 class ModelBase{
 	friend class DBSessionBase;
 private:
-	TableSchema& schemaRef;//owner is always Model<T, U>
 	const std::string& tableNameRef;
+	TableSchema& schemaRef;//owner is always Model<T, U>
 protected:
 	AttributesMap attributes;
 public:
@@ -28,13 +28,23 @@ public:
 	const TableSchema& getSchema() const;
 	void setAttributes(const AttributesMap& values);
 	const AttributesMap& getAttributes() const;
+	/**
+	 * @return empty string if no primary key columns with auto increment values
+	 */
+	bool autoIncPkeyColumnExists() const;
+	void setAutoIncPKey(long value);
 	bool equals(const ModelBase& that) const;
 	/**
 	 * inserts a new row or updates existing
 	 */
 //	void save();
 //	void load();
-	void insert();
+	/**
+	 * insert a new row for this model
+	 * @param updateAutoIncPKey whether or not make additional query
+	 * for extracting inserted row id and updating current model
+	 */
+	void insert(bool updateAutoIncPKey = false);
 //	void update();
 //	static std::vector<TableColumn> getColumns();
 //	static void addColumn(std::string name, DataType type);
