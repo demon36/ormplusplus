@@ -13,7 +13,7 @@ namespace ORMPlusPlus {
 class Logger {
 public:
 	enum class Lv{
-		DEBUG,
+		DBUG,
 		INFO,
 		WARNING,
 		ERROR,

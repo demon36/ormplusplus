@@ -29,7 +29,8 @@ private:
 	bool isPtrOwner = false;//should be false if used as shell
 	PrimitiveType& valueRef;//useful at debugging
 public:
-	static const std::type_info& getPrimitiveType(){
+	static const std::type_info& getPrimitiveType()
+	{
 		return typeid(PrimitiveType);
 	}
 
@@ -71,7 +72,7 @@ public:
 		NFBasePtr->setValue<PrimitiveType>(value);
 	}
 
-	NullableField& operator=(const NullableField& that)
+	NullableField& operator=(const NullableField& that) const
 	{
 		NFBasePtr->setValue<PrimitiveType>(that.getValueRef());
 		return *this;
@@ -83,7 +84,7 @@ public:
 		return *this;
 	}
 
-	bool operator==(const NullableField& that)
+	bool operator==(const NullableField& that) const
 	{
 		if(this->isNull() && that.isNull()){
 			return true;
@@ -94,7 +95,7 @@ public:
 		}
 	}
 
-	bool operator==(const PrimitiveType& value)
+	bool operator==(const PrimitiveType& value) const
 	{
 		if(this->isNull()){
 			return false;
@@ -103,91 +104,97 @@ public:
 		}
 	}
 
-	bool operator!=(const NullableField& that)
+	bool operator!=(const NullableField& that) const
 	{
 		return !operator==(that.getValueRef());
 	}
 
-	bool operator!=(const PrimitiveType& value)
+	bool operator!=(const PrimitiveType& value) const
 	{
 		return !operator==(getValueRef() == value);
 	}
 
-	bool operator>(const NullableField& that)
+	bool operator>(const NullableField& that) const
 	{
 		assertLHSNotNull(*this);
 		assertRHSNotNull(that);
 		return this->getValueRef() > that.getValueRef();
 	}
 
-	bool operator>(const PrimitiveType& value)
+	bool operator>(const PrimitiveType& value) const
 	{
 		assertLHSNotNull(*this);
 		return this->getValueRef() > value;
 	}
 
-	bool operator>=(const NullableField& that)
+	bool operator>=(const NullableField& that) const
 	{
 		assertLHSNotNull(*this);
 		assertRHSNotNull(that);
 		return this->getValueRef() >= that.getValueRef();
 	}
 
-	bool operator>=(const PrimitiveType& value)
+	bool operator>=(const PrimitiveType& value) const
 	{
 		assertLHSNotNull(*this);
 		return this->getValueRef() >= value;
 	}
 
-	bool operator<(const NullableField& that)
+	bool operator<(const NullableField& that) const
 	{
 		assertLHSNotNull(*this);
 		assertRHSNotNull(that);
 		return this->getValueRef() < that.getValueRef();
 	}
 
-	bool operator<(const PrimitiveType& value)
+	bool operator<(const PrimitiveType& value) const
 	{
 		assertLHSNotNull(*this);
 		return this->getValueRef() < value;
 	}
 
-	bool operator<=(const NullableField& that)
+	bool operator<=(const NullableField& that) const
 	{
 		assertLHSNotNull(*this);
 		assertRHSNotNull(that);
 		return this->getValueRef() <= that.getValueRef();
 	}
 
-	bool operator<=(const PrimitiveType& value)
+	bool operator<=(const PrimitiveType& value) const
 	{
 		assertLHSNotNull(*this);
 		return this->getValueRef() <= value;
 	}
 
-	operator PrimitiveType(){
+	operator PrimitiveType()
+	{
 		return getValueRef();
 	}
 
-	std::string toString(){
+	std::string toString() const
+	{
 		return NFBasePtr->toString();
 	}
 
-	~NullableField(){
+	~NullableField()
+	{
 		if(isPtrOwner && NFBasePtr != nullptr){
 			delete NFBasePtr;
 		}
 	}
 
-	const PrimitiveType& getValueRef() const{
+	const PrimitiveType& getValueRef() const
+	{
 		return NFBasePtr->getValueRef<PrimitiveType>();
 	}
 
-	NullableFieldBase& getBaseRef(){
+	NullableFieldBase& getBaseRef()
+	{
 		return *NFBasePtr;
 	}
 
-	bool isNull(){
+	bool isNull() const
+	{
 		return NFBasePtr->isNull();
 	}
 

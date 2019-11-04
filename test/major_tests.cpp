@@ -88,7 +88,7 @@ void testMultiInsertAndSelect(){
 
 int main(int argc, char** argv)
 {
-	Logger::setLevel(Logger::Lv::DEBUG);
+	Logger::setLevel(Logger::Lv::DBUG);
 	try{
 		DB::setDefaultSession(make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root"));
 		testModelDefinition();

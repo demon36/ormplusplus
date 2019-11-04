@@ -54,7 +54,7 @@ namespace ORMPlusPlus {
 
 	std::string Logger::levelToString(Lv level){
 		switch(level){
-			case Lv::DEBUG:
+			case Lv::DBUG:
 				return "DEBUG";
 				break;
 			case Lv::INFO:

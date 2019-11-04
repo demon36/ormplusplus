@@ -134,7 +134,7 @@ void MySQLSession::insert(ModelBase& model, bool updateAutoIncPKey){
 }
 
 RecordSet MySQLSession::execute(const string& queryString){
-	ORMLOG(Logger::Lv::DEBUG, "executing query : " + queryString);
+	ORMLOG(Logger::Lv::DBUG, "executing query : " + queryString);
 	Statement query(*sessionPtr);
 	query << queryString;
 	query.execute();
@@ -142,7 +142,7 @@ RecordSet MySQLSession::execute(const string& queryString){
 }
 
 std::size_t MySQLSession::executeNonQuery(const std::string& queryString){
-	ORMLOG(Logger::Lv::DEBUG, "executing query : " + queryString);
+	ORMLOG(Logger::Lv::DBUG, "executing query : " + queryString);
 	Statement query(*sessionPtr);
 	query << queryString;
 	return query.execute();
