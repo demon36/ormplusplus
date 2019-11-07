@@ -6,7 +6,10 @@
 #include <typeindex>
 
 namespace ORMPlusPlus{
-
+/**
+ * 	responsible for storing column data that is used to create a table
+	such as column name, data type, nullable, primary, autoincrement, etc..
+ */
 class TableColumn{
 private:
 	const std::string name;

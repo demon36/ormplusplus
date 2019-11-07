@@ -12,6 +12,8 @@ allow using .async() on a query
 show descriptive exception messages
 thread safety (db session, model instance)?
 db session connection pool ?
+thread safety: what if 2 instances of a model that has not been built yet get initialized by 2 threads at the same time
+throw an exception when 2 attributes have the same name
 
 when user tries to select where, he will have to type column name in snake case??
 any better practice to that ?
@@ -60,3 +62,12 @@ update
 insert
 	tableName
 	values
+
+
+construct String using an inst of AttribInit
+set string& inside it at ctr
+to get rid of getRef
+getrid of poco
+decrease layers
+replace DBSessions interface with compiletime driver selection flags
+always use actual datatypes int32_t

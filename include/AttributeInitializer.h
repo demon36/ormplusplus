@@ -8,7 +8,8 @@ namespace ORMPlusPlus{
 
 /**
  * used at initialization of user model attributes, AttribType is one of NullableField<T> specializations<br>
- * ex: String, Integer, Long
+ * ex: String, Integer, Long<br>
+ * 	responsible for creating a TableColumn statically in UserModel & initializing a nullable field value for the attribute
  */
 template<class AttribType>
 class AttributeInitializer : public AttributeInitializerBase{

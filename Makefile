@@ -108,7 +108,7 @@ $(TEST_BIN_DIR)/$(TEST_FILE): $(TEST_OBJ_FILES)
 	$(CC) -g $^ -o $@ $(LDFLAGS) $(TEST_LDFLAGS) $(LIBS) 
 
 init:
-	$(shell mkdir -p $(SRC_DIR) $(INC_DIR) $(OBJ_DIR) $(BIN_DIR) $(LIB_DIR) $(DEP_DIR) $(TEST_SRC_DIR) $(TEST_BIN_DIR) $(DOCS_DIR))
+	mkdir -p $(SRC_DIR) $(INC_DIR) $(OBJ_DIR) $(BIN_DIR) $(LIB_DIR) $(DEP_DIR) $(TEST_SRC_DIR) $(TEST_BIN_DIR) $(DOCS_DIR)
 
 clean:
 	rm -f $(OBJ_FILES) $(TEST_OBJ_FILES) \
@@ -119,7 +119,7 @@ clean:
 
 .PHONY: init all shared static exec run clean depend
 
--include  $(shell find $(DEP_DIR) -name '*.dep')/
+-include $(shell test -d $(DEP_DIR) && find $(DEP_DIR) -name '*.dep')
 
 #todo: do not strip debug symbols from static libs
 #todo: add an extra target for the symlink itself
