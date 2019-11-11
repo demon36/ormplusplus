@@ -41,9 +41,10 @@ protected:
 public:
 	//TODO: add const wherever it is possible
 	QueryBase() = delete;
-	QueryBase(std::string _tableName, const TableSchema& _schema);
+	QueryBase(const std::string& _tableName, const TableSchema& _schema);
 	QueryBase(const QueryBase& queryBase) = default;
-	std::string getTableName() const;
+	const std::string& getTableName() const;
+	const TableSchema& getTableSchema() const;
 	QueryType getType() const;
 	const std::vector<QueryCondition>& getConditionsRef() const;
 	int getLimit() const;

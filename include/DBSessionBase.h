@@ -2,15 +2,19 @@
 #define INCLUDE_DBSESSIONBASE_H_
 
 #include <memory>
+#include <list>
 
 //TODO::remove dependency on Poco here
-#include <Poco/Data/RecordSet.h>
+#include <Poco/DateTimeParser.h>
 
 #include "TableColumn.h"
 #include "QueryBase.h"
 #include "ModelBase.h"
 
 namespace ORMPlusPlus {
+
+//todo: implement optimized class ResultTable
+typedef std::list<std::map<std::string, std::string>> ResultTable;
 
 class DBSessionBase {
 public:
@@ -20,7 +24,7 @@ public:
 	virtual bool tableExists(const std::string& name) = 0;
 	bool tableExists(const std::string& name, TableSchema& schema);
 	virtual TableSchema getTableSchema(const std::string& name) = 0;
-
+	virtual std::string buildQueryString(const QueryBase& query);
 	/**
 	 * inserts the provided model or updates it if exists
 	 */
@@ -41,97 +45,51 @@ public:
 	/**
 	 * this function assumes query has already been checked against model schema
 	 */
+
 	template<class UserModel>
 	std::vector<UserModel> execute(const QueryBase& query){
-		std::stringstream queryStream;
-		std::string tableName = UserModel::getTableName();
-		const std::vector<QueryCondition>& conditions = query.getConditionsRef();
-		const std::vector<OrderRule>& orderRules = query.getOrderRulesRef();
-		int limit = query.getLimit();
 		std::vector<UserModel> results;
 
-		//TODO: use logging for raw queries
-		if(query.getType() == QueryType::_Null){
-			throw std::runtime_error("try to execute a query with null type");
-		}else if(query.getType() == QueryType::_Select){
-			queryStream << "select ";
-			printColumnNames(queryStream, UserModel::getSchema());
-			queryStream << " from " << tableName;
-			if(!conditions.empty()){
-				queryStream << " WHERE ";
-			}
-			//TODO: nested conditions ?
-			for(auto it = conditions.begin(); it != conditions.end(); ++it){
-				queryStream << it->getColumnName() << " "
-						<< it->getOperator() << " "
-						<< it->getValueString() << " ";
-				if(std::next(it) == conditions.end()){
-					queryStream << " ";
-				}else{
-					queryStream << " AND ";
+		ResultTable result = executeFlat(query);
+		for(auto row = result.begin(); row != result.end(); ++row){
+			UserModel obj;
+			//TODO: no getter here ?
+			//TODO: are result columns guaranteed to have same attributes order?
+			std::map<std::string, NullableFieldBase>& objAttribs = obj.attributes;
+			for(auto& attribElement : objAttribs){
+				const std::string& attribName = attribElement.first;
+				NullableFieldBase& attrib = attribElement.second;
+				const std::type_info& attribPrimitiveType = attrib.getType();
+
+				//TODO: change this later
+				if(attribPrimitiveType == typeid(int)){
+					attrib = stoi(row->at(attribName));// (*it)[attribName].convert<int>();
+				}else if(attribPrimitiveType == typeid(long)){
+					attrib = stol(row->at(attribName));;
+				}else if(attribPrimitiveType == typeid(float)){
+					attrib = stof(row->at(attribName));
+				}else if(attribPrimitiveType == typeid(double)){
+					attrib = stod(row->at(attribName));
+				}else if(attribPrimitiveType == typeid(std::string)){
+					attrib = row->at(attribName);
+				}else if(attribPrimitiveType == typeid(Poco::DateTime)){
+					//TODO: query datetime with same format
+					//TODO: use correct tz
+					int tz = 0;
+					attrib = Poco::DateTimeParser::parse("%Y-%m-%d %H:%M:%S", row->at(attribName), tz);
+				}else if(attribPrimitiveType == typeid(nullptr_t)){
+					//TODO get rid of this case
 				}
 			}
-
-			if(limit != 0){
-				queryStream << " limit " << limit;
-			}
-
-			if(!orderRules.empty()){
-				queryStream << " order by ";
-			}
-			for(auto it = orderRules.begin(); it != orderRules.end(); ++it){
-				queryStream << " " << it->column;
-				if(std::next(it) == orderRules.end()){
-					queryStream << " ";
-				}else{
-					queryStream << ", ";
-				}
-			}
-
-			queryStream<<";";
-
-			Poco::Data::RecordSet result = execute(queryStream.str());
-			for(auto it = result.begin(); it != result.end(); ++it){
-				UserModel obj;
-				//TODO: no getter here ?
-				std::map<std::string, NullableFieldBase>& objAttribs = obj.attributes;
-				for(auto& attribElement : objAttribs){
-					const std::string& attribName = attribElement.first;
-					NullableFieldBase& attrib = attribElement.second;
-					const std::type_info& attribPrimitiveType = attrib.getType();
-
-					//TODO: change this later
-					if(attribPrimitiveType == typeid(int)){
-						attrib = (*it)[attribName].convert<int>();
-					}else if(attribPrimitiveType == typeid(long)){
-						attrib = (*it)[attribName].convert<long>();
-					}else if(attribPrimitiveType == typeid(float)){
-						attrib = (*it)[attribName].convert<float>();
-					}else if(attribPrimitiveType == typeid(double)){
-						attrib = (*it)[attribName].convert<double>();
-					}else if(attribPrimitiveType == typeid(std::string)){
-						attrib = (*it)[attribName].convert<std::string>();
-					}else if(attribPrimitiveType == typeid(Poco::DateTime)){
-						attrib = (*it)[attribName].convert<Poco::DateTime>();
-					}else if(attribPrimitiveType == typeid(nullptr_t)){
-						//TODO get rid of this case
-					}
-				}
-				results.emplace_back(obj.clone());
-			}
-			return results;
-
-		}if(query.getType() == QueryType::_Insert){
-			throw std::runtime_error("unimplemented");
-		}if(query.getType() == QueryType::_Delete){
-			throw std::runtime_error("unimplemented");
-		}if(query.getType() == QueryType::_Update){
-			throw std::runtime_error("unimplemented");
+			results.emplace_back(obj.clone());
 		}
-		throw std::runtime_error("unsupported QueryType");
+		return results;
 	}
 
-	virtual Poco::Data::RecordSet execute(const std::string& query) = 0;
+	//TODO: use proper names
+	virtual ResultTable executeFlat(const QueryBase& query) = 0;
+
+	virtual ResultTable executeRawQuery(const std::string& queryString) = 0;
 
 	/**
 	 * @return # rows affected

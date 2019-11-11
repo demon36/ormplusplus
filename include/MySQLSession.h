@@ -21,7 +21,8 @@ public:
 	void createTable(const std::string& name, const TableSchema& schema) override;
 	TableSchema getTableSchema(const std::string& name) override;
 	void insert(ModelBase& model, bool updateAutoIncPKey = false) override;
-	Poco::Data::RecordSet execute(const std::string& queryString) override;
+	ResultTable executeFlat(const QueryBase& query) override;
+	ResultTable executeRawQuery(const std::string& queryString) override;
 	std::size_t executeNonQuery(const std::string& queryString) override;
 	virtual ~MySQLSession();
 };

@@ -1,0 +1,69 @@
+* todo
+** remove DBsession refs from Model
+** might support this syntax in the future:
+sqliteSession.select<Client>().where({}).findFirst();	//returns Client
+vector<Client> clients = sqliteSession.select<Client>().where({}).get()		//returns vector<Client>
+clients[0].age = 23;
+sqliteSession.save(c1);
+sqliteSession.saveMany(clients);
+sqliteSession.delete(c1);
+sqliteSession.update(c1).where({}).set({});
+sqliteSession.updateMany(clients).where({}).set({});
+DB::defaultSession().saveMany(clients);
+** check if column exists before executing the query 
+** check database models are copy-able
+** assert condition fields are available at current model
+** retrieve only columns declared by user
+** check column types at retrieval and insertion
+** use const ref where possible
+** allow creating a database if requested one does not exist
+** start writing unit tests
+** start commenting out code
+** allow using .async() on a query
+** show descriptive exception messages
+** thread safety (db session, model instance)?
+** db session connection pool ?
+** thread safety: what if 2 instances of a model that has not been built yet get initialized by 2 threads at the same time
+** throw an exception when 2 attributes have the same name
+** construct String using an inst of AttribInit
+** set string& inside it at ctr
+** to get rid of getRef
+** getrid of poco
+** decrease layers
+** replace DBSessions interface with compiletime driver selection flags
+** always use actual datatypes int32_t
+* questions
+** what attribute initialization method should I support?
+*** Integer age = bindColumn("age").autoinc().withDefault(34);
+**** static type check for autoinc() validity or withDefault() argument validity is very problematic and will require a stinky implementations
+**** attrib type defined once
+**** usage of macros can still be of use when user want attribute name to be the same as column name
+*** Integer age = bindColumn<Integer>("age").autoinc().withDefault(34);
+**** simple static type checking
+**** attrib type defined twice
+**** usage of macros is more valuable
+** what operations syntax should I support?
+*** modelInstance.save()
+*** sqlSession.save(modelInstance)
+* note dump
+** when user tries to select where, he will have to type column name in snake case??
+** watch this notation that is used by laravel's Eloquent:
+	Schema::create('migration_statistics', function (Blueprint $table) {
+		$table->increments('id');
+		$table->integer('s3_migration_id')->unsigned()->index();
+** operations:
+*** select
+**** tableName
+**** where
+**** orderBy
+**** limit
+*** delete
+**** tableName
+**** where
+*** update
+**** tableName
+**** where
+**** set
+*** insert
+**** tableName
+**** values

@@ -11,7 +11,7 @@ DBSessionBase::DBSessionBase() {
 
 void DBSessionBase::dropTable(const std::string& name){
 	string queryString = "DROP TABLE IF EXISTS `" + name + "`;";
-	execute(queryString);
+	executeNonQuery(queryString);
 }
 
 bool DBSessionBase::tableExists(const std::string& name, TableSchema& schema){
@@ -30,6 +30,64 @@ bool DBSessionBase::tableExists(const std::string& name, TableSchema& schema){
 		}
 	}
 	return true;
+}
+
+std::string DBSessionBase::buildQueryString(const QueryBase& query){
+	std::stringstream queryStream;
+	const std::vector<QueryCondition>& conditions = query.getConditionsRef();
+	const std::vector<OrderRule>& orderRules = query.getOrderRulesRef();
+	int limit = query.getLimit();
+
+	//TODO: use logging for raw queries
+	if(query.getType() == QueryType::_Null){
+		throw std::runtime_error("try to execute a query with null type");
+	}else if(query.getType() == QueryType::_Select){
+		queryStream << "select ";
+		printColumnNames(queryStream, query.getTableSchema());
+		queryStream << " from " << query.getTableName();
+		if(!conditions.empty()){
+			queryStream << " WHERE ";
+		}
+		//TODO: nested conditions ?
+		for(auto it = conditions.begin(); it != conditions.end(); ++it){
+			queryStream << it->getColumnName() << " "
+					<< it->getOperator() << " "
+					<< it->getValueString() << " ";
+			if(std::next(it) == conditions.end()){
+				queryStream << " ";
+			}else{
+				queryStream << " AND ";
+			}
+		}
+
+		if(limit != 0){
+			queryStream << " limit " << limit;
+		}
+
+		if(!orderRules.empty()){
+			queryStream << " order by ";
+		}
+		for(auto it = orderRules.begin(); it != orderRules.end(); ++it){
+			queryStream << " " << it->column;
+			if(std::next(it) == orderRules.end()){
+				queryStream << " ";
+			}else{
+				queryStream << ", ";
+			}
+		}
+
+		queryStream<<";";
+
+		return queryStream.str();
+
+	}else if(query.getType() == QueryType::_Insert){
+		throw std::runtime_error("unimplemented");
+	}else if(query.getType() == QueryType::_Delete){
+		throw std::runtime_error("unimplemented");
+	}else if(query.getType() == QueryType::_Update){
+		throw std::runtime_error("unimplemented");
+	}
+	throw std::runtime_error("unsupported QueryType");
 }
 
 DBSessionBase::~DBSessionBase() {

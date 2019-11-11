@@ -5,6 +5,7 @@
 
 #include <Poco/Data/MySQL/MySQL.h>
 #include <Poco/Data/MySQL/Connector.h>
+#include <Poco/Data/RecordSet.h>
 #include <Poco/Tuple.h>
 
 #include "Logger.h"
@@ -67,7 +68,7 @@ void MySQLSession::createTable(const string& name, const TableSchema& schema){
 
 	queryStream << ");";
 
-	execute(queryStream.str());
+	executeNonQuery(queryStream.str());
 }
 
 TableSchema MySQLSession::getTableSchema(const string& name){
@@ -125,20 +126,48 @@ void MySQLSession::insert(ModelBase& model, bool updateAutoIncPKey){
 	}
 
 	if(updateAutoIncPKey && model.autoIncPkeyColumnExists()){
-		RecordSet result = execute("SELECT LAST_INSERT_ID();");
+		ResultTable result = executeRawQuery("SELECT LAST_INSERT_ID();");
 		//const char* test = result.begin()->get(0).type().name();
-		long lastInsertId = result.begin()->get(0).convert<long>();
+		//TODO: error check
+		long lastInsertId = stol(result.front().begin()->second); //  result.begin()->get(0).convert<long>();
 		model.setAutoIncPKey(lastInsertId);
 	}
 	return;
 }
 
-RecordSet MySQLSession::execute(const string& queryString){
+ResultTable MySQLSession::executeFlat(const QueryBase& query){
+	std::string queryString = buildQueryString(query);
 	ORMLOG(Logger::Lv::DBUG, "executing query : " + queryString);
-	Statement query(*sessionPtr);
-	query << queryString;
-	query.execute();
-	return RecordSet(query);
+	Statement st(*sessionPtr);
+	st << queryString;
+	st.execute();
+	RecordSet result = RecordSet(st);
+	std::list<std::map<std::string, std::string>> flatResults;
+
+	for(Row& row : result){
+		std::map<std::string, std::string>& flatRow = *flatResults.insert(flatResults.end(), {});
+		for(size_t colIdx = 0; colIdx < result.columnCount(); colIdx++){
+			flatRow[result.columnName(colIdx)] = row[result.columnName(colIdx)].toString();//TODO: optimize
+		}
+	}
+
+	return flatResults;
+}
+
+ResultTable MySQLSession::executeRawQuery(const std::string& queryString){
+	ORMLOG(Logger::Lv::DBUG, "executing query : " + queryString);
+	Statement st(*sessionPtr);
+	st << queryString;
+	st.execute();
+	RecordSet result = RecordSet(st);
+	std::list<std::map<std::string, std::string>> flatResults;
+	for(Row& row : result){
+		std::map<std::string, std::string>& flatRow = *flatResults.insert(flatResults.end(), {});
+		for(const string& colName : *row.names()){
+			flatRow[colName] = row[colName].toString();
+		}
+	}
+	return flatResults;
 }
 
 std::size_t MySQLSession::executeNonQuery(const std::string& queryString){

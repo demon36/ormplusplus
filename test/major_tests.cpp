@@ -21,6 +21,8 @@ public:
 	DEFINE_ATTRIB(Integer, age).withDefault(5).asNullable();
 	DEFINE_ATTRIB(Integer, height);
 	DEFINE_ATTRIB(DateTime, dob).asNullable(false);
+
+	constexpr static const char* _id = "asdf"; //use instead of 2nd template parameter ??
 };
 
 class MiniBus : public Model<MiniBus, _("minibuses")>

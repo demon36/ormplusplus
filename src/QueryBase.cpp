@@ -3,13 +3,17 @@
 
 namespace ORMPlusPlus {
 
-QueryBase::QueryBase(std::string _tableName, const TableSchema& _schema)
+QueryBase::QueryBase(const std::string& _tableName, const TableSchema& _schema)
 : tableName(_tableName), schema(_schema)
 {
 }
 
-std::string QueryBase::getTableName() const{
+const std::string& QueryBase::getTableName() const{
 	return tableName;
+}
+
+const TableSchema& QueryBase::getTableSchema() const{
+	return schema;
 }
 
 QueryType QueryBase::getType() const{
