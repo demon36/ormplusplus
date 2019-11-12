@@ -17,6 +17,7 @@ MINOR_VERSION := 1.9
 
 SRC_FILES := $(shell find $(SRC_DIR) -regex '.*\.\(c\|cc\|cpp\|cxx\)')
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/$(SRC_DIR)/%.o,$(SRC_FILES))
+DEP_FILES := $(patsubst $(SRC_DIR)/%,$(DEP_DIR)/$(SRC_DIR)/%.dep,$(SRC_FILES)) $(patsubst $(TEST_SRC_DIR)/%,$(DEP_DIR)/$(TEST_SRC_DIR)/%.dep,$(TEST_SRC_FILES))
 TEST_SRC_FILES := $(shell find $(TEST_SRC_DIR) -regex '.*\.\(c\|cc\|cpp\|cxx\)')
 TEST_OBJ_FILES := $(patsubst $(TEST_SRC_DIR)/%.cpp,$(OBJ_DIR)/$(TEST_SRC_DIR)/%.o,$(TEST_SRC_FILES))
 
@@ -28,7 +29,7 @@ TEST_FILE := main_test
 CFLAGS := -m$(ARCH) -Wall -Wconversion -Werror -g -std=c++11 -I$(INC_DIR)
 CFLAGS_DEBUG := -DDEBUG
 CFLAGS_RELEASE := -O3
-LIBS := -lPocoFoundation -lPocoData -lPocoDataMySQL
+LIBS := #ex: -lthirdpary
 LDFLAGS := -m$(ARCH)
 SO_LDFLAGS := -shared -Wl,-zdefs,-soname,$(SO_FILE).$(MAJOR_VERSION),-rpath,'$$ORIGIN'
 TEST_LDFLAGS := -L$(LIB_DIR) -l:$(SO_FILE) -Wl,-rpath,'$$ORIGIN/lib:$$ORIGIN/dep:$$ORIGIN/../../../$(LIB_DIR)'
@@ -115,12 +116,13 @@ clean:
 	$(LIB_DIR)/$(SO_FILE) $(SO_FILE).$(MAJOR_VERSION).$(MINOR_VERSION) $(LIB_DIR)/$(SO_FILE).$(MAJOR_VERSION) $(LIB_DIR)/$(SO_FILE).dbg \
 	$(LIB_DIR)/$(A_FILE) $(A_FILE).$(MAJOR_VERSION).$(MINOR_VERSION) $(LIB_DIR)/$(A_FILE).$(MAJOR_VERSION) $(LIB_DIR)/$(A_FILE).dbg \
 	$(BIN_DIR)/$(EXEC_FILE) $(EXEC_FILE).$(MAJOR_VERSION).$(MINOR_VERSION) $(LIB_DIR)/$(EXEC_FILE).$(MAJOR_VERSION) $(BIN_DIR)/$(EXEC_FILE).dbg \
-	$(TEST_BIN_DIR)/$(TEST_FILE)
+	$(TEST_BIN_DIR)/$(TEST_FILE) $(DEP_FILES)
 
 .PHONY: init all shared static exec run clean depend
 
 -include $(shell test -d $(DEP_DIR) && find $(DEP_DIR) -name '*.dep')
 
+#todo: add variable for c++ source file extension
 #todo: do not strip debug symbols from static libs
 #todo: add an extra target for the symlink itself
 #todo: add target cleanall

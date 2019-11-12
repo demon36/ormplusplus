@@ -145,7 +145,8 @@ ResultTable MySQLSession::executeFlat(const QueryBase& query){
 	std::list<std::map<std::string, std::string>> flatResults;
 
 	for(Row& row : result){
-		std::map<std::string, std::string>& flatRow = *flatResults.insert(flatResults.end(), {});
+		flatResults.push_back({});
+		std::map<std::string, std::string>& flatRow = flatResults.back();
 		for(size_t colIdx = 0; colIdx < result.columnCount(); colIdx++){
 			flatRow[result.columnName(colIdx)] = row[result.columnName(colIdx)].toString();//TODO: optimize
 		}
@@ -162,7 +163,8 @@ ResultTable MySQLSession::executeRawQuery(const std::string& queryString){
 	RecordSet result = RecordSet(st);
 	std::list<std::map<std::string, std::string>> flatResults;
 	for(Row& row : result){
-		std::map<std::string, std::string>& flatRow = *flatResults.insert(flatResults.end(), {});
+		flatResults.push_back({});
+		std::map<std::string, std::string>& flatRow = flatResults.back();
 		for(const string& colName : *row.names()){
 			flatRow[colName] = row[colName].toString();
 		}

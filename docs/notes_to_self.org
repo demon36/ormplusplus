@@ -1,6 +1,10 @@
 * todo
+** use struct tm instead of Poco::DateTime
+** getrid of poco
+** add support for sqlite
 ** remove DBsession refs from Model
-** might support this syntax in the future:
+** remove the nasty string template parameter header
+** support this syntax:
 sqliteSession.select<Client>().where({}).findFirst();	//returns Client
 vector<Client> clients = sqliteSession.select<Client>().where({}).get()		//returns vector<Client>
 clients[0].age = 23;
@@ -10,12 +14,14 @@ sqliteSession.delete(c1);
 sqliteSession.update(c1).where({}).set({});
 sqliteSession.updateMany(clients).where({}).set({});
 DB::defaultSession().saveMany(clients);
+** support blob data type
 ** check if column exists before executing the query 
 ** check database models are copy-able
 ** assert condition fields are available at current model
 ** retrieve only columns declared by user
 ** check column types at retrieval and insertion
 ** use const ref where possible
+** support timestamp data type
 ** allow creating a database if requested one does not exist
 ** start writing unit tests
 ** start commenting out code
@@ -25,10 +31,10 @@ DB::defaultSession().saveMany(clients);
 ** db session connection pool ?
 ** thread safety: what if 2 instances of a model that has not been built yet get initialized by 2 threads at the same time
 ** throw an exception when 2 attributes have the same name
+** throw an exception when more than one column is autoincrement
 ** construct String using an inst of AttribInit
 ** set string& inside it at ctr
 ** to get rid of getRef
-** getrid of poco
 ** decrease layers
 ** replace DBSessions interface with compiletime driver selection flags
 ** always use actual datatypes int32_t
