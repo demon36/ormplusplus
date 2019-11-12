@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <chrono>
 
 #include "NullableFieldBase.h"
 #include "NullableField.h"
@@ -60,8 +61,8 @@ NullableFieldBase::NullableFieldBase(const type_info& type)
 		primitiveValuePtr = new double(0);
 	}else if(m_type == typeid(string)){
 		primitiveValuePtr = new string("");
-	}else if(m_type == typeid(Poco::DateTime)){
-		primitiveValuePtr = new Poco::DateTime();
+	}else if(m_type == typeid(::tm)){
+		primitiveValuePtr = new ::tm();
 	}else if(m_type == typeid(nullptr_t)){
 		//is this the best way to do it ?
 		primitiveValuePtr = new nullptr_t();
@@ -83,8 +84,8 @@ NullableFieldBase::NullableFieldBase(const NullableFieldBase& that)
 		primitiveValuePtr = new double(that.getValueRef<double>());
 	}else if(that.m_type == typeid(string)){
 		primitiveValuePtr = new string(that.getValueRef<string>());
-	}else if(that.m_type == typeid(Poco::DateTime)){
-		primitiveValuePtr = new Poco::DateTime(that.getValueRef<Poco::DateTime>());
+	}else if(that.m_type == typeid(::tm)){
+		primitiveValuePtr = new ::tm(that.getValueRef<::tm>());
 	}else if(that.m_type == typeid(nullptr_t)){
 		//is this the best way to do it ?
 		primitiveValuePtr = new nullptr_t(that.getValueRef<nullptr_t>());
@@ -113,8 +114,8 @@ NullableFieldBase& NullableFieldBase::operator=(const NullableFieldBase that){
 			this->getValueRef<double>() = that.getValueRef<double>();
 		}else if(that.m_type == typeid(string)){
 			this->getValueRef<string>() = that.getValueRef<string>();
-		}else if(that.m_type == typeid(Poco::DateTime)){
-			this->getValueRef<Poco::DateTime>() = that.getValueRef<Poco::DateTime>();
+		}else if(that.m_type == typeid(::tm)){
+			this->getValueRef<::tm>() = that.getValueRef<::tm>();
 		}else if(that.m_type == typeid(nullptr_t)){
 			//is this the best way to do it ?
 			this->getValueRef<nullptr_t>() = that.getValueRef<nullptr_t>();
@@ -138,8 +139,19 @@ bool NullableFieldBase::equals(const NullableFieldBase& that) const{
 		return this->getValueRef<double>() == that.getValueRef<double>();
 	}else if(that.m_type == typeid(string)){
 		return this->getValueRef<string>() == that.getValueRef<string>();
-	}else if(that.m_type == typeid(Poco::DateTime)){
-		return this->getValueRef<Poco::DateTime>() == that.getValueRef<Poco::DateTime>();
+	}else if(that.m_type == typeid(::tm)){
+		::tm& lhs = this->getValueRef<::tm>();
+		::tm& rhs = that.getValueRef<::tm>();
+//		return lhs.tm_gmtoff == rhs.tm_gmtoff &&
+//				lhs.tm_year == rhs.tm_year &&
+//				lhs.tm_mon == rhs.tm_mon &&
+//				lhs.tm_mday == rhs.tm_mday &&
+//				lhs.tm_yday == rhs.tm_yday &&
+//				lhs.tm_hour == rhs.tm_hour &&
+//				lhs.tm_min == rhs.tm_min &&
+//				lhs.tm_sec == rhs.tm_sec &&
+//				lhs.tm_isdst == rhs.tm_isdst;
+		return difftime(mktime(&lhs), mktime(&rhs)) == 0;
 	}else if(that.m_type == typeid(nullptr_t)){
 		return this->getValueRef<nullptr_t>() == that.getValueRef<nullptr_t>();
 	}else{
@@ -167,9 +179,11 @@ string NullableFieldBase::toString() const
 		return to_string(*(double*)primitiveValuePtr);
 	}else if(m_type == typeid(string)){
 		return *(string*)primitiveValuePtr;
-	}else if(m_type == typeid(Poco::DateTime)){
-		Poco::DateTime& date = *(Poco::DateTime*)primitiveValuePtr;
-		return Poco::DateTimeFormatter::format(date, "%Y-%m-%d %h:%M:%S");
+	}else if(m_type == typeid(::tm)){
+		::tm& date = *(::tm*)primitiveValuePtr;
+	    char dateBuffer[100] = {0};
+	    std::strftime(dateBuffer, sizeof(dateBuffer), "%F %X", &date);
+		return dateBuffer;
 	}else if(m_type == typeid(nullptr_t)){
 		return "NULL";
 	}
@@ -195,8 +209,8 @@ NullableFieldBase::~NullableFieldBase(){
 		delete (double*)primitiveValuePtr;
 	}else if(m_type == typeid(string)){
 		delete (string*)primitiveValuePtr;
-	}else if(m_type == typeid(Poco::DateTime)){
-		delete (Poco::DateTime*)primitiveValuePtr;
+	}else if(m_type == typeid(::tm)){
+		delete (::tm*)primitiveValuePtr;
 	}else if(m_type == typeid(nullptr_t)){
 		delete (nullptr_t*)primitiveValuePtr;
 	}

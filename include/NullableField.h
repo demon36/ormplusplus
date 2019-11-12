@@ -183,7 +183,7 @@ public:
 		}
 	}
 
-	const PrimitiveType& getValueRef() const
+	PrimitiveType& getValueRef() const
 	{
 		return NFBasePtr->getValueRef<PrimitiveType>();
 	}
@@ -223,7 +223,7 @@ typedef NullableField<long> Long;
 typedef NullableField<float> Float;
 typedef NullableField<double> Double;
 typedef NullableField<std::string> String;
-typedef NullableField<Poco::DateTime> DateTime;
+typedef NullableField<::tm> DateTime;
 //TODO: is this specialization essential ?
 typedef NullableField<nullptr_t> Null;
 

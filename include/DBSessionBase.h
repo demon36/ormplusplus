@@ -4,9 +4,6 @@
 #include <memory>
 #include <list>
 
-//TODO::remove dependency on Poco here
-#include <Poco/DateTimeParser.h>
-
 #include "TableColumn.h"
 #include "QueryBase.h"
 #include "ModelBase.h"
@@ -72,11 +69,10 @@ public:
 					attrib = stod(row->at(attribName));
 				}else if(attribPrimitiveType == typeid(std::string)){
 					attrib = row->at(attribName);
-				}else if(attribPrimitiveType == typeid(Poco::DateTime)){
+				}else if(attribPrimitiveType == typeid(::tm)){
 					//TODO: query datetime with same format
 					//TODO: use correct tz
-					int tz = 0;
-					attrib = Poco::DateTimeParser::parse("%Y-%m-%d %H:%M:%S", row->at(attribName), tz);
+					strptime(row->at(attribName).c_str(), "%Y-%m-%dT%H:%M:%SZ", &attrib.getValueRef<::tm>());
 				}else if(attribPrimitiveType == typeid(nullptr_t)){
 					//TODO get rid of this case
 				}

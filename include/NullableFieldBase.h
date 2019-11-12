@@ -8,10 +8,6 @@
 #include <typeindex>
 #include <map>
 
-
-#include <Poco/DateTime.h>
-#include <Poco/DateTimeFormatter.h>
-
 namespace ORMPlusPlus {
 
 //TODO: remove this after removing NullableField<nullptr_t>

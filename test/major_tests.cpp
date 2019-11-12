@@ -74,7 +74,9 @@ void testSingleInsertAndSelect(){
 	c0.age = 15;
 	c0.name = "robert";
 	c0.height = 167;
-	c0.dob = Poco::DateTime(2018, 9, 30, 5, 20, 21);
+	::tm dobtm;
+	strptime("1993-09-30 17:20:21", "%Y-%m-%d %H:%M:%S", &dobtm);
+	c0.dob = dobtm;
 	c0.insert(true);
 
 	Client c1 = Client::where({

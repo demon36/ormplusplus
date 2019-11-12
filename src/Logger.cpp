@@ -1,11 +1,9 @@
 #include "Logger.h"
 
 #include <iomanip>
-#include <Poco/DateTime.h>
-#include <Poco/DateTimeFormatter.h>
+#include <chrono>
 
 using namespace std;
-using namespace Poco;
 
 #ifdef _WIN32
 #define PATH_SEPARATOR "\\"
@@ -47,8 +45,12 @@ namespace ORMPlusPlus {
 		if(slashIndex != module.npos){
 			module = module.substr(slashIndex+1);
 		}
-		string dateString = Poco::DateTimeFormatter::format(DateTime(), "%Y-%m-%d %h:%M:%S");
-		logFile << dateString << " | " << left << setw(7) << levelToString(level) << " | ";
+
+	    std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	    char dateBuffer[100] = {0};
+	    std::strftime(dateBuffer, sizeof(dateBuffer), "%F %X", std::localtime(&now));
+
+		logFile << dateBuffer << " | " << left << setw(7) << levelToString(level) << " | ";
 		logFile << left << setw(20) << module << " | " << msg << endl;
 	}
 
