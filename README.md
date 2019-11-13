@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 - [ ] update many
 - [ ] query order by, limit
 - [ ] query group by, having
-- [ ] get rid of Poco dependency
+- [x] get rid of Poco dependency
 - [ ] autosave
 - [ ] nested where conditions
 - [ ] aggregate fns (AVG, COUNT, SUM, MAX, MIN)
@@ -73,9 +73,9 @@ int main(int argc, char** argv)
 - [ ] transactions (maybe?)
 
 ### build instructions
-- install poco libraries
+- install mysql c connector
 ``
-sudo apt-get install libpoco-dev
+sudo apt-get install default-libmysqlclient-dev
 ``
 - run make
 

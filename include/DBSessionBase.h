@@ -52,6 +52,7 @@ public:
 			UserModel obj;
 			//TODO: no getter here ?
 			//TODO: are result columns guaranteed to have same attributes order?
+			//todo: optimize the extra copying
 			std::map<std::string, NullableFieldBase>& objAttribs = obj.attributes;
 			for(auto& attribElement : objAttribs){
 				const std::string& attribName = attribElement.first;
@@ -60,7 +61,7 @@ public:
 
 				//TODO: change this later
 				if(attribPrimitiveType == typeid(int)){
-					attrib = stoi(row->at(attribName));// (*it)[attribName].convert<int>();
+					attrib = stoi(row->at(attribName));
 				}else if(attribPrimitiveType == typeid(long)){
 					attrib = stol(row->at(attribName));;
 				}else if(attribPrimitiveType == typeid(float)){
@@ -70,9 +71,9 @@ public:
 				}else if(attribPrimitiveType == typeid(std::string)){
 					attrib = row->at(attribName);
 				}else if(attribPrimitiveType == typeid(::tm)){
-					//TODO: query datetime with same format
+					//TODO: query datetime with same format, ex: "1993-09-30 17:20:21"
 					//TODO: use correct tz
-					strptime(row->at(attribName).c_str(), "%Y-%m-%dT%H:%M:%SZ", &attrib.getValueRef<::tm>());
+					strptime(row->at(attribName).c_str(), "%Y-%m-%d %H:%M:%S", &attrib.getValueRef<::tm>());
 				}else if(attribPrimitiveType == typeid(nullptr_t)){
 					//TODO get rid of this case
 				}
@@ -85,12 +86,12 @@ public:
 	//TODO: use proper names
 	virtual ResultTable executeFlat(const QueryBase& query) = 0;
 
-	virtual ResultTable executeRawQuery(const std::string& queryString) = 0;
+	virtual ResultTable executeFlat(const std::string& queryString) = 0;
 
 	/**
 	 * @return # rows affected
 	 */
-	virtual std::size_t executeNonQuery(const std::string& queryString) = 0;
+	virtual std::size_t executeVoid(const std::string& queryString) = 0;
 	virtual ~DBSessionBase();
 protected:
 	//TODO: move to modelBase OR create class schema instead of typedef and override << for it

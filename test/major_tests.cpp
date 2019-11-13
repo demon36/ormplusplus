@@ -98,8 +98,6 @@ int main(int argc, char** argv)
 		testModelDefinition();
 		assertTableCreation();
 		testSingleInsertAndSelect();
-	}catch(Poco::Exception& ex){
-		cerr<<ex.displayText()<<endl;
 	}catch(exception& ex){
 		cerr<<ex.what()<<endl;
 	}

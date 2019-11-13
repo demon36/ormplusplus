@@ -3,34 +3,38 @@
 #include <typeindex>
 #include <vector>
 
-#include <Poco/Data/MySQL/MySQL.h>
-#include <Poco/Data/MySQL/Connector.h>
-#include <Poco/Data/RecordSet.h>
-#include <Poco/Tuple.h>
+#include <mysql/mysql.h>
 
 #include "Logger.h"
 
 using namespace std;
-using Poco::Data::Session;
-using Poco::Data::Statement;
-using namespace Poco::Data;
-using namespace Poco::Data::Keywords;
 
 namespace ORMPlusPlus {
 
+void MySQLSession::mysqlQuery(const std::string& query){
+	if (mysql_query((st_mysql*)sessionPtr, query.c_str())) {
+		throw runtime_error(mysql_error((st_mysql*)sessionPtr));
+	}
+}
+
 MySQLSession::MySQLSession(const string& host, const string& database, const string& user, const string& password, int port){
-	Poco::Data::MySQL::Connector::registerConnector();
-	string connectionString = Poco::format("host=%s;port=%d;db=%s;user=%s;password=%s;compress=true;auto-reconnect=true",
-			host, port, database, user, password);
-	sessionPtr = new Session("MySQL", connectionString);
+	sessionPtr = mysql_init(NULL);
+
+	if(sessionPtr == NULL){
+		throw runtime_error(mysql_error((st_mysql*)sessionPtr));
+	}
+
+	//todo: use compression
+	if (mysql_real_connect((st_mysql*)sessionPtr, host.c_str(), user.c_str(), password.c_str(), database.c_str(), port, NULL, 0) == NULL){
+		throw runtime_error(mysql_error((st_mysql*)sessionPtr));
+	}
+
 	ORMLOG(Logger::Lv::INFO, "connected to mysql server " + host + ":" + to_string(port));
 }
 
 bool MySQLSession::tableExists(const string& name){
-	std::vector<string> foundTables;
-	Statement query(*sessionPtr);
-	query << "SHOW TABLES LIKE '%s';", into(foundTables), name;
-	query.execute();
+	string query = "SHOW TABLES LIKE '"+name+"';";
+	ResultTable foundTables = executeFlat(query);
 	return !foundTables.empty();
 }
 
@@ -68,45 +72,36 @@ void MySQLSession::createTable(const string& name, const TableSchema& schema){
 
 	queryStream << ");";
 
-	executeNonQuery(queryStream.str());
+	executeVoid(queryStream.str());
 }
 
 TableSchema MySQLSession::getTableSchema(const string& name){
-	typedef Poco::Tuple<
-				string,		//COLUMN_NAME
-				string,		//DATA_TYPE
-				int,		//CHARACTER_MAXIMUM_LENGTH
-				int,		//NUMERIC_PRECISION
-				string,		//IS_NULLABLE
-				string,		//COLUMN_DEFAULT
-				string,		//COLUMN_KEY
-				string		//EXTRA
-			> DBColumnData;
-	std::vector<DBColumnData> rawSchema;
-	Statement query(*sessionPtr);
-	//TODO: use an ORM class for this ?
-	query << "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, IS_NULLABLE, COLUMN_DEFAULT, COLUMN_KEY, EXTRA "
-			"FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%s';", into(rawSchema), name;
-	query.execute();
+	//TODO: use an ORM class for schema
+	string query = "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, IS_NULLABLE, COLUMN_DEFAULT, COLUMN_KEY, EXTRA "
+			"FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '"+name+"';";
+	ResultTable result = executeFlat(query);
 	TableSchema schema;
-	for(auto& columnTuple : rawSchema){
-		string DBColumnType = columnTuple.get<1>();
+	for(auto& row : result){
+		string DBColumnType = row["DATA_TYPE"];
 		size_t typeHash = NullableFieldBase::getTypeHash(DBColumnType);
-		string extra = columnTuple.get<7>();
-		bool isNullable = columnTuple.get<4>() == "YES";
-		bool isPKey = columnTuple.get<6>() == "PRI";
+		string extra = row["EXTRA"];
+		//todo: find better soln other than converting null to -1
+		int maxLength = row["CHARACTER_MAXIMUM_LENGTH"].empty() ? -1 : stoi(row["CHARACTER_MAXIMUM_LENGTH"]);
+		int numPrecision = row["NUMERIC_PRECISION"].empty() ? -1 : stoi(row["NUMERIC_PRECISION"]);
+		bool isNullable = row["IS_NULLABLE"] == "YES";
+		bool isPKey = row["COLUMN_KEY"] == "PRI";
 		bool isAutoIncrement = extra.find("auto_increment") != extra.npos;
 		TableColumn tempColumn(
-				columnTuple.get<0>(),	//COLUMN_NAME
-				typeHash,				//DATA_TYPE
-				columnTuple.get<2>(),	//CHARACTER_MAXIMUM_LENGTH
-				columnTuple.get<3>(),	//NUMERIC_PRECISION
+				row["COLUMN_NAME"],
+				typeHash,
+				maxLength,
+				numPrecision,
 				isNullable,
-				columnTuple.get<5>(), 	//COLUMN_DEFAULT
+				row["COLUMN_DEFAULT"],
 				isPKey,
 				isAutoIncrement
 		);
-		schema.emplace(columnTuple.get<0>(), tempColumn);
+		schema.emplace(row["COLUMN_NAME"], tempColumn);
 	}
 	return schema;
 }
@@ -121,12 +116,12 @@ void MySQLSession::insert(ModelBase& model, bool updateAutoIncPKey){
 	queryStream << " ) VALUES ( ";
 	printAttribValues(queryStream, model.getSchema(), model.getAttributes());
 	queryStream << " );";
-	if(executeNonQuery(queryStream.str()) != 1){
+	if(executeVoid(queryStream.str()) != 1){
 		throw runtime_error("failed to insert model");
 	}
 
 	if(updateAutoIncPKey && model.autoIncPkeyColumnExists()){
-		ResultTable result = executeRawQuery("SELECT LAST_INSERT_ID();");
+		ResultTable result = executeFlat("SELECT LAST_INSERT_ID();");
 		//const char* test = result.begin()->get(0).type().name();
 		//TODO: error check
 		long lastInsertId = stol(result.front().begin()->second); //  result.begin()->get(0).convert<long>();
@@ -137,51 +132,51 @@ void MySQLSession::insert(ModelBase& model, bool updateAutoIncPKey){
 
 ResultTable MySQLSession::executeFlat(const QueryBase& query){
 	std::string queryString = buildQueryString(query);
-	ORMLOG(Logger::Lv::DBUG, "executing query : " + queryString);
-	Statement st(*sessionPtr);
-	st << queryString;
-	st.execute();
-	RecordSet result = RecordSet(st);
-	std::list<std::map<std::string, std::string>> flatResults;
+	return executeFlat(queryString);
+}
 
-	for(Row& row : result){
+ResultTable MySQLSession::executeFlat(const std::string& query){
+	ORMLOG(Logger::Lv::DBUG, "executing query : " + query);
+	mysqlQuery(query);
+
+	MYSQL_RES* result = mysql_store_result((st_mysql*)sessionPtr);
+
+	if(result == NULL){
+		throw runtime_error(mysql_error((st_mysql*)sessionPtr));
+	}
+
+	MYSQL_ROW row;
+	MYSQL_FIELD *field;
+	vector<string> columns;//todo: optimize and remove this
+	std::list<std::map<std::string, std::string>> flatResults;
+	int num_fields = mysql_num_fields(result);
+
+	while((field = mysql_fetch_field(result)) != NULL){
+		columns.push_back(field->name);
+	}
+
+	while((row = mysql_fetch_row(result)) != NULL){
 		flatResults.push_back({});
 		std::map<std::string, std::string>& flatRow = flatResults.back();
-		for(size_t colIdx = 0; colIdx < result.columnCount(); colIdx++){
-			flatRow[result.columnName(colIdx)] = row[result.columnName(colIdx)].toString();//TODO: optimize
+		for(int i = 0; i < num_fields; i++){
+			flatRow[columns[i]] = row[i] ? row[i] : "";
+			//todo: differentiate between NULL, "NULL", empty values
 		}
 	}
 
+	mysql_free_result(result);
 	return flatResults;
 }
 
-ResultTable MySQLSession::executeRawQuery(const std::string& queryString){
-	ORMLOG(Logger::Lv::DBUG, "executing query : " + queryString);
-	Statement st(*sessionPtr);
-	st << queryString;
-	st.execute();
-	RecordSet result = RecordSet(st);
-	std::list<std::map<std::string, std::string>> flatResults;
-	for(Row& row : result){
-		flatResults.push_back({});
-		std::map<std::string, std::string>& flatRow = flatResults.back();
-		for(const string& colName : *row.names()){
-			flatRow[colName] = row[colName].toString();
-		}
-	}
-	return flatResults;
-}
-
-std::size_t MySQLSession::executeNonQuery(const std::string& queryString){
-	ORMLOG(Logger::Lv::DBUG, "executing query : " + queryString);
-	Statement query(*sessionPtr);
-	query << queryString;
-	return query.execute();
+std::size_t MySQLSession::executeVoid(const std::string& query){
+	ORMLOG(Logger::Lv::DBUG, "executing query : " + query);
+	mysqlQuery(query);
+	return (size_t)mysql_affected_rows((st_mysql*)sessionPtr);
 }
 
 MySQLSession::~MySQLSession() {
 	ORMLOG(Logger::Lv::INFO, "disconnected from mysql server ");
-	delete sessionPtr;
+	mysql_close((st_mysql*)sessionPtr);
 }
 
 } /* namespace ORMPlusPlus */

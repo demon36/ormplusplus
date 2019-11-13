@@ -4,11 +4,9 @@ compiler:
   - gcc
 addons:
   apt:
-    sources:
-    - sourceline: 'ppa:gezakovacs/poco'
     update: true
     packages:
-    - libpoco-dev
+    - default-libmysqlclient-dev
     - lcov
 services:
   - mysql

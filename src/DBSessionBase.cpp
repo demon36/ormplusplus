@@ -11,7 +11,7 @@ DBSessionBase::DBSessionBase() {
 
 void DBSessionBase::dropTable(const std::string& name){
 	string queryString = "DROP TABLE IF EXISTS `" + name + "`;";
-	executeNonQuery(queryString);
+	executeVoid(queryString);
 }
 
 bool DBSessionBase::tableExists(const std::string& name, TableSchema& schema){

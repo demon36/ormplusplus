@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include <Poco/Data/Session.h>
-
 #include "DBSessionBase.h"
 #include "Logger.h"
 
@@ -14,7 +12,8 @@ namespace ORMPlusPlus {
 
 class MySQLSession : public DBSessionBase {
 private:
-	Poco::Data::Session* sessionPtr;
+	void* sessionPtr;
+	void mysqlQuery(const std::string& query);
 public:
 	MySQLSession(const std::string& host, const std::string& database, const std::string& user, const std::string& password, int port = MYSQL_DEFAULT_PORT);
 	bool tableExists(const std::string& name) override;
@@ -22,8 +21,8 @@ public:
 	TableSchema getTableSchema(const std::string& name) override;
 	void insert(ModelBase& model, bool updateAutoIncPKey = false) override;
 	ResultTable executeFlat(const QueryBase& query) override;
-	ResultTable executeRawQuery(const std::string& queryString) override;
-	std::size_t executeNonQuery(const std::string& queryString) override;
+	ResultTable executeFlat(const std::string& query) override;
+	std::size_t executeVoid(const std::string& query) override;
 	virtual ~MySQLSession();
 };
 
