@@ -16,10 +16,10 @@ MAJOR_VERSION := 0
 MINOR_VERSION := 1.9
 
 SRC_FILES := $(shell find $(SRC_DIR) -regex '.*\.\(c\|cc\|cpp\|cxx\)')
-OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/$(SRC_DIR)/%.o,$(SRC_FILES))
+OBJ_FILES := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/$(SRC_DIR)/%.o,$(SRC_FILES))
 DEP_FILES := $(patsubst $(SRC_DIR)/%,$(DEP_DIR)/$(SRC_DIR)/%.dep,$(SRC_FILES)) $(patsubst $(TEST_SRC_DIR)/%,$(DEP_DIR)/$(TEST_SRC_DIR)/%.dep,$(TEST_SRC_FILES))
 TEST_SRC_FILES := $(shell find $(TEST_SRC_DIR) -regex '.*\.\(c\|cc\|cpp\|cxx\)')
-TEST_OBJ_FILES := $(patsubst $(TEST_SRC_DIR)/%.cpp,$(OBJ_DIR)/$(TEST_SRC_DIR)/%.o,$(TEST_SRC_FILES))
+TEST_OBJ_FILES := $(patsubst $(TEST_SRC_DIR)/%,$(OBJ_DIR)/$(TEST_SRC_DIR)/%.o,$(TEST_SRC_FILES))
 
 SO_FILE := $(PROJECT_NAME).so
 A_FILE := $(PROJECT_NAME).a
@@ -66,13 +66,13 @@ ifeq ($(BUILD),coverage)
 	xdg-open $(COV_REPORTS_DIR)/index.html
 endif
 
-$(OBJ_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(OBJ_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%
 	@mkdir -p $(@D) $(DEP_DIR)/$(<D)
-	$(CC) $(CFLAGS) -fPIC -c -o $@ $< -MD -MF $(DEP_DIR)/$<.dep
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $< -MMD -MF $(DEP_DIR)/$<.dep
 
-$(OBJ_DIR)/$(TEST_SRC_DIR)/%.o: $(TEST_SRC_DIR)/%.cpp
+$(OBJ_DIR)/$(TEST_SRC_DIR)/%.o: $(TEST_SRC_DIR)/%
 	@mkdir -p $(@D) $(DEP_DIR)/$(<D)
-	$(CC) $(CFLAGS) -c -o $@ $< -MD -MF $(DEP_DIR)/$<.dep
+	$(CC) $(CFLAGS) -c -o $@ $< -MMD -MF $(DEP_DIR)/$<.dep
 
 $(LIB_DIR)/$(SO_FILE): $(OBJ_FILES)
 	@mkdir -p $(@D)
@@ -122,16 +122,9 @@ clean:
 
 -include $(shell test -d $(DEP_DIR) && find $(DEP_DIR) -name '*.dep')
 
-#todo: add variable for c++ source file extension
-#todo: do not strip debug symbols from static libs
 #todo: add an extra target for the symlink itself
 #todo: add target cleanall
 #todo: add rebuild target
-#todo: bind debug info to shared object in release builds `objcopy --add-gnu-debuglink=foo.dbg foo`
-#todo: revise versioning (there should be 2 symlinks)
-#todo: make tests depend on shared/static lib
 #todo: add section for other makefile deps
 #todo: support pkg-config
-#todo: replace blind test linking
 #todo: support excluding source files from build
-#todo: support making a test for an executable project 
