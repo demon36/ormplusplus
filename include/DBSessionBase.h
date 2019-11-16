@@ -1,17 +1,12 @@
 #ifndef INCLUDE_DBSESSIONBASE_H_
 #define INCLUDE_DBSESSIONBASE_H_
 
-#include <memory>
-#include <list>
-
 #include "TableColumn.h"
 #include "QueryBase.h"
 #include "ModelBase.h"
+#include "ResultTable.h"
 
 namespace ORMPlusPlus {
-
-//todo: implement optimized class ResultTable
-typedef std::list<std::map<std::string, std::string>> ResultTable;
 
 class DBSessionBase {
 public:
@@ -35,55 +30,28 @@ public:
 	virtual void insert(ModelBase& model, bool updateAutoIncPKey = false) = 0;
 //	virtual void update(const ModelBase& model) = 0;
 
-	//TODO: find a soln for the following issue:
-	//		this function should be marked as virtual in order to get overridden
-	//		by different database sessions, but c++ prohibits virtual template fns
-	//TODO: split this fn
 	/**
 	 * this function assumes query has already been checked against model schema
 	 */
-
 	template<class UserModel>
 	std::vector<UserModel> execute(const QueryBase& query){
 		std::vector<UserModel> results;
 
 		ResultTable result = executeFlat(query);
-		for(auto row = result.begin(); row != result.end(); ++row){
+		for(size_t i = 0; i < result.getNumRows(); i++){
 			UserModel obj;
 			//TODO: no getter here ?
 			//TODO: are result columns guaranteed to have same attributes order?
 			//todo: optimize the extra copying
 			std::map<std::string, NullableFieldBase>& objAttribs = obj.attributes;
 			for(auto& attribElement : objAttribs){
-				const std::string& attribName = attribElement.first;
-				NullableFieldBase& attrib = attribElement.second;
-				const std::type_info& attribPrimitiveType = attrib.getType();
-
-				//TODO: change this later
-				if(attribPrimitiveType == typeid(int)){
-					attrib = stoi(row->at(attribName));
-				}else if(attribPrimitiveType == typeid(long)){
-					attrib = stol(row->at(attribName));;
-				}else if(attribPrimitiveType == typeid(float)){
-					attrib = stof(row->at(attribName));
-				}else if(attribPrimitiveType == typeid(double)){
-					attrib = stod(row->at(attribName));
-				}else if(attribPrimitiveType == typeid(std::string)){
-					attrib = row->at(attribName);
-				}else if(attribPrimitiveType == typeid(::tm)){
-					//TODO: query datetime with same format, ex: "1993-09-30 17:20:21"
-					//TODO: use correct tz
-					strptime(row->at(attribName).c_str(), "%Y-%m-%d %H:%M:%S", &attrib.getValueRef<::tm>());
-				}else if(attribPrimitiveType == typeid(nullptr_t)){
-					//TODO get rid of this case
-				}
+				attribElement.second = result.getFieldValue(i, attribElement.first);
 			}
 			results.emplace_back(obj.clone());
 		}
 		return results;
 	}
 
-	//TODO: use proper names
 	virtual ResultTable executeFlat(const QueryBase& query) = 0;
 
 	virtual ResultTable executeFlat(const std::string& queryString) = 0;

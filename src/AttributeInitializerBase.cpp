@@ -1,5 +1,7 @@
 #include "AttributeInitializerBase.h"
 
+#include "TableColumn.h"
+
 namespace ORMPlusPlus {
 
 AttributeInitializerBase::AttributeInitializerBase(NullableFieldBase& NFBase, TableColumn* associatedColumn)

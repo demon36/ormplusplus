@@ -35,7 +35,7 @@ public:
 	}
 
 	NullableField()
-	: NFBasePtr(new NullableFieldBase(typeid(PrimitiveType))),
+	: NFBasePtr(new NullableFieldBase(typeid(PrimitiveType).hash_code())),
 	  isPtrOwner(true),
 	  valueRef(NFBasePtr->getValueRef<PrimitiveType>())
 	{
@@ -55,7 +55,7 @@ public:
 	{
 	}
 
-	NullableField(NullableFieldBase& nullableFieldBase)
+	NullableField(NullableFieldBase& nullableFieldBase) //todo: convert to NullableFieldBase&&
 	: NFBasePtr(&nullableFieldBase),
 	  isPtrOwner(false),
 	  valueRef(NFBasePtr->getValueRef<PrimitiveType>())
@@ -72,7 +72,7 @@ public:
 		NFBasePtr->setValue<PrimitiveType>(value);
 	}
 
-	NullableField& operator=(const NullableField& that) const
+	NullableField& operator=(const NullableField& that)
 	{
 		NFBasePtr->setValue<PrimitiveType>(that.getValueRef());
 		return *this;

@@ -4,7 +4,7 @@
 #include <string>
 
 #include "DBSessionBase.h"
-#include "Logger.h"
+#include "ResultTable.h"
 
 #define MYSQL_DEFAULT_PORT 3306
 

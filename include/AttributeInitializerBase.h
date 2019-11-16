@@ -1,10 +1,11 @@
 #ifndef INCLUDE_ATTRIBUTEINITIALIZERBASE_H_
 #define INCLUDE_ATTRIBUTEINITIALIZERBASE_H_
 
-#include "TableColumn.h"
 #include "NullableFieldBase.h"
 
 namespace ORMPlusPlus {
+
+class TableColumn;
 
 /**
  * Used at NullableField construction

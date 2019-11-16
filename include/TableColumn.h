@@ -1,11 +1,12 @@
 #ifndef INCLUDE_TABLECOLUMN_H_
 #define INCLUDE_TABLECOLUMN_H_
 
-#include <vector>
 #include <map>
-#include <typeindex>
+
+#include "NullableField.h"
 
 namespace ORMPlusPlus{
+
 /**
  * 	responsible for storing column data that is used to create a table
 	such as column name, data type, nullable, primary, autoincrement, etc..
@@ -14,24 +15,24 @@ class TableColumn{
 private:
 	const std::string name;
 	const std::size_t typeHash;
-	int length = 0;
-	int precision = 0;
+	long length = -1;//todo: use nullable type here too ?
+	long precision = -1;
 	bool nullable = false;
-	std::string defaultValue;
+	String defaultValue;
 	bool isPrimaryKey = false;
 	bool autoIncrement = false;
 public:
 	TableColumn();
-	TableColumn(const std::string& name, std::size_t typeHash, int length, int precision, bool isNullable, const std::string& defaultValue, bool isPrimaryKey, bool autoIncrement);
+	TableColumn(const std::string& name, std::size_t typeHash, long length, long precision, bool isNullable, const String& defaultValue, bool isPrimaryKey, bool autoIncrement);
 	TableColumn(const std::string& name, std::size_t typeHash);
 
 	std::string getName() const;
 	std::size_t getTypeHash() const;
 	std::string getDBTypeName() const;
-	int getLength() const;
-	int getPrecision() const;
+	long getLength() const;
+	long getPrecision() const;
 	bool isNullable() const;
-	std::string getDefaultValue() const;
+	String getDefaultValue() const;
 	bool isPrimary() const;
 	bool isAutoIncrement() const;
 	bool isIntegral() const;

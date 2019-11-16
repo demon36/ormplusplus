@@ -1,4 +1,5 @@
 #include "ormplusplus.h"
+#include "Logger.h"
 
 #include <iomanip>
 
@@ -56,7 +57,7 @@ void testModelDefinition(){
 	ASSERT(!schema.at("height").isAutoIncrement());
 	ASSERT(!schema.at("height").isNullable());
 	ASSERT(schema.at("height").isIntegral());
-	ASSERT(schema.at("height").getDefaultValue().empty());
+	ASSERT(schema.at("height").getDefaultValue().isNull());
 	ASSERT(!schema.at("height").isPrimary());
 	ASSERT(!schema.at("height").isText());
 }
@@ -66,7 +67,7 @@ void assertTableCreation(){
 	ASSERT(!DB::tableExists<Client>());
 	DB::createTable<Client>();
 	ASSERT(DB::tableExists<Client>());
-	ASSERT(DB::tableExists<Client>(true));
+	ASSERT(DB::tableExists<Client>(true));//todo: fix this
 }
 
 void testSingleInsertAndSelect(){

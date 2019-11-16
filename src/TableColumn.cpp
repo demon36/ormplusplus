@@ -13,7 +13,7 @@ TableColumn::TableColumn()
 : typeHash(typeid(nullptr).hash_code())//TODO: check the consequences
 {}
 
-TableColumn::TableColumn(const string& name_, size_t typeHash_, int length, int precision, bool isNullable, const string& defaultValue, bool isPrimaryKey, bool autoIncrement)
+TableColumn::TableColumn(const string& name_, size_t typeHash_, long length, long precision, bool isNullable, const String& defaultValue, bool isPrimaryKey, bool autoIncrement)
 : name(name_), typeHash(typeHash_)
 {
 	this->length = length;
@@ -28,21 +28,21 @@ TableColumn::TableColumn(const string& name_, size_t typeHash_)
 : name(name_), typeHash(typeHash_)
 {
 	if(isIntegral()){
-		length = 0;
+		length = -1;
 		precision = DEFAULT_NUM_PRECISION;
 	}else if(isText()){
 		length = DEFAULT_STRING_LENGTH;
-		precision = 0;
+		precision = -1;
 	}
 }
 
 string TableColumn::getName() const { return name; }
 size_t TableColumn::getTypeHash() const { return typeHash; }
 string TableColumn::getDBTypeName() const { return NullableFieldBase::typeInfoMap.at(typeHash).DBName; }
-int TableColumn::getLength() const { return length; }
-int TableColumn::getPrecision() const { return precision; }
+long TableColumn::getLength() const { return length; }
+long TableColumn::getPrecision() const { return precision; }
 bool TableColumn::isNullable() const { return nullable; }
-std::string TableColumn::getDefaultValue() const { return defaultValue; }
+String TableColumn::getDefaultValue() const { return defaultValue; }
 bool TableColumn::isAutoIncrement() const { return autoIncrement; }
 bool TableColumn::isPrimary() const { return isPrimaryKey; }
 

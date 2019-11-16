@@ -29,7 +29,7 @@ class NullableFieldBase{
 
 private:
 	void* primitiveValuePtr = nullptr;
-	const std::type_info& m_type;
+	const std::size_t typeHash;
 	bool hasValue = false;
 
 protected:
@@ -45,13 +45,13 @@ public:
 
 	template<class PrimitiveType>
 	static NullableFieldBase create(const PrimitiveType& value){
-		NullableFieldBase instance(typeid(PrimitiveType));
+		NullableFieldBase instance(typeid(PrimitiveType).hash_code());
 		instance.setValue<PrimitiveType>(value);
 		return instance;
 	}
 
 	NullableFieldBase();
-	NullableFieldBase(const std::type_info& type);
+	NullableFieldBase(size_t typeHash);//todo: replace with a fancy TypeInfo class for distinction from long int or whatever
 	NullableFieldBase(const NullableFieldBase& that);
 	NullableFieldBase(NullableFieldBase&& that);
 	NullableFieldBase& operator=(const NullableFieldBase);
@@ -59,7 +59,7 @@ public:
 	template<class PrimitiveType>
 	NullableFieldBase& operator=(const PrimitiveType& value){
 		//TODO: add fn assert type ?
-		if(typeid(PrimitiveType) != m_type){//FIXME: assertion done twice
+		if(typeid(PrimitiveType).hash_code() != typeHash){//FIXME: assertion done twice
 			throw std::runtime_error("trying to assign nullable field to non-compatible type value");
 		}
 		getValueRef<PrimitiveType>() = value;
@@ -70,7 +70,7 @@ public:
 	template<class PrimitiveType>
 	PrimitiveType& getValueRef() const{
 		//TODO: assert not null
-		if(typeid(PrimitiveType) == m_type){
+		if(typeid(PrimitiveType).hash_code() == typeHash){
 			return *(PrimitiveType*)primitiveValuePtr;
 		}else{
 			throw std::runtime_error("type mismatch at NullableFieldBase::getValueRef()");
@@ -81,7 +81,7 @@ public:
 	void setValue(const PrimitiveType& value){
 		//TODO: assert not null
 		//TODO: use enable if
-		if(typeid(PrimitiveType) == m_type){
+		if(typeid(PrimitiveType).hash_code() == typeHash){
 			*(PrimitiveType*)primitiveValuePtr = value;
 			hasValue = true;
 		}else{
@@ -92,7 +92,7 @@ public:
 	bool equals(const NullableFieldBase& that) const;
 	bool isNull() const;
 	std::string toString() const;
-	const std::type_info& getType() const;
+	size_t getType() const;
 
 	//TODO: support bypassing to streams
 	~NullableFieldBase();
