@@ -57,7 +57,7 @@ void testModelDefinition(){
 	ASSERT(!schema.at("height").isAutoIncrement());
 	ASSERT(!schema.at("height").isNullable());
 	ASSERT(schema.at("height").isIntegral());
-	ASSERT(schema.at("height").getDefaultValue().isNull());
+	ASSERT(schema.at("height").hasDefaultValue() == false);
 	ASSERT(!schema.at("height").isPrimary());
 	ASSERT(!schema.at("height").isText());
 }
@@ -67,7 +67,7 @@ void assertTableCreation(){
 	ASSERT(!DB::tableExists<Client>());
 	DB::createTable<Client>();
 	ASSERT(DB::tableExists<Client>());
-	ASSERT(DB::tableExists<Client>(true));//todo: fix this
+	ASSERT(DB::tableExists<Client>(true));
 }
 
 void testSingleInsertAndSelect(){
@@ -84,7 +84,7 @@ void testSingleInsertAndSelect(){
 		{"id", "=", c0.id}
 	}).selectOne();
 
-	ASSERT(c0.equals(c1));
+	ASSERT(c0.equals(c1));//todo: fix this
 }
 
 void testMultiInsertAndSelect(){

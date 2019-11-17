@@ -7,6 +7,7 @@
 #include <iostream>
 #include <typeindex>
 #include <map>
+#include <list>
 
 namespace ORMPlusPlus {
 
@@ -14,13 +15,29 @@ namespace ORMPlusPlus {
 //needed for using NullableField<nullptr_t>
 std::ostream& operator<<(std::ostream& outstream, nullptr_t value);
 
-//some type information
 struct TypeInfo
 {
+	TypeInfo() = delete;
+	const size_t nullableTypeHash;
 	const bool isIntegral;
 	const bool isText;
-	const std::string DBName;
+
+	static const TypeInfo Int32Type;
+	static const TypeInfo Int64Type;
+	static const TypeInfo FloatType;
+	static const TypeInfo DoubleType;
+	static const TypeInfo StringType;
+	static const TypeInfo DateTimeType;
+	static const TypeInfo NullType;
+
+	static const std::list<TypeInfo> AllTypes;
+	static const TypeInfo& findbyHash(size_t hash);
 };
+
+
+bool operator==(const TypeInfo lhs, const TypeInfo rhs);
+
+
 
 /**
  * Encapsulates the nullable field data
@@ -37,12 +54,6 @@ protected:
 	static void assertRHSNotNull(const NullableFieldBase& rhs);
 
 public:
-
-	//key: type_info hash
-	//TODO: add getter for the map
-	static const std::map<std::size_t, TypeInfo> typeInfoMap;
-	static std::size_t getTypeHash(std::string TypeDBName);
-
 	template<class PrimitiveType>
 	static NullableFieldBase create(const PrimitiveType& value){
 		NullableFieldBase instance(typeid(PrimitiveType).hash_code());
@@ -54,7 +65,7 @@ public:
 	NullableFieldBase(size_t typeHash);//todo: replace with a fancy TypeInfo class for distinction from long int or whatever
 	NullableFieldBase(const NullableFieldBase& that);
 	NullableFieldBase(NullableFieldBase&& that);
-	NullableFieldBase& operator=(const NullableFieldBase);
+	NullableFieldBase& operator=(const NullableFieldBase& that);
 
 	template<class PrimitiveType>
 	NullableFieldBase& operator=(const PrimitiveType& value){
@@ -83,9 +94,9 @@ public:
 		//TODO: use enable if
 		if(typeid(PrimitiveType).hash_code() == typeHash){
 			*(PrimitiveType*)primitiveValuePtr = value;
-			hasValue = true;
+			hasValue = true;//todo: replace hasValue with valuePtr != nullptr
 		}else{
-			throw std::runtime_error("type mismatch at NullableFieldBase::getValueRef()");
+			throw std::runtime_error("type mismatch at NullableFieldBase::setValue(value)");
 		}
 	}
 

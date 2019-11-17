@@ -14,6 +14,9 @@ class MySQLSession : public DBSessionBase {
 private:
 	void* sessionPtr;
 	void mysqlQuery(const std::string& query);
+	static size_t toPrimitiveType(int mySQLTypeEnum);
+	static const TypeInfo& getTypeInfo(const std::string& mySQLColTypeName);
+	static const std::map<std::string, TypeInfo> typeNamesMap;
 public:
 	MySQLSession(const std::string& host, const std::string& database, const std::string& user, const std::string& password, int port = MYSQL_DEFAULT_PORT);
 	bool tableExists(const std::string& name) override;

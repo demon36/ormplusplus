@@ -1,6 +1,11 @@
 * todo
-** use struct tm instead of Poco::DateTime
-** getrid of poco
+** DONE use struct tm instead of Poco::DateTime
+** DONE getrid of poco
+** TODO revise NullableField typing system
+** TODO add more description to type hash attributes
+** TODO separate TypeInfo in its own files
+** TODO fix failing test byt unifying datetime usage -maybe add date utils-
+** TODO change the way TableColumn.defaultValue is represented
 ** add support for sqlite
 ** remove DBsession refs from Model
 ** remove the nasty string template parameter header

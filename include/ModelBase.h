@@ -22,7 +22,6 @@ protected:
 public:
 	ModelBase(const std::string& tableName, TableSchema& schema);
 	ModelBase(const ModelBase& that);
-	void addColumn(const std::string& name, std::size_t typeHash);
 	TableColumn& getColumnRef(const std::string& name) const;
 	std::string getTableName() const;
 	const TableSchema& getSchema() const;

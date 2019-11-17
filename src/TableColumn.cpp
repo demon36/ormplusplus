@@ -10,22 +10,24 @@ using namespace std;
 namespace ORMPlusPlus{
 
 TableColumn::TableColumn()
-: typeHash(typeid(nullptr).hash_code())//TODO: check the consequences
+: typeInfo(TypeInfo::NullType)//TODO: check the consequences
 {}
 
-TableColumn::TableColumn(const string& name_, size_t typeHash_, long length, long precision, bool isNullable, const String& defaultValue, bool isPrimaryKey, bool autoIncrement)
-: name(name_), typeHash(typeHash_)
+TableColumn::TableColumn(const string& _name, const TypeInfo& _typeInfo, long length, long precision, bool isNullable, bool isPrimaryKey, bool autoIncrement)
+: name(_name), typeInfo(_typeInfo)
 {
 	this->length = length;
 	this->precision = precision;
 	this->nullable = isNullable;
-	this->defaultValue = defaultValue;
+	if(isNullable){//if column is nullable then default value is NULL
+		defaultValueSet = true;
+	}
 	this->isPrimaryKey = isPrimaryKey;
 	this->autoIncrement = autoIncrement;
 }
 
-TableColumn::TableColumn(const string& name_, size_t typeHash_)
-: name(name_), typeHash(typeHash_)
+TableColumn::TableColumn(const string& _name, const TypeInfo& _typeInfo)
+: name(_name), typeInfo(_typeInfo)
 {
 	if(isIntegral()){
 		length = -1;
@@ -37,11 +39,11 @@ TableColumn::TableColumn(const string& name_, size_t typeHash_)
 }
 
 string TableColumn::getName() const { return name; }
-size_t TableColumn::getTypeHash() const { return typeHash; }
-string TableColumn::getDBTypeName() const { return NullableFieldBase::typeInfoMap.at(typeHash).DBName; }
+const TypeInfo& TableColumn::getTypeInfo() const { return typeInfo; }
 long TableColumn::getLength() const { return length; }
 long TableColumn::getPrecision() const { return precision; }
 bool TableColumn::isNullable() const { return nullable; }
+bool TableColumn::hasDefaultValue() const { return defaultValueSet; }
 String TableColumn::getDefaultValue() const { return defaultValue; }
 bool TableColumn::isAutoIncrement() const { return autoIncrement; }
 bool TableColumn::isPrimary() const { return isPrimaryKey; }
@@ -67,10 +69,22 @@ void TableColumn::setPrimary(bool value){
 
 void TableColumn::setNullable(bool value){
 	nullable = value;
+	if(nullable && !defaultValueSet){
+		defaultValueSet = true;
+	}
+	//todo: this probably needs a revisit, notice this scenario:
+	//use constructs TableColumn with nullable = true
+	//defaultValueSet gets set to true because NULL becomes the default value
+	//user calls setNullable(false)
+	//now we need to clear defaultValueSet
+	//but what if user already sat defaultValue to something different that NULL ?
+	//todo: change defaultValue representation to be compatible with database field
+	//possible values: "NULL", "34", "'a string value'", "'NULL'"
 }
 
-void TableColumn::setDefaultValue(const std::string& value){
+void TableColumn::setDefaultValue(const String& value){
 	defaultValue = value;
+	defaultValueSet = true;
 }
 
 void TableColumn::setAutoIncrement(bool value){
@@ -78,21 +92,18 @@ void TableColumn::setAutoIncrement(bool value){
 }
 
 bool TableColumn::isIntegral() const {
-	//TODO: check key exists
-	//TODO: maybe instead of using TypeInfo struct we need to some sets
-	//		each set contains ids for types holding some property
-	return NullableFieldBase::typeInfoMap.at(typeHash).isIntegral;
+	return typeInfo.isIntegral;
 }
 
 bool TableColumn::isText() const {
-	return NullableFieldBase::typeInfoMap.at(typeHash).isText;
+	return typeInfo.isText;
 }
 
 bool TableColumn::operator==(const TableColumn& that){
 	//TODO: update with added attributes
 	if(
 		this->name == that.name &&
-		this->typeHash == that.typeHash &&
+		this->typeInfo == that.typeInfo &&
 		this->nullable == that.nullable &&
 		this->defaultValue == that.defaultValue &&
 		this->isPrimaryKey == that.isPrimaryKey &&

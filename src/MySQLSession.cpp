@@ -11,11 +11,74 @@ using namespace std;
 
 namespace ORMPlusPlus {
 
-size_t toPrimitiveType(enum_field_types mySQLType);
-
 void MySQLSession::mysqlQuery(const std::string& query){
 	if (mysql_query((st_mysql*)sessionPtr, query.c_str())) {
 		throw runtime_error(mysql_error((st_mysql*)sessionPtr));
+	}
+}
+
+size_t MySQLSession::toPrimitiveType(int mySQLTypeEnum){
+	//todo: revice typing setup
+	enum_field_types mySQLType = (enum_field_types)mySQLTypeEnum;
+	switch(mySQLType){
+//		case MYSQL_TYPE_BIT://todo: support bool
+		case MYSQL_TYPE_TINY:
+		case MYSQL_TYPE_SHORT:
+		case MYSQL_TYPE_INT24:
+		case MYSQL_TYPE_LONG:
+			return typeid(int).hash_code();
+
+		case MYSQL_TYPE_LONGLONG:
+			return typeid(long).hash_code();
+
+
+		case MYSQL_TYPE_FLOAT:
+			return typeid(float).hash_code();
+		case MYSQL_TYPE_DOUBLE:
+		case MYSQL_TYPE_DECIMAL:
+			return typeid(double).hash_code();
+
+		case MYSQL_TYPE_DATE:
+		case MYSQL_TYPE_TIME:
+		case MYSQL_TYPE_DATETIME:
+		case MYSQL_TYPE_TIMESTAMP:
+		case MYSQL_TYPE_YEAR:
+		case MYSQL_TYPE_NEWDATE:
+			return typeid(tm).hash_code();
+
+		case MYSQL_TYPE_VARCHAR:
+		case MYSQL_TYPE_VAR_STRING:
+		case MYSQL_TYPE_STRING:
+		case MYSQL_TYPE_BLOB://todo: support blob
+			return typeid(string).hash_code();
+
+		case MYSQL_TYPE_NULL:
+			return typeid(nullptr).hash_code();
+
+		default:
+			throw runtime_error("unsupported type");
+	}
+}
+
+const map<string, TypeInfo> MySQLSession::typeNamesMap({
+	{"INT", TypeInfo::Int32Type},
+	{"BIGINT", TypeInfo::Int64Type},
+	{"FLOAT", TypeInfo::FloatType},
+	{"DOUBLE", TypeInfo::DoubleType},
+	{"VARCHAR", TypeInfo::StringType},
+	{"DATETIME", TypeInfo::DateTimeType},
+});
+
+const TypeInfo& MySQLSession::getTypeInfo(const std::string& mySQLColTypeName){
+	string normalizedCaseName = mySQLColTypeName;
+	for(char &c: normalizedCaseName){
+		c = (char)toupper(c);
+	}
+
+	if(typeNamesMap.find(normalizedCaseName) == typeNamesMap.end()){
+		throw out_of_range("MySQLSession::getTypeInfo called with unsupported type name");
+	}else{
+		return typeNamesMap.find(normalizedCaseName)->second;
 	}
 }
 
@@ -48,17 +111,36 @@ void MySQLSession::createTable(const string& name, const TableSchema& schema){
 		columnsList.push_back( columnEntry.second );
 	}
 
+
 	for(size_t i = 0; i < columnsList.size(); i++){
-		queryStream << "`"<< columnsList[i].getName() <<"` " <<  columnsList[i].getDBTypeName();
+		string DBTypeName;
+		for(auto& typeNameEntry : typeNamesMap){
+			if(typeNameEntry.second.nullableTypeHash == columnsList[i].getTypeInfo().nullableTypeHash){
+				DBTypeName = typeNameEntry.first;
+				break;
+			}
+		}
+
+		if(DBTypeName.empty()){
+			throw runtime_error("trying to create table with unsupported column type");
+		}
+
+		queryStream << "`"<< columnsList[i].getName() <<"` " <<  DBTypeName;
 		if(columnsList[i].isText()){
 			queryStream << "(" << columnsList[i].getLength() << ")";
 		}
 		if(columnsList[i].isAutoIncrement()){
 			queryStream << " AUTO_INCREMENT ";
 		}
-		if(!columnsList[i].getDefaultValue().isNull()){
-			queryStream << " DEFAULT '" << columnsList[i].getDefaultValue() << "' ";
+
+		if(columnsList[i].hasDefaultValue()){
+			if(columnsList[i].getDefaultValue().isNull()){
+				queryStream << " DEFAULT NULL ";
+			}else{
+				queryStream << " DEFAULT '" << columnsList[i].getDefaultValue() << "' ";
+			}
 		}
+
 		if(columnsList[i].isPrimary()){
 			queryStream << " PRIMARY KEY ";
 		}
@@ -86,27 +168,35 @@ TableSchema MySQLSession::getTableSchema(const string& name){
 	for(size_t i = 0; i < result.getNumRows(); i++){
 		string columnName = result.getFieldValue(i, "COLUMN_NAME").getValueRef<string>();
 		string DBColumnType = result.getFieldValue(i, "DATA_TYPE").getValueRef<string>();
-		size_t typeHash = NullableFieldBase::getTypeHash(DBColumnType);
 		string extra = result.getFieldValue(i, "EXTRA").getValueRef<string>();
 		long maxLength = result.getFieldValue(i, "CHARACTER_MAXIMUM_LENGTH").isNull() ? -1 : result.getFieldValue(i, "CHARACTER_MAXIMUM_LENGTH").getValueRef<long>();
 		long numPrecision = result.getFieldValue(i, "NUMERIC_PRECISION").isNull() ? -1 : result.getFieldValue(i, "NUMERIC_PRECISION").getValueRef<long>();
 		bool isNullable = result.getFieldValue(i, "IS_NULLABLE").getValueRef<string>() == "YES";
 		bool isPKey = result.getFieldValue(i, "COLUMN_KEY").getValueRef<string>() == "PRI";
 		bool isAutoIncrement = extra.find("auto_increment") != extra.npos;
-		String defaultValue;
-		if(!result.getFieldValue(i, "COLUMN_DEFAULT").isNull()){
-			defaultValue = result.getFieldValue(i, "COLUMN_DEFAULT").getValueRef<string>();
-		}
+
 		TableColumn tempColumn(
 				columnName,
-				typeHash,
+				getTypeInfo(DBColumnType),
 				maxLength,
 				numPrecision,
 				isNullable,
-				defaultValue,
 				isPKey,
 				isAutoIncrement
 		);
+
+		if(!result.getFieldValue(i, "COLUMN_DEFAULT").isNull()){
+			String defaultValue = result.getFieldValue(i, "COLUMN_DEFAULT").getValueRef<string>();
+			if(defaultValue == "NULL"){
+				tempColumn.setDefaultValue(String());
+			}else if(tempColumn.getTypeInfo() == TypeInfo::StringType){
+				//default value is wrapped in single quotations
+				tempColumn.setDefaultValue(defaultValue.getValueRef().substr(1, defaultValue.getValueRef().size()-2));
+			}else{
+				tempColumn.setDefaultValue(defaultValue);
+			}
+		}
+
 		schema.emplace(columnName, tempColumn);
 	}
 	return schema;
@@ -191,48 +281,6 @@ std::size_t MySQLSession::executeVoid(const std::string& query){
 MySQLSession::~MySQLSession() {
 	ORMLOG(Logger::Lv::INFO, "disconnected from mysql server ");
 	mysql_close((st_mysql*)sessionPtr);
-}
-
-size_t toPrimitiveType(enum_field_types mySQLType){
-	//todo: revice typing setup
-	switch(mySQLType){
-//		case MYSQL_TYPE_BIT://todo: support bool
-		case MYSQL_TYPE_TINY:
-		case MYSQL_TYPE_SHORT:
-		case MYSQL_TYPE_INT24:
-		case MYSQL_TYPE_LONG:
-			return typeid(int).hash_code();
-
-		case MYSQL_TYPE_LONGLONG:
-			return typeid(long).hash_code();
-
-
-		case MYSQL_TYPE_FLOAT:
-			return typeid(float).hash_code();
-		case MYSQL_TYPE_DOUBLE:
-		case MYSQL_TYPE_DECIMAL:
-			return typeid(double).hash_code();
-
-		case MYSQL_TYPE_DATE:
-		case MYSQL_TYPE_TIME:
-		case MYSQL_TYPE_DATETIME:
-		case MYSQL_TYPE_TIMESTAMP:
-		case MYSQL_TYPE_YEAR:
-		case MYSQL_TYPE_NEWDATE:
-			return typeid(tm).hash_code();
-
-		case MYSQL_TYPE_VARCHAR:
-		case MYSQL_TYPE_VAR_STRING:
-		case MYSQL_TYPE_STRING:
-		case MYSQL_TYPE_BLOB://todo: support blob
-			return typeid(string).hash_code();
-
-		case MYSQL_TYPE_NULL:
-			return typeid(nullptr).hash_code();
-
-		default:
-			throw runtime_error("unsupported type");
-	}
 }
 
 } /* namespace ORMPlusPlus */

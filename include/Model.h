@@ -48,7 +48,7 @@ protected:
 		if(columnExists(name)){
 			return false;
 		}else{
-			schema.emplace(name, TableColumn(name, typeHash));
+			schema.emplace(name, TableColumn(name, TypeInfo::findbyHash(typeHash)));
 			return true;
 		}
 	}

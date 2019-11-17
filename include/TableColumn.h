@@ -14,24 +14,25 @@ namespace ORMPlusPlus{
 class TableColumn{
 private:
 	const std::string name;
-	const std::size_t typeHash;
+	const TypeInfo& typeInfo;
 	long length = -1;//todo: use nullable type here too ?
 	long precision = -1;
 	bool nullable = false;
-	String defaultValue;
+	bool defaultValueSet = false;
+	String defaultValue;//default value can be non-existent, NULL or "NULL" (or any other string)
 	bool isPrimaryKey = false;
 	bool autoIncrement = false;
 public:
 	TableColumn();
-	TableColumn(const std::string& name, std::size_t typeHash, long length, long precision, bool isNullable, const String& defaultValue, bool isPrimaryKey, bool autoIncrement);
-	TableColumn(const std::string& name, std::size_t typeHash);
+	TableColumn(const std::string& _name, const TypeInfo& _typeInfo, long length, long precision, bool isNullable, bool isPrimaryKey, bool autoIncrement);
+	TableColumn(const std::string& _name, const TypeInfo& _typeInfo);
 
 	std::string getName() const;
-	std::size_t getTypeHash() const;
-	std::string getDBTypeName() const;
+	const TypeInfo& getTypeInfo() const;
 	long getLength() const;
 	long getPrecision() const;
 	bool isNullable() const;
+	bool hasDefaultValue() const;
 	String getDefaultValue() const;
 	bool isPrimary() const;
 	bool isAutoIncrement() const;
@@ -42,7 +43,7 @@ public:
 	void setPrecision(int value);
 	void setPrimary(bool value);
 	void setNullable(bool value);
-	void setDefaultValue(const std::string& value);
+	void setDefaultValue(const String& value);
 	void setAutoIncrement(bool value);
 
 	bool operator==(const TableColumn& that);

@@ -8,29 +8,33 @@ using namespace std;
 
 namespace ORMPlusPlus {
 
-ostream& operator<<(ostream& outstream, nullptr_t value){
-	return outstream;
-}
+const TypeInfo TypeInfo::Int32Type{typeid(Integer).hash_code(), true, false};
+const TypeInfo TypeInfo::Int64Type{typeid(Long).hash_code(), true, false};
+const TypeInfo TypeInfo::FloatType{typeid(Float).hash_code(), true, false};
+const TypeInfo TypeInfo::DoubleType{typeid(Double).hash_code(), true, false};
+const TypeInfo TypeInfo::StringType{typeid(String).hash_code(), false, true};
+const TypeInfo TypeInfo::DateTimeType{typeid(DateTime).hash_code(), false, false};
+const TypeInfo TypeInfo::NullType{typeid(Null).hash_code(), false, false};
 
-//key: type_info hash
-//todo: merge with the mapping in MySQLSession
-const map<size_t, TypeInfo> NullableFieldBase::typeInfoMap({
-	{typeid(Integer).hash_code(), {true, false, "INT"}},
-	{typeid(Long).hash_code(), {true, false, "BIGINT"}},
-	{typeid(Float).hash_code(), {true, false, "FLOAT"}},
-	{typeid(Double).hash_code(), {true, false, "DOUBLE"}},
-	{typeid(String).hash_code(), {false, true, "VARCHAR"}},
-	{typeid(DateTime).hash_code(), {false, false, "DATETIME"}},
-});
+const list<TypeInfo> TypeInfo::AllTypes({Int32Type, Int64Type, FloatType, DoubleType, StringType, DateTimeType, NullType});
 
-size_t NullableFieldBase::getTypeHash(string TypeDBName){
-	std::transform(TypeDBName.begin(), TypeDBName.end(), TypeDBName.begin(), ::toupper);
-	for(auto& typeInfo : typeInfoMap){
-		if(typeInfo.second.DBName == TypeDBName){
-			return typeInfo.first;
+const TypeInfo& TypeInfo::findbyHash(size_t hash){
+	for(auto& type : AllTypes){
+		if(type.nullableTypeHash == hash){
+			return type;
 		}
 	}
-	throw runtime_error("type not found");
+	throw runtime_error("TypeInfo::findbyHash called with an unsupported type");
+}
+
+bool operator==(const TypeInfo lhs, const TypeInfo rhs){
+	return lhs.nullableTypeHash == rhs.nullableTypeHash &&
+		lhs.isIntegral == rhs.isIntegral &&
+		lhs.isText == rhs.isText;
+}
+
+ostream& operator<<(ostream& outstream, nullptr_t value){
+	return outstream;
 }
 
 void NullableFieldBase::assertLHSNotNull(const NullableFieldBase& lhs){
@@ -101,7 +105,7 @@ NullableFieldBase::NullableFieldBase(NullableFieldBase&& that)
 	that.primitiveValuePtr = nullptr;
 }
 
-NullableFieldBase& NullableFieldBase::operator=(const NullableFieldBase that){
+NullableFieldBase& NullableFieldBase::operator=(const NullableFieldBase& that){
 	if(this->typeHash != that.typeHash){
 		throw runtime_error("calling NullableFieldBase::operator= with non-equal nullable field types");
 	}else{

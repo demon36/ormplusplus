@@ -74,7 +74,7 @@ public:
 
 	NullableField& operator=(const NullableField& that)
 	{
-		NFBasePtr->setValue<PrimitiveType>(that.getValueRef());
+		NFBasePtr->operator=(*that.NFBasePtr);
 		return *this;
 	}
 
