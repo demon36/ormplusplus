@@ -4,7 +4,9 @@
 ** TODO revise NullableField typing system
 ** TODO add more description to type hash attributes
 ** TODO separate TypeInfo in its own files
-** TODO fix failing test byt unifying datetime usage -maybe add date utils-
+** DONE fix failing test by unifying datetime usage
+** TODO add date utils
+** support date time zones
 ** TODO change the way TableColumn.defaultValue is represented
 ** add support for sqlite
 ** remove DBsession refs from Model

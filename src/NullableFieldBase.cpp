@@ -145,19 +145,16 @@ bool NullableFieldBase::equals(const NullableFieldBase& that) const{
 		return this->getValueRef<double>() == that.getValueRef<double>();
 	}else if(that.typeHash == typeid(string).hash_code()){
 		return this->getValueRef<string>() == that.getValueRef<string>();
-	}else if(that.typeHash == typeid(::tm).hash_code()){
-		::tm& lhs = this->getValueRef<::tm>();
-		::tm& rhs = that.getValueRef<::tm>();
-//		return lhs.tm_gmtoff == rhs.tm_gmtoff &&
-//				lhs.tm_year == rhs.tm_year &&
-//				lhs.tm_mon == rhs.tm_mon &&
-//				lhs.tm_mday == rhs.tm_mday &&
-//				lhs.tm_yday == rhs.tm_yday &&
-//				lhs.tm_hour == rhs.tm_hour &&
-//				lhs.tm_min == rhs.tm_min &&
-//				lhs.tm_sec == rhs.tm_sec &&
-//				lhs.tm_isdst == rhs.tm_isdst;
-		return difftime(mktime(&lhs), mktime(&rhs)) == 0;
+	}else if(that.typeHash == typeid(tm).hash_code()){
+		tm& lhs = this->getValueRef<tm>();
+		tm& rhs = that.getValueRef<tm>();
+		return	lhs.tm_year == rhs.tm_year &&
+				lhs.tm_mon == rhs.tm_mon &&
+				lhs.tm_mday == rhs.tm_mday &&
+				lhs.tm_yday == rhs.tm_yday &&
+				lhs.tm_hour == rhs.tm_hour &&
+				lhs.tm_min == rhs.tm_min &&
+				lhs.tm_sec == rhs.tm_sec;
 	}else if(that.typeHash == typeid(nullptr_t).hash_code()){
 		return this->getValueRef<nullptr_t>() == that.getValueRef<nullptr_t>();
 	}else{

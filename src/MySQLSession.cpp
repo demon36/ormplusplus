@@ -122,7 +122,7 @@ void MySQLSession::createTable(const string& name, const TableSchema& schema){
 		}
 
 		if(DBTypeName.empty()){
-			throw runtime_error("trying to create table with unsupported column type");
+			throw runtime_error("trying to create table with column "+columnsList[i].getName()+" having unsupported type");
 		}
 
 		queryStream << "`"<< columnsList[i].getName() <<"` " <<  DBTypeName;
@@ -249,7 +249,6 @@ ResultTable MySQLSession::executeFlat(const std::string& query){
 	vector<string> columns;
 	vector<size_t> columnTypeHashes;
 
-
 	int num_fields = mysql_num_fields(result);
 
 	while((field = mysql_fetch_field(result)) != NULL){
@@ -264,7 +263,6 @@ ResultTable MySQLSession::executeFlat(const std::string& query){
 		size_t rowIdx = flatResults.addRow();
 		for(int i = 0; i < num_fields; i++){
 			flatResults.setFieldValue(rowIdx, i, row[i]);
-			//todo: differentiate between NULL, "NULL", empty values
 		}
 	}
 
