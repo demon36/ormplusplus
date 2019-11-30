@@ -62,7 +62,7 @@ public:
 	template<class PrimitiveType>
 	NullableFieldBase& operator=(const PrimitiveType& value){
 		//TODO: add fn assert type ?
-		if(typeid(PrimitiveType).hash_code() != typeHash){//FIXME: assertion done twice
+		if(typeid(PrimitiveType).hash_code() != typeHash){//todo: fix assertion done twice
 			throw std::runtime_error("trying to assign nullable field to non-compatible type value");
 		}
 		getValueRef<PrimitiveType>() = value;

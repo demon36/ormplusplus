@@ -9,7 +9,6 @@ namespace ORMPlusPlus{
 /**
  * Facilitates interaction with the nullable field
  */
-
 template <class PrimitiveType>
 class NullableField;
 
@@ -29,17 +28,17 @@ private:
 	bool isPtrOwner = false;//should be false if used as shell
 	PrimitiveType& valueRef;//useful at debugging
 
-		static void assertLHSNotNull(const NullableField& lhs) {
-			if (lhs.isNull()) {
-				throw std::runtime_error("comparing with null left hand operand");
-			}
+	static void assertLHSNotNull(const NullableField& lhs){
+		if (lhs.isNull()) {
+			throw std::runtime_error("comparing with null left hand operand");
 		}
+	}
 
-		static void assertRHSNotNull(const NullableField& rhs) {
-			if (rhs.isNull()) {
-				throw std::runtime_error("comparing with null left hand operand");
-			}
+	static void assertRHSNotNull(const NullableField& rhs){
+		if (rhs.isNull()) {
+			throw std::runtime_error("comparing with null left hand operand");
 		}
+	}
 
 public:
 	static const std::type_info& getPrimitiveType()
@@ -80,7 +79,8 @@ public:
 	{
 	}
 
-	NullableField(const PrimitiveType& value) : NullableField()
+	NullableField(const PrimitiveType& value)
+	: NullableField()
 	{
 		NFBasePtr->setValue<PrimitiveType>(value);
 	}
@@ -124,7 +124,7 @@ public:
 
 	bool operator!=(const PrimitiveType& value) const
 	{
-		return !operator==(getValueRef() == value);
+		return !operator==(value);
 	}
 
 	bool operator>(const NullableField& that) const

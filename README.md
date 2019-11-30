@@ -44,42 +44,6 @@ int main(int argc, char** argv)
 }
 ```
 
-```cpp
-class Client : ModelBase
-{
-public:
-	Integer height = bindColumn("").withDefault(34).asPrimary();
-};
-
-int main(int argc, char** argv)
-{
-	MySQLSession session("localhost", "ormplusplus", "root", "root");
-	
-	if(!session::tableExists<Client>()){
-		session::createTable<Client>();
-	}
-
-	std::vector<Client> allClients = session::from<Client>().get();
-	//or
-
-	std::vector<Client> youngClients = Client::where({
-		{"age", "<", 45},
-		{"name", "=", NullValue},
-	}).orderBy({
-		{"age", SortDir::Asc},
-		{"height", SortDir::Desc},
-	}).limit(100).get();
-	
-	Client c0 = Client::where({"id", 542}).findFirst();
-	Client c1;
-	c1.name = "myname";
-	c1.age = 25;
-	c1.save();
-
-	return 0;
-}
-```
-
 ### TODO
 - [x] model definition
 - [x] table creation

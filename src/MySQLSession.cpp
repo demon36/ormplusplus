@@ -18,7 +18,7 @@ void MySQLSession::mysqlQuery(const std::string& query){
 }
 
 size_t MySQLSession::toPrimitiveType(int mySQLTypeEnum){
-	//todo: revice typing setup
+	//todo: revise typing setup
 	enum_field_types mySQLType = (enum_field_types)mySQLTypeEnum;
 	switch(mySQLType){
 //		case MYSQL_TYPE_BIT://todo: support bool
@@ -217,13 +217,7 @@ void MySQLSession::insert(ModelBase& model, bool updateAutoIncPKey){
 	}
 
 	if(updateAutoIncPKey && model.autoIncPkeyColumnExists()){
-		ResultTable result = executeFlat("SELECT LAST_INSERT_ID();");
-		//const char* test = result.begin()->get(0).type().name();
-		//TODO: error check
-		if(result.getNumRows() == 0){
-			throw runtime_error("SELECT LAST_INSERT_ID(); returned no results");
-		}
-		long lastInsertId = result.getFieldValue(0, 0).getValueRef<long>(); //  result.begin()->get(0).convert<long>();
+		long lastInsertId = mysql_insert_id((st_mysql*)sessionPtr); //  result.begin()->get(0).convert<long>();
 		model.setAutoIncPKey(lastInsertId);
 	}
 	return;

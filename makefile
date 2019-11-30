@@ -1,2 +1,2 @@
 -include template.mk
-LIBS := -lmysqlclient
+LIBS := -lmysqlclient -lsqlite3
