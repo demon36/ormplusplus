@@ -122,7 +122,7 @@ void MySQLSession::createTable(const string& name, const TableSchema& schema){
 		}
 
 		if(DBTypeName.empty()){
-			throw runtime_error("trying to create table with column "+columnsList[i].getName()+" having unsupported type");
+			throw runtime_error("trying to create table with column '"+columnsList[i].getName()+"' having unsupported type");
 		}
 
 		queryStream << "`"<< columnsList[i].getName() <<"` " <<  DBTypeName;

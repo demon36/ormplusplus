@@ -37,18 +37,6 @@ ostream& operator<<(ostream& outstream, nullptr_t value){
 	return outstream;
 }
 
-void NullableFieldBase::assertLHSNotNull(const NullableFieldBase& lhs){
-	if(lhs.isNull()){
-		throw runtime_error("comparing with null left hand operand");
-	}
-}
-
-void NullableFieldBase::assertRHSNotNull(const NullableFieldBase& rhs){
-	if(rhs.isNull()){
-		throw runtime_error("comparing with null left hand operand");
-	}
-}
-
 NullableFieldBase::NullableFieldBase()
 : typeHash(typeid(nullptr_t).hash_code())
 {}

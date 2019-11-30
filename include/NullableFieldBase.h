@@ -4,9 +4,7 @@
 #include <cstddef>
 #include <string>
 #include <sstream>
-#include <iostream>
 #include <typeindex>
-#include <map>
 #include <list>
 
 namespace ORMPlusPlus {
@@ -37,23 +35,17 @@ struct TypeInfo
 
 bool operator==(const TypeInfo lhs, const TypeInfo rhs);
 
-
-
 /**
  * Encapsulates the nullable field data
  */
 class NullableFieldBase{
-
 private:
 	void* primitiveValuePtr = nullptr;
 	const std::size_t typeHash;
 	bool hasValue = false;
 
-protected:
-	static void assertLHSNotNull(const NullableFieldBase& lhs);
-	static void assertRHSNotNull(const NullableFieldBase& rhs);
-
 public:
+
 	template<class PrimitiveType>
 	static NullableFieldBase create(const PrimitiveType& value){
 		NullableFieldBase instance(typeid(PrimitiveType).hash_code());

@@ -44,6 +44,7 @@ void testModelDefinition(){
 	ASSERT(c.id.isNull());
 	ASSERT(c.name == "nameless");
 	ASSERT(c.age == 5);
+	ASSERT(c.age < 6);
 	ASSERT(c.height.isNull());
 
 	const TableSchema& schema = Client::getSchema();

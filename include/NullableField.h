@@ -28,6 +28,19 @@ private:
 	NullableFieldBase* NFBasePtr = nullptr;
 	bool isPtrOwner = false;//should be false if used as shell
 	PrimitiveType& valueRef;//useful at debugging
+
+		static void assertLHSNotNull(const NullableField& lhs) {
+			if (lhs.isNull()) {
+				throw std::runtime_error("comparing with null left hand operand");
+			}
+		}
+
+		static void assertRHSNotNull(const NullableField& rhs) {
+			if (rhs.isNull()) {
+				throw std::runtime_error("comparing with null left hand operand");
+			}
+		}
+
 public:
 	static const std::type_info& getPrimitiveType()
 	{
