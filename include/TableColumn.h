@@ -15,7 +15,7 @@ class TableColumn{
 private:
 	const std::string name;
 	const TypeInfo& typeInfo;
-	long length = -1;//todo: use nullable type here too ?
+	long length = -1;//todo: use nullable type for length and precision to avoid comparing them when checking table schema exists
 	long precision = -1;
 	bool nullable = false;
 	bool defaultValueSet = false;

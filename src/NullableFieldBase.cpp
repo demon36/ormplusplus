@@ -13,25 +13,25 @@ ostream& operator<<(ostream& outstream, nullptr_t value){
 }
 
 NullableFieldBase::NullableFieldBase()
-: typeHash(typeid(nullptr_t).hash_code())
+: typeInfoRef(Null::getTypeInfo())
 {}
 
-NullableFieldBase::NullableFieldBase(size_t _typeHash)
-: typeHash(_typeHash)
+NullableFieldBase::NullableFieldBase(const TypeInfo& typeInfo)
+: typeInfoRef(typeInfo)
 {
-	if(typeHash == typeid(int).hash_code()){
+	if(typeInfoRef.primitiveTypeHash == typeid(int).hash_code()){
 		primitiveValuePtr = new int(0);
-	}else if(typeHash == typeid(long).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(long).hash_code()){
 		primitiveValuePtr = new long(0);
-	}else if(typeHash == typeid(float).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(float).hash_code()){
 		primitiveValuePtr = new float(0);
-	}else if(typeHash == typeid(double).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(double).hash_code()){
 		primitiveValuePtr = new double(0);
-	}else if(typeHash == typeid(string).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(string).hash_code()){
 		primitiveValuePtr = new string("");
-	}else if(typeHash == typeid(::tm).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(::tm).hash_code()){
 		primitiveValuePtr = new ::tm();
-	}else if(typeHash == typeid(nullptr_t).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(nullptr_t).hash_code()){
 		//is this the best way to do it ?
 		primitiveValuePtr = new nullptr_t();
 	}else{
@@ -40,28 +40,28 @@ NullableFieldBase::NullableFieldBase(size_t _typeHash)
 }
 
 NullableFieldBase::NullableFieldBase(const NullableFieldBase& that)
-: typeHash(that.typeHash), hasValue(that.hasValue)
+: typeInfoRef(that.typeInfoRef), hasValue(that.hasValue)
 {
-	if(that.typeHash == typeid(int).hash_code()){
+	if(that.typeInfoRef.primitiveTypeHash == typeid(int).hash_code()){
 		primitiveValuePtr = new int(that.getValueRef<int>());
-	}else if(that.typeHash == typeid(long).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(long).hash_code()){
 		primitiveValuePtr = new long(that.getValueRef<long>());
-	}else if(that.typeHash == typeid(float).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(float).hash_code()){
 		primitiveValuePtr = new float(that.getValueRef<float>());
-	}else if(that.typeHash == typeid(double).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(double).hash_code()){
 		primitiveValuePtr = new double(that.getValueRef<double>());
-	}else if(that.typeHash == typeid(string).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(string).hash_code()){
 		primitiveValuePtr = new string(that.getValueRef<string>());
-	}else if(that.typeHash == typeid(::tm).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(::tm).hash_code()){
 		primitiveValuePtr = new ::tm(that.getValueRef<::tm>());
-	}else if(that.typeHash == typeid(nullptr_t).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(nullptr_t).hash_code()){
 		//is this the best way to do it ?
 		primitiveValuePtr = new nullptr_t(that.getValueRef<nullptr_t>());
 	}
 }
 
 NullableFieldBase::NullableFieldBase(NullableFieldBase&& that)
-: typeHash(that.typeHash), hasValue(that.hasValue)
+: typeInfoRef(that.typeInfoRef), hasValue(that.hasValue)
 {
 	this->primitiveValuePtr = that.primitiveValuePtr;
 	that.hasValue = false;
@@ -69,23 +69,23 @@ NullableFieldBase::NullableFieldBase(NullableFieldBase&& that)
 }
 
 NullableFieldBase& NullableFieldBase::operator=(const NullableFieldBase& that){
-	if(this->typeHash != that.typeHash){
+	if(this->typeInfoRef != that.typeInfoRef){
 		throw runtime_error("calling NullableFieldBase::operator= with non-equal nullable field types");
 	}else{
 		this->hasValue = that.hasValue;
-		if(that.typeHash == typeid(int).hash_code()){
+		if(that.typeInfoRef.primitiveTypeHash == typeid(int).hash_code()){
 			this->getValueRef<int>() = that.getValueRef<int>();
-		}else if(that.typeHash == typeid(long).hash_code()){
+		}else if(that.typeInfoRef.primitiveTypeHash == typeid(long).hash_code()){
 			this->getValueRef<long>() = that.getValueRef<long>();
-		}else if(that.typeHash == typeid(float).hash_code()){
+		}else if(that.typeInfoRef.primitiveTypeHash == typeid(float).hash_code()){
 			this->getValueRef<float>() = that.getValueRef<float>();
-		}else if(that.typeHash == typeid(double).hash_code()){
+		}else if(that.typeInfoRef.primitiveTypeHash == typeid(double).hash_code()){
 			this->getValueRef<double>() = that.getValueRef<double>();
-		}else if(that.typeHash == typeid(string).hash_code()){
+		}else if(that.typeInfoRef.primitiveTypeHash == typeid(string).hash_code()){
 			this->getValueRef<string>() = that.getValueRef<string>();
-		}else if(that.typeHash == typeid(::tm).hash_code()){
+		}else if(that.typeInfoRef.primitiveTypeHash == typeid(::tm).hash_code()){
 			this->getValueRef<::tm>() = that.getValueRef<::tm>();
-		}else if(that.typeHash == typeid(nullptr_t).hash_code()){
+		}else if(that.typeInfoRef.primitiveTypeHash == typeid(nullptr_t).hash_code()){
 			//is this the best way to do it ?
 			this->getValueRef<nullptr_t>() = that.getValueRef<nullptr_t>();
 		}
@@ -94,21 +94,21 @@ NullableFieldBase& NullableFieldBase::operator=(const NullableFieldBase& that){
 }
 
 bool NullableFieldBase::equals(const NullableFieldBase& that) const{
-	if(this->typeHash != that.typeHash){
+	if(this->typeInfoRef != that.typeInfoRef){
 		return false;
 	}
 
-	if(that.typeHash == typeid(int).hash_code()){
+	if(that.typeInfoRef.primitiveTypeHash == typeid(int).hash_code()){
 		return this->getValueRef<int>() == that.getValueRef<int>();
-	}else if(that.typeHash == typeid(long).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(long).hash_code()){
 		return this->getValueRef<long>() == that.getValueRef<long>();
-	}else if(that.typeHash == typeid(float).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(float).hash_code()){
 		return this->getValueRef<float>() == that.getValueRef<float>();
-	}else if(that.typeHash == typeid(double).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(double).hash_code()){
 		return this->getValueRef<double>() == that.getValueRef<double>();
-	}else if(that.typeHash == typeid(string).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(string).hash_code()){
 		return this->getValueRef<string>() == that.getValueRef<string>();
-	}else if(that.typeHash == typeid(tm).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(tm).hash_code()){
 		tm& lhs = this->getValueRef<tm>();
 		tm& rhs = that.getValueRef<tm>();
 		return	lhs.tm_year == rhs.tm_year &&
@@ -118,7 +118,7 @@ bool NullableFieldBase::equals(const NullableFieldBase& that) const{
 				lhs.tm_hour == rhs.tm_hour &&
 				lhs.tm_min == rhs.tm_min &&
 				lhs.tm_sec == rhs.tm_sec;
-	}else if(that.typeHash == typeid(nullptr_t).hash_code()){
+	}else if(that.typeInfoRef.primitiveTypeHash == typeid(nullptr_t).hash_code()){
 		return this->getValueRef<nullptr_t>() == that.getValueRef<nullptr_t>();
 	}else{
 		throw runtime_error("called NullableFieldBase::equals() with unsupported type");
@@ -135,29 +135,29 @@ string NullableFieldBase::toString() const
 	if(isNull()){
 		return "NULL";
 	}
-	if(typeHash == typeid(int).hash_code()){
+	if(typeInfoRef.primitiveTypeHash == typeid(int).hash_code()){
 		return to_string(*(int*)primitiveValuePtr);
-	}else if(typeHash == typeid(long).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(long).hash_code()){
 		return to_string(*(long*)primitiveValuePtr);
-	}else if(typeHash == typeid(float).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(float).hash_code()){
 		return to_string(*(float*)primitiveValuePtr);
-	}else if(typeHash == typeid(double).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(double).hash_code()){
 		return to_string(*(double*)primitiveValuePtr);
-	}else if(typeHash == typeid(string).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(string).hash_code()){
 		return *(string*)primitiveValuePtr;
-	}else if(typeHash == typeid(::tm).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(::tm).hash_code()){
 		::tm& date = *(::tm*)primitiveValuePtr;
 	    char dateBuffer[100] = {0};
 	    std::strftime(dateBuffer, sizeof(dateBuffer), "%F %X", &date);
 		return dateBuffer;
-	}else if(typeHash == typeid(nullptr_t).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(nullptr_t).hash_code()){
 		return "NULL";
 	}
 	throw runtime_error("unresolved type");
 }
 
-size_t NullableFieldBase::getType() const{
-	return typeHash;
+const TypeInfo& NullableFieldBase::getType() const{
+	return typeInfoRef;
 }
 
 bool NullableFieldBase::isIntegral(const std::type_info& type){
@@ -173,19 +173,19 @@ NullableFieldBase::~NullableFieldBase(){
 		return;
 	}
 
-	if(typeHash == typeid(int).hash_code()){
+	if(typeInfoRef.primitiveTypeHash == typeid(int).hash_code()){
 		delete (int*)primitiveValuePtr;
-	}else if(typeHash == typeid(long).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(long).hash_code()){
 		delete (long*)primitiveValuePtr;
-	}else if(typeHash == typeid(float).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(float).hash_code()){
 		delete (float*)primitiveValuePtr;
-	}else if(typeHash == typeid(double).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(double).hash_code()){
 		delete (double*)primitiveValuePtr;
-	}else if(typeHash == typeid(string).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(string).hash_code()){
 		delete (string*)primitiveValuePtr;
-	}else if(typeHash == typeid(::tm).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(::tm).hash_code()){
 		delete (::tm*)primitiveValuePtr;
-	}else if(typeHash == typeid(nullptr_t).hash_code()){
+	}else if(typeInfoRef.primitiveTypeHash == typeid(nullptr_t).hash_code()){
 		delete (nullptr_t*)primitiveValuePtr;
 	}
 }

@@ -43,7 +43,7 @@ public:
 
 	//TODO: add more supported types for auto increment
 	template < class T = AttribType,
-	           class = typename std::enable_if<std::is_same<T, Integer>::value>::type>//only allow auto increment with integers -at least for now-
+	           class = typename std::enable_if<std::is_same<T, Integer>::value || std::is_same<T, Long>::value>::type>
 	AttributeInitializer& autoIncrement() {
 		AttributeInitializerBase::autoIncrement();
 		return *this;

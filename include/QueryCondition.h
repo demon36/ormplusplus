@@ -17,6 +17,7 @@ public:
 	QueryCondition(const std::string& columnName, const std::string& operator_, const char* value);
 	QueryCondition(const std::string& columnName, const std::string& operator_, std::string value);
 	QueryCondition(const std::string& columnName, const std::string& operator_, int value);
+	QueryCondition(const std::string& columnName, const std::string& operator_, long value);
 	QueryCondition(const std::string& columnName, const std::string& operator_, Null value);
 
 	std::string getColumnName() const;

@@ -89,13 +89,13 @@ void ModelBase::setAutoIncPKey(long value){
 	}else{
 		//TODO: think of a cleaner way
 		//TODO: add tests for all types
-		if(columnPtr->getTypeInfo().nullableTypeHash == typeid(Integer).hash_code()){
+		if(columnPtr->getTypeInfo().wrapperTypeHash == typeid(Integer).hash_code()){
 			attributes.at(columnPtr->getName()).setValue<int>((int)value);
-		}else if(columnPtr->getTypeInfo().nullableTypeHash == typeid(Long).hash_code()){
+		}else if(columnPtr->getTypeInfo().wrapperTypeHash == typeid(Long).hash_code()){
 			attributes.at(columnPtr->getName()).setValue<long>((long)value);
-		}else if(columnPtr->getTypeInfo().nullableTypeHash == typeid(Float).hash_code()){
+		}else if(columnPtr->getTypeInfo().wrapperTypeHash == typeid(Float).hash_code()){
 			attributes.at(columnPtr->getName()).setValue<float>((float)value);
-		}else if(columnPtr->getTypeInfo().nullableTypeHash == typeid(Double).hash_code()){
+		}else if(columnPtr->getTypeInfo().wrapperTypeHash == typeid(Double).hash_code()){
 			attributes.at(columnPtr->getName()).setValue<double>((double)value);
 		}else{
 			throw runtime_error("unsupported data type used for auto increment primary key");

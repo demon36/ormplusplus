@@ -17,7 +17,7 @@ void printTestResult(const string& expression, bool result){
 class Client : public Model<Client>
 {
 public:
-	DEFINE_ATTRIB(Integer, id).autoIncrement().asPrimary();
+	DEFINE_ATTRIB(Long, id).autoIncrement().asPrimary();
 	DEFINE_ATTRIB(String, name).withDefault("nameless");
 	DEFINE_ATTRIB(Integer, age).withDefault(5).asNullable();
 	DEFINE_ATTRIB(Integer, height);

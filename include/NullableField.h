@@ -45,14 +45,11 @@ private:
 	}
 
 public:
-	static const std::type_info& getPrimitiveType(){
-		return typeid(PrimitiveType);
-	}
-
 	static const TypeInfo& getTypeInfo(){
 		if(typeInfoPtr == nullptr){
 			typeInfoPtr.reset(new TypeInfo(
 					typeid(NullableField<PrimitiveType>),
+					typeid(PrimitiveType),
 					NullableFieldBase::isIntegral(typeid(PrimitiveType)),
 					NullableFieldBase::isText(typeid(PrimitiveType))
 				));
@@ -61,7 +58,7 @@ public:
 	}
 
 	NullableField()
-	: NFBasePtr(new NullableFieldBase(typeid(PrimitiveType).hash_code())),
+	: NFBasePtr(new NullableFieldBase(getTypeInfo())),
 	  isPtrOwner(true),
 	  valueRef(NFBasePtr->getValueRef<PrimitiveType>())
 	{

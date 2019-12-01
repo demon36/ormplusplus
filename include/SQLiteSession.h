@@ -12,7 +12,7 @@ class SQLiteSession : public DBSessionBase {
 private:
 	void* sessionPtr;
 	void* sqliteQuery(const std::string& query);
-	static size_t toPrimitiveType(int mySQLTypeEnum);
+	static const TypeInfo& getTypeInfo(int mySQLTypeEnum);
 	static const TypeInfo& getTypeInfo(const std::string& mySQLColTypeName);
 	static const std::map<std::string, TypeInfo> typeNamesMap;
 public:

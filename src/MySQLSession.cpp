@@ -17,7 +17,7 @@ void MySQLSession::mysqlQuery(const std::string& query){
 	}
 }
 
-size_t MySQLSession::toPrimitiveType(int mySQLTypeEnum){
+const TypeInfo& MySQLSession::getTypeInfo(int mySQLTypeEnum){
 	//todo: revise typing setup
 	enum_field_types mySQLType = (enum_field_types)mySQLTypeEnum;
 	switch(mySQLType){
@@ -26,17 +26,17 @@ size_t MySQLSession::toPrimitiveType(int mySQLTypeEnum){
 		case MYSQL_TYPE_SHORT:
 		case MYSQL_TYPE_INT24:
 		case MYSQL_TYPE_LONG:
-			return typeid(int).hash_code();
+			return Integer::getTypeInfo();
 
 		case MYSQL_TYPE_LONGLONG:
-			return typeid(long).hash_code();
+			return Long::getTypeInfo();
 
 
 		case MYSQL_TYPE_FLOAT:
-			return typeid(float).hash_code();
+			return Float::getTypeInfo();
 		case MYSQL_TYPE_DOUBLE:
 		case MYSQL_TYPE_DECIMAL:
-			return typeid(double).hash_code();
+			return Double::getTypeInfo();
 
 		case MYSQL_TYPE_DATE:
 		case MYSQL_TYPE_TIME:
@@ -44,16 +44,16 @@ size_t MySQLSession::toPrimitiveType(int mySQLTypeEnum){
 		case MYSQL_TYPE_TIMESTAMP:
 		case MYSQL_TYPE_YEAR:
 		case MYSQL_TYPE_NEWDATE:
-			return typeid(tm).hash_code();
+			return DateTime::getTypeInfo();
 
 		case MYSQL_TYPE_VARCHAR:
 		case MYSQL_TYPE_VAR_STRING:
 		case MYSQL_TYPE_STRING:
 		case MYSQL_TYPE_BLOB://todo: support blob
-			return typeid(string).hash_code();
+			return String::getTypeInfo();
 
 		case MYSQL_TYPE_NULL:
-			return typeid(nullptr).hash_code();
+			return Null::getTypeInfo();
 
 		default:
 			throw runtime_error("unsupported type");
@@ -115,7 +115,7 @@ void MySQLSession::createTable(const string& name, const TableSchema& schema){
 	for(size_t i = 0; i < columnsList.size(); i++){
 		string DBTypeName;
 		for(auto& typeNameEntry : typeNamesMap){
-			if(typeNameEntry.second.nullableTypeHash == columnsList[i].getTypeInfo().nullableTypeHash){
+			if(typeNameEntry.second.wrapperTypeHash == columnsList[i].getTypeInfo().wrapperTypeHash){
 				DBTypeName = typeNameEntry.first;
 				break;
 			}
@@ -241,16 +241,16 @@ ResultTable MySQLSession::executeFlat(const std::string& query){
 	MYSQL_ROW row;
 	MYSQL_FIELD *field;
 	vector<string> columns;
-	vector<size_t> columnTypeHashes;
+	vector<const TypeInfo*> columnTypes;
 
 	int num_fields = mysql_num_fields(result);
 
 	while((field = mysql_fetch_field(result)) != NULL){
 		columns.push_back(field->name);
-		columnTypeHashes.push_back(toPrimitiveType(field->type));
+		columnTypes.push_back(&getTypeInfo(field->type));
 	}
 
-	ResultTable flatResults(columns, columnTypeHashes);
+	ResultTable flatResults(columns, columnTypes);
 
 	while((row = mysql_fetch_row(result)) != NULL){
 		ORMLOG(Logger::Lv::DBUG, "fetching new row");

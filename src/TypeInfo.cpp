@@ -10,12 +10,12 @@ using namespace std;
 
 namespace ORMPlusPlus {
 
-TypeInfo::TypeInfo(const std::type_info& type, bool _isIntegral, bool _isText)
-: nullableTypeHash(type.hash_code()), isIntegral(_isIntegral), isText(_isText), name(getTypeName(type))
+TypeInfo::TypeInfo(const std::type_info& wrapperType, const std::type_info& primitiveType, bool _isIntegral, bool _isText)
+: wrapperTypeHash(wrapperType.hash_code()), primitiveTypeHash(primitiveType.hash_code()), isIntegral(_isIntegral), isText(_isText), name(getTypeName(wrapperType))
 {}
 
 TypeInfo::TypeInfo(const TypeInfo& that)
-: nullableTypeHash(that.nullableTypeHash), isIntegral(that.isIntegral), isText(that.isText), name(that.name)
+: wrapperTypeHash(that.wrapperTypeHash), primitiveTypeHash(that.primitiveTypeHash), isIntegral(that.isIntegral), isText(that.isText), name(that.name)
 {}
 
 string TypeInfo::getTypeName(const std::type_info& type){
@@ -36,9 +36,11 @@ string TypeInfo::getTypeName(const std::type_info& type){
 }
 
 bool operator==(const TypeInfo lhs, const TypeInfo rhs){
-	return lhs.nullableTypeHash == rhs.nullableTypeHash &&
-		lhs.isIntegral == rhs.isIntegral &&
-		lhs.isText == rhs.isText;
+	return lhs.wrapperTypeHash == rhs.wrapperTypeHash;
+}
+
+bool operator!=(const TypeInfo lhs, const TypeInfo rhs){
+	return !operator ==(lhs, rhs);
 }
 
 }

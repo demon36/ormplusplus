@@ -1,6 +1,8 @@
 #ifndef INCLUDE_NULLABLEFIELDBASE_H_
 #define INCLUDE_NULLABLEFIELDBASE_H_
 
+#include "TypeInfo.h"
+
 #include <cstddef>
 #include <string>
 #include <sstream>
@@ -18,20 +20,20 @@ std::ostream& operator<<(std::ostream& outstream, nullptr_t value);
 class NullableFieldBase{
 private:
 	void* primitiveValuePtr = nullptr;
-	const std::size_t typeHash;
+	const TypeInfo& typeInfoRef;
 	bool hasValue = false;
 
 public:
 
 	template<class PrimitiveType>
-	static NullableFieldBase create(const PrimitiveType& value){
-		NullableFieldBase instance(typeid(PrimitiveType).hash_code());
+	static NullableFieldBase create(const TypeInfo& typeInfo, const PrimitiveType& value){
+		NullableFieldBase instance(typeInfo);
 		instance.setValue<PrimitiveType>(value);
 		return instance;
 	}
 
 	NullableFieldBase();
-	NullableFieldBase(size_t typeHash);//todo: replace with a fancy TypeInfo class for distinction from long int or whatever
+	NullableFieldBase(const TypeInfo& typeInfo);
 	NullableFieldBase(const NullableFieldBase& that);
 	NullableFieldBase(NullableFieldBase&& that);
 	NullableFieldBase& operator=(const NullableFieldBase& that);
@@ -39,7 +41,7 @@ public:
 	template<class PrimitiveType>
 	NullableFieldBase& operator=(const PrimitiveType& value){
 		//TODO: add fn assert type ?
-		if(typeid(PrimitiveType).hash_code() != typeHash){//todo: fix assertion done twice
+		if(typeid(PrimitiveType).hash_code() != typeInfoRef.primitiveTypeHash){//todo: fix assertion done twice
 			throw std::runtime_error("trying to assign nullable field to non-compatible type value");
 		}
 		getValueRef<PrimitiveType>() = value;
@@ -50,7 +52,7 @@ public:
 	template<class PrimitiveType>
 	PrimitiveType& getValueRef() const{
 		//TODO: assert not null
-		if(typeid(PrimitiveType).hash_code() == typeHash){
+		if(typeid(PrimitiveType).hash_code() == typeInfoRef.primitiveTypeHash){
 			return *(PrimitiveType*)primitiveValuePtr;
 		}else{
 			throw std::runtime_error("type mismatch at NullableFieldBase::getValueRef()");
@@ -61,7 +63,7 @@ public:
 	void setValue(const PrimitiveType& value){
 		//TODO: assert not null
 		//TODO: use enable if
-		if(typeid(PrimitiveType).hash_code() == typeHash){
+		if(typeid(PrimitiveType).hash_code() == typeInfoRef.primitiveTypeHash){
 			*(PrimitiveType*)primitiveValuePtr = value;
 			hasValue = true;//todo: replace hasValue with valuePtr != nullptr
 		}else{
@@ -72,7 +74,7 @@ public:
 	bool equals(const NullableFieldBase& that) const;
 	bool isNull() const;
 	std::string toString() const;
-	size_t getType() const;
+	const TypeInfo& getType() const;
 	static bool isIntegral(const std::type_info& type);
 	static bool isText(const std::type_info& type);
 

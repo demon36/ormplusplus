@@ -111,7 +111,7 @@ public:
 	AttributeInitializer<AttribType> initializeAttrib(const std::string& name){
 		bool columnAlreadyAdded = !addColumnIfNotExists(name, AttribType::getTypeInfo());
 		//TODO: move logic to ModelBase
-		NullableFieldBase& field = attributes.emplace(name, NullableFieldBase(AttribType::getPrimitiveType().hash_code())).first->second;
+		NullableFieldBase& field = attributes.emplace(name, NullableFieldBase(AttribType::getTypeInfo())).first->second;
 		if(columnAlreadyAdded){
 			return {field, nullptr};
 		}else{

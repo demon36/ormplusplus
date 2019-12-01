@@ -20,27 +20,27 @@ void* SQLiteSession::sqliteQuery(const std::string& query){
 /**
  * @see https://www.sqlite.org/c3ref/c_blob.html
  */
-size_t SQLiteSession::toPrimitiveType(int sqliteTypeId){
+const TypeInfo& SQLiteSession::getTypeInfo(int sqliteTypeId){
 	//todo: revise typing setup
 	//todo: use TypeInfo here
 	//todo: BROKEN LOGIC: sqlite fundamental datatypes cannot be mapped to ormplusplus data types
 	switch(sqliteTypeId){
 		case SQLITE_INTEGER:
-			return typeid(int).hash_code();
+			return Integer::getTypeInfo();
 //			return typeid(long).hash_code();
 
 		case SQLITE_FLOAT:
-			return typeid(float).hash_code();
+			return Float::getTypeInfo();
 //			return typeid(double).hash_code();
 
 //		case SQLITE_TEXT:
 //			return typeid(tm).hash_code();
 
 		case SQLITE_TEXT:
-			return typeid(string).hash_code();
+			return String::getTypeInfo();
 
 		case SQLITE_NULL:
-			return typeid(nullptr).hash_code();
+			return Null::getTypeInfo();
 
 		default:
 			throw runtime_error("unsupported type");
@@ -49,7 +49,7 @@ size_t SQLiteSession::toPrimitiveType(int sqliteTypeId){
 
 const map<string, TypeInfo> SQLiteSession::typeNamesMap({
 	{"INT", Integer::getTypeInfo()},
-	{"BIGINT", Long::getTypeInfo()},
+	{"INTEGER", Long::getTypeInfo()},
 	{"FLOAT", Float::getTypeInfo()},
 	{"DOUBLE", Double::getTypeInfo()},
 	{"VARCHAR", String::getTypeInfo()},
@@ -97,7 +97,7 @@ void SQLiteSession::createTable(const string& name, const TableSchema& schema){
 	for(size_t i = 0; i < columnsList.size(); i++){
 		string DBTypeName;
 		for(auto& typeNameEntry : typeNamesMap){
-			if(typeNameEntry.second.nullableTypeHash == columnsList[i].getTypeInfo().nullableTypeHash){
+			if(typeNameEntry.second.wrapperTypeHash == columnsList[i].getTypeInfo().wrapperTypeHash){
 				DBTypeName = typeNameEntry.first;
 				break;
 			}
@@ -111,9 +111,6 @@ void SQLiteSession::createTable(const string& name, const TableSchema& schema){
 		if(columnsList[i].isText()){
 			queryStream << "(" << columnsList[i].getLength() << ")";
 		}
-		if(columnsList[i].isAutoIncrement()){
-			queryStream << " AUTOINCREMENT ";
-		}
 
 		if(columnsList[i].hasDefaultValue()){
 			if(columnsList[i].getDefaultValue().isNull()){
@@ -126,11 +123,17 @@ void SQLiteSession::createTable(const string& name, const TableSchema& schema){
 		if(columnsList[i].isPrimary()){
 			queryStream << " PRIMARY KEY ";
 		}
+
+		if(columnsList[i].isAutoIncrement()){
+			queryStream << " AUTOINCREMENT ";
+		}
+
 		if(columnsList[i].isNullable()){
 			queryStream << " NULL ";
 		}else{
 			queryStream << " NOT NULL ";
 		}
+
 		if(i < columnsList.size()-1){
 			queryStream << ", ";
 		}
@@ -213,15 +216,15 @@ ResultTable SQLiteSession::executeFlat(const std::string& query){
 	sqlite3_stmt* stmt = (sqlite3_stmt*)sqliteQuery(query);
 
 	vector<string> columns;
-	vector<size_t> columnTypeHashes;
+	vector<const TypeInfo*> columnTypes;
 
 	int num_fields = sqlite3_column_count(stmt);
 	for(int i = 0; i < num_fields; i++){
 		columns.push_back(sqlite3_column_name(stmt, i));
-		columnTypeHashes.push_back(toPrimitiveType(sqlite3_column_type(stmt, i)));
+		columnTypes.push_back(&getTypeInfo(sqlite3_column_type(stmt, i)));
 	}
 
-	ResultTable flatResults(columns, columnTypeHashes);
+	ResultTable flatResults(columns, columnTypes);
 
 	while(sqlite3_step(stmt) != SQLITE_DONE){
 		ORMLOG(Logger::Lv::DBUG, "fetching new row");
