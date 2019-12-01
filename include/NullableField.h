@@ -3,6 +3,9 @@
 
 #include "NullableFieldBase.h"
 #include "AttributeInitializerBase.h"
+#include "TypeInfo.h"
+
+#include <memory>
 
 namespace ORMPlusPlus{
 
@@ -27,6 +30,7 @@ private:
 	NullableFieldBase* NFBasePtr = nullptr;
 	bool isPtrOwner = false;//should be false if used as shell
 	PrimitiveType& valueRef;//useful at debugging
+	static std::unique_ptr<TypeInfo> typeInfoPtr;
 
 	static void assertLHSNotNull(const NullableField& lhs){
 		if (lhs.isNull()) {
@@ -41,9 +45,19 @@ private:
 	}
 
 public:
-	static const std::type_info& getPrimitiveType()
-	{
+	static const std::type_info& getPrimitiveType(){
 		return typeid(PrimitiveType);
+	}
+
+	static const TypeInfo& getTypeInfo(){
+		if(typeInfoPtr == nullptr){
+			typeInfoPtr.reset(new TypeInfo(
+					typeid(NullableField<PrimitiveType>),
+					NullableFieldBase::isIntegral(typeid(PrimitiveType)),
+					NullableFieldBase::isText(typeid(PrimitiveType))
+				));
+		}
+		return *typeInfoPtr;
 	}
 
 	NullableField()
@@ -215,6 +229,9 @@ public:
 	friend std::istream& operator>> <>(std::istream&, const NullableField&);
 
 };
+
+template<class PrimitiveType>
+std::unique_ptr<TypeInfo> NullableField<PrimitiveType>::typeInfoPtr;
 
 template<class PrimitiveType>
 std::ostream& operator<<(std::ostream& os, const NullableField<PrimitiveType>& field)

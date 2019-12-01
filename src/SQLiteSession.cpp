@@ -11,7 +11,7 @@ namespace ORMPlusPlus {
 
 void* SQLiteSession::sqliteQuery(const std::string& query){
 	sqlite3_stmt* stmt;
-	if (!sqlite3_prepare_v2((sqlite3*)sessionPtr, query.c_str(), -1, &stmt, NULL)) {
+	if (sqlite3_prepare_v2((sqlite3*)sessionPtr, query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
 		throw runtime_error(sqlite3_errmsg((sqlite3*)sessionPtr));
 	}
 	return stmt;
@@ -48,12 +48,12 @@ size_t SQLiteSession::toPrimitiveType(int sqliteTypeId){
 }
 
 const map<string, TypeInfo> SQLiteSession::typeNamesMap({
-	{"INT", TypeInfo::Int32Type},
-	{"BIGINT", TypeInfo::Int64Type},
-	{"FLOAT", TypeInfo::FloatType},
-	{"DOUBLE", TypeInfo::DoubleType},
-	{"VARCHAR", TypeInfo::StringType},
-	{"DATETIME", TypeInfo::DateTimeType},
+	{"INT", Integer::getTypeInfo()},
+	{"BIGINT", Long::getTypeInfo()},
+	{"FLOAT", Float::getTypeInfo()},
+	{"DOUBLE", Double::getTypeInfo()},
+	{"VARCHAR", String::getTypeInfo()},
+	{"DATETIME", DateTime::getTypeInfo()},
 });
 
 const TypeInfo& SQLiteSession::getTypeInfo(const std::string& mySQLColTypeName){
@@ -169,7 +169,7 @@ TableSchema SQLiteSession::getTableSchema(const string& name){
 			String defaultValue = result.getFieldValue(i, "DFLT_VALUE").getValueRef<string>();
 			if(defaultValue == "NULL"){
 				tempColumn.setDefaultValue(String());
-			}else if(tempColumn.getTypeInfo() == TypeInfo::StringType){
+			}else if(tempColumn.getTypeInfo() == String::getTypeInfo()){
 				//default value is wrapped in single quotations
 				tempColumn.setDefaultValue(defaultValue.getValueRef().substr(1, defaultValue.getValueRef().size()-2));
 			}else{
@@ -240,7 +240,7 @@ std::size_t SQLiteSession::executeVoid(const std::string& query){
 	ORMLOG(Logger::Lv::DBUG, "executing query : " + query);
 	sqlite3_stmt* stmt = (sqlite3_stmt*)sqliteQuery(query);
 	int retval = sqlite3_step(stmt);
-    if (retval != SQLITE_DONE || retval != SQLITE_ROW) {
+    if (retval != SQLITE_DONE && retval != SQLITE_ROW) {
     	//todo: add app specific description to exception msgs, have a help function to wrap it
     	throw runtime_error(sqlite3_errmsg((sqlite3*)sessionPtr));
     }
@@ -248,7 +248,7 @@ std::size_t SQLiteSession::executeVoid(const std::string& query){
 }
 
 SQLiteSession::~SQLiteSession() {
-	ORMLOG(Logger::Lv::INFO, "disconnected from mysql server ");
+	ORMLOG(Logger::Lv::INFO, "disconnected from sqlite database");
 	sqlite3_close((sqlite3*)sessionPtr);
 }
 

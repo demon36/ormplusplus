@@ -1,6 +1,7 @@
 #include "TableColumn.h"
-
 #include "NullableFieldBase.h"
+#include "TypeInfo.h"
+
 
 #define DEFAULT_STRING_LENGTH 1024
 #define DEFAULT_NUM_PRECISION 10
@@ -10,7 +11,7 @@ using namespace std;
 namespace ORMPlusPlus{
 
 TableColumn::TableColumn()
-: typeInfo(TypeInfo::NullType)//TODO: check the consequences
+: typeInfo(Null::getTypeInfo())//TODO: check the consequences
 {}
 
 TableColumn::TableColumn(const string& _name, const TypeInfo& _typeInfo, long length, long precision, bool isNullable, bool isPrimaryKey, bool autoIncrement)

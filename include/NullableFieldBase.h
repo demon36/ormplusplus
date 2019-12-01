@@ -5,35 +5,12 @@
 #include <string>
 #include <sstream>
 #include <typeindex>
-#include <list>
 
 namespace ORMPlusPlus {
 
 //TODO: remove this after removing NullableField<nullptr_t>
 //needed for using NullableField<nullptr_t>
 std::ostream& operator<<(std::ostream& outstream, nullptr_t value);
-
-struct TypeInfo
-{
-	TypeInfo() = delete;
-	const size_t nullableTypeHash;
-	const bool isIntegral;
-	const bool isText;
-
-	static const TypeInfo Int32Type;
-	static const TypeInfo Int64Type;
-	static const TypeInfo FloatType;
-	static const TypeInfo DoubleType;
-	static const TypeInfo StringType;
-	static const TypeInfo DateTimeType;
-	static const TypeInfo NullType;
-
-	static const std::list<TypeInfo> AllTypes;
-	static const TypeInfo& findbyHash(size_t hash);
-};
-
-
-bool operator==(const TypeInfo lhs, const TypeInfo rhs);
 
 /**
  * Encapsulates the nullable field data
@@ -96,6 +73,8 @@ public:
 	bool isNull() const;
 	std::string toString() const;
 	size_t getType() const;
+	static bool isIntegral(const std::type_info& type);
+	static bool isText(const std::type_info& type);
 
 	//TODO: support bypassing to streams
 	~NullableFieldBase();

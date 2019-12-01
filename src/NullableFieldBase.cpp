@@ -8,31 +8,6 @@ using namespace std;
 
 namespace ORMPlusPlus {
 
-const TypeInfo TypeInfo::Int32Type{typeid(Integer).hash_code(), true, false};
-const TypeInfo TypeInfo::Int64Type{typeid(Long).hash_code(), true, false};
-const TypeInfo TypeInfo::FloatType{typeid(Float).hash_code(), true, false};
-const TypeInfo TypeInfo::DoubleType{typeid(Double).hash_code(), true, false};
-const TypeInfo TypeInfo::StringType{typeid(String).hash_code(), false, true};
-const TypeInfo TypeInfo::DateTimeType{typeid(DateTime).hash_code(), false, false};
-const TypeInfo TypeInfo::NullType{typeid(Null).hash_code(), false, false};
-
-const list<TypeInfo> TypeInfo::AllTypes({Int32Type, Int64Type, FloatType, DoubleType, StringType, DateTimeType, NullType});
-
-const TypeInfo& TypeInfo::findbyHash(size_t hash){
-	for(auto& type : AllTypes){
-		if(type.nullableTypeHash == hash){
-			return type;
-		}
-	}
-	throw runtime_error("TypeInfo::findbyHash called with an unsupported type");
-}
-
-bool operator==(const TypeInfo lhs, const TypeInfo rhs){
-	return lhs.nullableTypeHash == rhs.nullableTypeHash &&
-		lhs.isIntegral == rhs.isIntegral &&
-		lhs.isText == rhs.isText;
-}
-
 ostream& operator<<(ostream& outstream, nullptr_t value){
 	return outstream;
 }
@@ -183,6 +158,14 @@ string NullableFieldBase::toString() const
 
 size_t NullableFieldBase::getType() const{
 	return typeHash;
+}
+
+bool NullableFieldBase::isIntegral(const std::type_info& type){
+	return type == typeid(int) || type == typeid(long) || type == typeid(double) || type == typeid(float);
+}
+
+bool NullableFieldBase::isText(const std::type_info& type){
+	return type == typeid(string);//todo: is blob text ?
 }
 
 NullableFieldBase::~NullableFieldBase(){

@@ -61,12 +61,12 @@ size_t MySQLSession::toPrimitiveType(int mySQLTypeEnum){
 }
 
 const map<string, TypeInfo> MySQLSession::typeNamesMap({
-	{"INT", TypeInfo::Int32Type},
-	{"BIGINT", TypeInfo::Int64Type},
-	{"FLOAT", TypeInfo::FloatType},
-	{"DOUBLE", TypeInfo::DoubleType},
-	{"VARCHAR", TypeInfo::StringType},
-	{"DATETIME", TypeInfo::DateTimeType},
+	{"INT", Integer::getTypeInfo()},
+	{"BIGINT", Long::getTypeInfo()},
+	{"FLOAT", Float::getTypeInfo()},
+	{"DOUBLE", Double::getTypeInfo()},
+	{"VARCHAR", String::getTypeInfo()},
+	{"DATETIME", DateTime::getTypeInfo()},
 });
 
 const TypeInfo& MySQLSession::getTypeInfo(const std::string& mySQLColTypeName){
@@ -189,7 +189,7 @@ TableSchema MySQLSession::getTableSchema(const string& name){
 			String defaultValue = result.getFieldValue(i, "COLUMN_DEFAULT").getValueRef<string>();
 			if(defaultValue == "NULL"){
 				tempColumn.setDefaultValue(String());
-			}else if(tempColumn.getTypeInfo() == TypeInfo::StringType){
+			}else if(tempColumn.getTypeInfo() == String::getTypeInfo()){
 				//default value is wrapped in single quotations
 				tempColumn.setDefaultValue(defaultValue.getValueRef().substr(1, defaultValue.getValueRef().size()-2));
 			}else{

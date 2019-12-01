@@ -49,7 +49,6 @@ public:
 //	static void addColumn(std::string name, DataType type);
 	//TODO: implement
 	std::string toString();
-	static std::string getTypeName(const std::type_info& type);
 };
 }
 

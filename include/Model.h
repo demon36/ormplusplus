@@ -44,11 +44,11 @@ protected:
 	 * adds a column to model schema
 	 * @return true at success, false if already exists
 	 */
-	static bool addColumnIfNotExists(const std::string& name, std::size_t typeHash){
+	static bool addColumnIfNotExists(const std::string& name, const TypeInfo& typeInfo){
 		if(columnExists(name)){
 			return false;
 		}else{
-			schema.emplace(name, TableColumn(name, TypeInfo::findbyHash(typeHash)));
+			schema.emplace(name, TableColumn(name, typeInfo));
 			return true;
 		}
 	}
@@ -109,7 +109,7 @@ public:
 	//TODO: should this fn be renamed to bindAttribute ?
 	template<typename AttribType>
 	AttributeInitializer<AttribType> initializeAttrib(const std::string& name){
-		bool columnAlreadyAdded = !addColumnIfNotExists(name, typeid(AttribType).hash_code());
+		bool columnAlreadyAdded = !addColumnIfNotExists(name, AttribType::getTypeInfo());
 		//TODO: move logic to ModelBase
 		NullableFieldBase& field = attributes.emplace(name, NullableFieldBase(AttribType::getPrimitiveType().hash_code())).first->second;
 		if(columnAlreadyAdded){
@@ -139,7 +139,7 @@ TableSchema Model<UserModel, TableName>::schema;
 template<class UserModel, class TableName>
 std::string Model<UserModel, TableName>::tableName =
 		std::string(TableName::data()).empty() ?
-		ModelBase::getTypeName(typeid(UserModel)) : TableName::data();
+		TypeInfo::getTypeName(typeid(UserModel)) : TableName::data();
 
 template<class UserModel, class TableName>
 bool Model<UserModel, TableName>::schemaBuilt = false;

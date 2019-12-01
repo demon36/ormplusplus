@@ -1,7 +1,3 @@
-#ifdef __GNUC__
-#include <cxxabi.h>
-#endif
-
 #include "ModelBase.h"
 #include "DB.h"
 
@@ -109,22 +105,6 @@ void ModelBase::setAutoIncPKey(long value){
 
 void ModelBase::insert(bool updateAutoIncPKey){
 	DB::getDefaultSession().insert(*this, updateAutoIncPKey);
-}
-
-string ModelBase::getTypeName(const std::type_info& type){
-#ifdef __GNUC__
-	int status;
-	char* demangled = abi::__cxa_demangle(type.name(),0,0,&status);
-	if(status != 0){
-		throw runtime_error("failed to demangle class name at ModelBase::getTypeName");
-	}
-	std::string demangledStr(demangled);
-	free(demangled);
-	return demangledStr;
-#else
-	//msvc & clang do not -presumably- mangle class names
-	return type.name();
-#endif
 }
 
 }
