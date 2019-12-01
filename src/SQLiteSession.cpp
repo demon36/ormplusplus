@@ -53,6 +53,7 @@ const map<string, TypeInfo> SQLiteSession::typeNamesMap({
 	{"FLOAT", Float::getTypeInfo()},
 	{"DOUBLE", Double::getTypeInfo()},
 	{"VARCHAR", String::getTypeInfo()},
+	{"TEXT", String::getTypeInfo()},
 	{"DATETIME", DateTime::getTypeInfo()},
 });
 
@@ -60,6 +61,14 @@ const TypeInfo& SQLiteSession::getTypeInfo(const std::string& mySQLColTypeName){
 	string normalizedCaseName = mySQLColTypeName;
 	for(char &c: normalizedCaseName){
 		c = (char)toupper(c);
+	}
+
+	//todo: add length to column info
+	//todo: fix this bs
+	if(normalizedCaseName.find("VARCHAR") == 0){
+		normalizedCaseName = "VARCHAR";
+	} else if(normalizedCaseName.find("TEXT") == 0){
+		normalizedCaseName = "TEXT";
 	}
 
 	if(typeNamesMap.find(normalizedCaseName) == typeNamesMap.end()){
@@ -150,12 +159,12 @@ TableSchema SQLiteSession::getTableSchema(const string& name){
 	ResultTable result = executeFlat(query);
 	TableSchema schema;
 	for(size_t i = 0; i < result.getNumRows(); i++){
-		string columnName = result.getFieldValue(i, "NAME").getValueRef<string>();
-		string DBColumnType = result.getFieldValue(i, "TYPE").getValueRef<string>();
+		string columnName = result.getFieldValue(i, "name").getValueRef<string>();
+		string DBColumnType = result.getFieldValue(i, "type").getValueRef<string>();
 		long maxLength = -1;//todo: parse number between parentheses, ex: VARCHAR(34)
 		long numPrecision = -1;//todo: understand how sqlite does it
-		bool isNullable = result.getFieldValue(i, "NOTNULL").getValueRef<string>() == "0";
-		bool isPKey = result.getFieldValue(i, "PK").getValueRef<string>() == "1";
+		bool isNullable = result.getFieldValue(i, "notnull").getValueRef<int>() == 0;
+		bool isPKey = result.getFieldValue(i, "pk").getValueRef<int>() == 1;
 		bool isAutoIncrement = true;//todo: fetch autoincrement info, will probably need to parse the table creation sql :S
 
 		TableColumn tempColumn(
@@ -168,8 +177,8 @@ TableSchema SQLiteSession::getTableSchema(const string& name){
 				isAutoIncrement
 		);
 
-		if(!result.getFieldValue(i, "DFLT_VALUE").isNull()){ //todo: add a test case for these conditions
-			String defaultValue = result.getFieldValue(i, "DFLT_VALUE").getValueRef<string>();
+		if(!result.getFieldValue(i, "dflt_value").isNull()){ //todo: add a test case for these conditions
+			String defaultValue = result.getFieldValue(i, "dflt_value").getValueRef<string>();
 			if(defaultValue == "NULL"){
 				tempColumn.setDefaultValue(String());
 			}else if(tempColumn.getTypeInfo() == String::getTypeInfo()){
@@ -218,22 +227,33 @@ ResultTable SQLiteSession::executeFlat(const std::string& query){
 	vector<string> columns;
 	vector<const TypeInfo*> columnTypes;
 
+	int retval = sqlite3_step(stmt);
+	if (retval != SQLITE_DONE && retval != SQLITE_ROW) {
+		throw runtime_error(sqlite3_errmsg((sqlite3*)sessionPtr));
+	}
+
 	int num_fields = sqlite3_column_count(stmt);
 	for(int i = 0; i < num_fields; i++){
 		columns.push_back(sqlite3_column_name(stmt, i));
-		columnTypes.push_back(&getTypeInfo(sqlite3_column_type(stmt, i)));
+		const char* sqliteTypeName = sqlite3_column_decltype(stmt, i);
+		if(sqliteTypeName == NULL){
+			columnTypes.push_back(&getTypeInfo(sqlite3_column_type(stmt, i)));
+		} else {
+			columnTypes.push_back(&getTypeInfo(sqliteTypeName));
+		}
+
 	}
 
 	ResultTable flatResults(columns, columnTypes);
 
-	while(sqlite3_step(stmt) != SQLITE_DONE){
+	do{//todo: only do this when retval == SQLITE_ROW
 		ORMLOG(Logger::Lv::DBUG, "fetching new row");
 		size_t rowIdx = flatResults.addRow();
 		for(int i = 0; i < num_fields; i++){
 			flatResults.setFieldValue(rowIdx, i, (const char*)sqlite3_column_text(stmt, i));
 			//todo: make use of fns like sqlite3_column_int() for better performance
 		}
-	}
+	}while(sqlite3_step(stmt) != SQLITE_DONE);
 
     sqlite3_finalize(stmt);
 	return flatResults;

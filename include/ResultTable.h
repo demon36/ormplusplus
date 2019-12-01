@@ -24,6 +24,7 @@ public:
 	size_t addRow();
 	size_t getNumRows();
 	void setFieldValue(size_t rowIdx, size_t colIdx, const char* value);
+	size_t getColumnIdx(const std::string& colName);
 	NullableFieldBase& getFieldValue(size_t rowIdx, size_t colIdx);
 	NullableFieldBase& getFieldValue(size_t rowIdx, const std::string colName);
 	template<class NullableField>

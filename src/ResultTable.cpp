@@ -77,6 +77,14 @@ void ResultTable::setFieldValue(size_t rowIdx, size_t colIdx, const char* value)
 
 }
 
+size_t ResultTable::getColumnIdx(const std::string& colName){
+	const auto& it = colNameToIdx.find(colName);
+	if(it == colNameToIdx.end()){
+		throw runtime_error("column with name "+colName+" not found");
+	}
+	return it->second;
+}
+
 NullableFieldBase& ResultTable::getFieldValue(size_t rowIdx, size_t colIdx){
 	if(rowIdx >= numRows){
 		throw std::out_of_range("trying to set field value for a row that does not exist");
@@ -94,7 +102,7 @@ NullableFieldBase& ResultTable::getFieldValue(size_t rowIdx, size_t colIdx){
 }
 
 NullableFieldBase& ResultTable::getFieldValue(size_t rowIdx, const std::string colName){
-	return getFieldValue(rowIdx, colNameToIdx[colName]);
+	return getFieldValue(rowIdx, getColumnIdx(colName));
 }
 
 template<class primitiveType>
