@@ -95,13 +95,17 @@ void testMultiInsertAndSelect(){
 int main(int argc, char** argv)
 {
 	Logger::setLevel(Logger::Lv::DBUG);
-	try{
-		DB::setDefaultSession(make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root"));
-		testModelDefinition();
+	testModelDefinition();
+	map<string, shared_ptr<DBSessionBase>> dbSessions = {
+		{"mysql", make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root")},
+		{"sqlite", make_shared<SQLiteSession>("testdb.sqlite")}
+	};
+	for(auto& sessionEntry : dbSessions){
+		cout<<"running tests on "<<sessionEntry.first<<" database"<<endl;
+		DB::setDefaultSession(sessionEntry.second);
 		assertTableCreation();
 		testSingleInsertAndSelect();
-	}catch(exception& ex){
-		cerr<<ex.what()<<endl;
+		cout<<"==================================================="<<endl;
 	}
 	return 0;
 }

@@ -241,20 +241,18 @@ ResultTable SQLiteSession::executeFlat(const std::string& query){
 		} else {
 			columnTypes.push_back(&getTypeInfo(sqliteTypeName));
 		}
-
 	}
 
 	ResultTable flatResults(columns, columnTypes);
-
-	do{//todo: only do this when retval == SQLITE_ROW
+	while(retval == SQLITE_ROW){
 		ORMLOG(Logger::Lv::DBUG, "fetching new row");
 		size_t rowIdx = flatResults.addRow();
 		for(int i = 0; i < num_fields; i++){
 			flatResults.setFieldValue(rowIdx, i, (const char*)sqlite3_column_text(stmt, i));
 			//todo: make use of fns like sqlite3_column_int() for better performance
 		}
-	}while(sqlite3_step(stmt) != SQLITE_DONE);
-
+		retval = sqlite3_step(stmt);
+	}
     sqlite3_finalize(stmt);
 	return flatResults;
 }

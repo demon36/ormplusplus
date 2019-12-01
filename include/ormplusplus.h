@@ -3,4 +3,5 @@
 #include "Model.h"
 #include "DB.h"
 #include "MySQLSession.h"
+#include "SQLiteSession.h"
 #endif

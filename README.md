@@ -1,7 +1,7 @@
 # ormplusplus (pre-alpha)
 A basic ORM for C++11 that does not precompile your code
 
-Targeting MySQL support, SQLite and others can be supported in the future
+Targeting SQLite & MySQL support, others can be added in the future
 
 [![Build Status](https://travis-ci.org/demon36/ormplusplus.svg?branch=master)](https://travis-ci.org/demon36/ormplusplus)
 [![codecov](https://codecov.io/gh/demon36/ormplusplus/branch/master/graph/badge.svg)](https://codecov.io/gh/demon36/ormplusplus)
@@ -52,6 +52,7 @@ int main(int argc, char** argv)
 - [x] put DB supported types in one place
 - [x] update tests
 - [x] use logging
+- [x] add basic support for sqlite
 - [ ] insert one
 - [ ] select one
 - [ ] insert many
@@ -67,16 +68,16 @@ int main(int argc, char** argv)
 - [ ] nested where conditions
 - [ ] aggregate fns (AVG, COUNT, SUM, MAX, MIN)
 - [ ] insert or update if exists
-- [ ] add support for sqlite
+- [ ] separate sqlite and mysql dependencies
 - [ ] add support for mongodb
 - [ ] check thread safety
 - [ ] relational models (maybe?)
 - [ ] transactions (maybe?)
 
 ### build instructions
-- install mysql c connector
+- install mysql and sqlite c connectors
 ``
-sudo apt-get install default-libmysqlclient-dev
+sudo apt-get install default-libmysqlclient-dev libsqlite3-dev #on debian bullseye
 ``
 - run make
 

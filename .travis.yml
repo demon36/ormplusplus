@@ -6,7 +6,7 @@ addons:
   apt:
     update: true
     packages:
-    - libmysqlclient-dev
+    - libmysqlclient-dev libsqlite3-dev
     - lcov
 services:
   - mysql
