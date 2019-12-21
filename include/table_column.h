@@ -19,7 +19,7 @@ private:
 	long precision = -1;
 	bool nullable = false;
 	bool default_value_set = false;
-	String default_value;//default value can be non-existent, NULL or "NULL" (or any other string)
+	db_string default_value;//default value can be non-existent, NULL or "NULL" (or any other string)
 	bool is_pkey = false;
 	bool is_auto_inc = false;
 public:
@@ -33,7 +33,7 @@ public:
 	long get_precision() const;
 	bool is_nullable() const;
 	bool has_default_value() const;
-	String get_default_value() const;
+	db_string get_default_value() const;
 	bool is_primary_key() const;//todo: possible to make these attribs public ?
 	bool is_auto_increment() const;
 	bool is_integral() const;
@@ -43,7 +43,7 @@ public:
 	void set_precision(int value);
 	void set_primary(bool value);
 	void set_nullable(bool value);
-	void set_default_value(const String& value);
+	void set_default_value(const db_string& value);
 	void set_auto_increment(bool value);
 
 	bool operator==(const table_column& that);

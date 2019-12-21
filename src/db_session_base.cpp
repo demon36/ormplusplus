@@ -15,17 +15,17 @@ void db_session_base::drop_table(const std::string& name){
 }
 
 bool db_session_base::table_exists(const std::string& name, table_schema& schema){
-	auto foundSchema = get_table_schema(name);
+	auto found_schema = get_table_schema(name);
 	for(auto& column : schema){
-		table_column& foundColumn = foundSchema[column.first];
-		if(column.second != foundColumn){
+		table_column& found_column = found_schema[column.first];
+		if(column.second != found_column){
 			return false;
 		}
-		if(column.second.is_integral() && column.second.get_precision() > foundColumn.get_precision()){
+		if(column.second.is_integral() && column.second.get_precision() > found_column.get_precision()){
 			return false;
 		}
 		//TODO: can it be both ??
-		if(column.second.is_text() && column.second.get_length() > foundColumn.get_length()){
+		if(column.second.is_text() && column.second.get_length() > found_column.get_length()){
 			return false;
 		}
 	}
@@ -33,88 +33,88 @@ bool db_session_base::table_exists(const std::string& name, table_schema& schema
 }
 
 std::string db_session_base::build_query_string(const query_base& query){
-	std::stringstream queryStream;
-	const std::vector<query_condition>& conditions = query.getConditionsRef();
-	const std::vector<order_rule>& orderRules = query.getOrderRulesRef();
-	int limit = query.getLimit();
+	std::stringstream query_stream;
+	const std::vector<query_condition>& conditions = query.get_conditions_ref();
+	const std::vector<order_rule>& order_rules = query.get_order_rules_ref();
+	int limit = query.get_limit();
 
 	//TODO: use logging for raw queries
-	if(query.getType() == query_type::_Null){
+	if(query.get_type() == query_type::_null){
 		throw std::runtime_error("try to execute a query with null type");
-	}else if(query.getType() == query_type::_Select){
-		queryStream << "select ";
-		printColumnNames(queryStream, query.getTableSchema());
-		queryStream << " from " << query.getTableName();
+	}else if(query.get_type() == query_type::_select){
+		query_stream << "select ";
+		print_col_names(query_stream, query.get_schema_ref());
+		query_stream << " from " << query.get_table_name();
 		if(!conditions.empty()){
-			queryStream << " WHERE ";
+			query_stream << " WHERE ";
 		}
 		//TODO: nested conditions ?
 		for(auto it = conditions.begin(); it != conditions.end(); ++it){
-			queryStream << it->getColumnName() << " "
-					<< it->getOperator() << " "
-					<< it->getValueString() << " ";
+			query_stream << it->get_col_name() << " "
+					<< it->get_operator() << " "
+					<< it->get_value_string() << " ";
 			if(std::next(it) == conditions.end()){
-				queryStream << " ";
+				query_stream << " ";
 			}else{
-				queryStream << " AND ";
+				query_stream << " AND ";
 			}
 		}
 
 		if(limit != 0){
-			queryStream << " limit " << limit;
+			query_stream << " limit " << limit;
 		}
 
-		if(!orderRules.empty()){
-			queryStream << " order by ";
+		if(!order_rules.empty()){
+			query_stream << " order by ";
 		}
-		for(auto it = orderRules.begin(); it != orderRules.end(); ++it){
-			queryStream << " " << it->column;
-			if(std::next(it) == orderRules.end()){
-				queryStream << " ";
+		for(auto it = order_rules.begin(); it != order_rules.end(); ++it){
+			query_stream << " " << it->column;
+			if(std::next(it) == order_rules.end()){
+				query_stream << " ";
 			}else{
-				queryStream << ", ";
+				query_stream << ", ";
 			}
 		}
 
-		queryStream<<";";
+		query_stream<<";";
 
-		return queryStream.str();
+		return query_stream.str();
 
-	}else if(query.getType() == query_type::_Insert){
+	}else if(query.get_type() == query_type::_insert){
 		throw std::runtime_error("unimplemented");
-	}else if(query.getType() == query_type::_Delete){
+	}else if(query.get_type() == query_type::_delete){
 		throw std::runtime_error("unimplemented");
-	}else if(query.getType() == query_type::_Update){
+	}else if(query.get_type() == query_type::_update){
 		throw std::runtime_error("unimplemented");
 	}
-	throw std::runtime_error("unsupported QueryType");
+	throw std::runtime_error("unsupported query_type");
 }
 
 db_session_base::~db_session_base() {
 	// TODO Auto-generated destructor stub
 }
 
-void db_session_base::printColumnNames(std::ostream& stream, const table_schema& schema){
-	for(auto columnIt = schema.begin(); columnIt != schema.end(); ++columnIt){
-		stream << " `" << columnIt->first << "`";
-		if(std::next(columnIt) != schema.end()){
+void db_session_base::print_col_names(std::ostream& stream, const table_schema& schema){
+	for(auto column_it = schema.begin(); column_it != schema.end(); ++column_it){
+		stream << " `" << column_it->first << "`";
+		if(std::next(column_it) != schema.end()){
 			stream << ",";
 		}
 	}
 }
 
-void db_session_base::printAttribValues(std::ostream& stream, const table_schema& schema, const AttributesMap& attribs){
-	for(auto columnIt = schema.begin(); columnIt != schema.end(); ++columnIt){
+void db_session_base::print_attrib_values(std::ostream& stream, const table_schema& schema, const attribs_map& attribs){
+	for(auto column_it = schema.begin(); column_it != schema.end(); ++column_it){
 		//TODO: override operatpr << for nullable field base
-		if(!columnIt->second.isIntegral()){
-			stream << " '" << attribs.at(columnIt->first).toString() << "'";
+		if(!column_it->second.is_integral()){
+			stream << " '" << attribs.at(column_it->first).to_string() << "'";
 		}else{
-			stream << " " << attribs.at(columnIt->first).toString();
+			stream << " " << attribs.at(column_it->first).to_string();
 		}
-		if(std::next(columnIt) != schema.end()){
+		if(std::next(column_it) != schema.end()){
 			stream << ",";
 		}
 	}
 }
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */

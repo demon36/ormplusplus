@@ -16,7 +16,7 @@ class model_base{
 	friend class db_session_base;
 private:
 	const std::string& table_name_ref;
-	table_schema& schema_ref;//owner is always Model<T, U>
+	table_schema& schema_ref;//owner is always model<T, U>
 protected:
 	attribs_map attributes;
 public:
@@ -40,13 +40,13 @@ public:
 //	void load();
 	/**
 	 * insert a new row for this model
-	 * @param updateAutoIncPKey whether or not make additional query
+	 * @param update_auto_inc_pkey whether or not make additional query
 	 * for extracting inserted row id and updating current model
 	 */
 	void insert(bool update_auto_inc_pkey = false);
 //	void update();
-//	static std::vector<TableColumn> getColumns();
-//	static void addColumn(std::string name, DataType type);
+//	static std::vector<table_column> get_columns();
+//	static void add_column(std::string name, type_info type);
 	//TODO: implement
 	std::string to_string();
 };

@@ -20,15 +20,15 @@ public:
 	/**
 	 * inserts the provided model or updates it if exists
 	 */
-//	virtual void save(const ModelBase& model) = 0;
-	//non const ModelBase ref since auto increment pkey might be altered
+//	virtual void save(const model_base& model) = 0;
+	//non const model_base ref since auto increment pkey might be altered
 	/**
 	 * insert a new row for provided model
-	 * @param updateAutoIncPKey whether or not make additional query
+	 * @param update_auto_inc_pkey whether or not make additional query
 	 * for extracting inserted row id and updating provided model
 	 */
 	virtual void insert(model_base& model, bool update_auto_inc_pkey = false) = 0;
-//	virtual void update(const ModelBase& model) = 0;
+//	virtual void update(const model_base& model) = 0;
 
 	/**
 	 * this function assumes query has already been checked against model schema
@@ -62,7 +62,7 @@ public:
 	virtual std::size_t execute_void(const std::string& query_string) = 0;
 	virtual ~db_session_base();
 protected:
-	//TODO: move to modelBase OR create class schema instead of typedef and override << for it
+	//TODO: move to model_base OR create class schema instead of typedef and override << for it
 	/**
 	 * prints comma separated schema map keys ex: "`c1`, `c2` ,..." to specified stream
 	 */
@@ -76,6 +76,6 @@ protected:
 	static void print_attrib_values(std::ostream& stream, const table_schema& schema, const attribs_map& attribs);
 };
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */
 
 #endif /* INCLUDE_DB_SESSION_BASE_H_ */

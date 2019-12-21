@@ -23,7 +23,7 @@ public:
 	static void use_file(const std::string& file_name);
 	static void set_level(lvl value);
 	static void log(std::string module, lvl level, const std::string& msg);
-	static std::string levelToString(lvl level);
+	static std::string level_to_string(lvl level);
 
 private:
 	static std::fstream log_file;
@@ -31,6 +31,6 @@ private:
 	static lvl m_level;
 };
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */
 
 #endif /* INCLUDE_LOGGER_H_ */

@@ -5,21 +5,21 @@ using namespace std;
 
 namespace ormplusplus{
 
-//void ModelBase::addColumn(std::string name, DataType type){
-//	columns[name] = TableColumn();
-//	columns[name].setType(type);
+//void model_base::add_column(std::string name, data_type type){
+//	columns[name] = table_column();
+//	columns[name].set_type(type);
 //}
 
-//vector<TableColumn> ModelBase::getColumns(){
-//	vector<TableColumn> _columns;
+//vector<Table_column> model_base::get_columns(){
+//	vector<table_column> _columns;
 //	for(auto& column : columns){
 //		_columns.push_back(column.second);
 //	}
 //	return _columns;
 //}
 
-model_base::model_base(const string& tableName, table_schema& schema)
-: table_name_ref(tableName), schema_ref(schema)
+model_base::model_base(const string& table_name, table_schema& schema)
+: table_name_ref(table_name), schema_ref(schema)
 {
 }
 
@@ -48,8 +48,8 @@ const table_schema& model_base::get_schema() const{
 }
 
 void model_base::set_attribs(const attribs_map& values){
-	for(auto& attribEntry : this->attributes){
-		attribEntry.second = values.at(attribEntry.first);
+	for(auto& attrib_entry : this->attributes){
+		attrib_entry.second = values.at(attrib_entry.first);
 	}
 }
 
@@ -58,8 +58,8 @@ const attribs_map& model_base::get_attribs() const{
 }
 
 bool model_base::equals(const model_base& that) const{
-	for(const auto& attribEntry : this->attributes){
-		if(!attribEntry.second.equals(that.attributes.at(attribEntry.first))){
+	for(const auto& attrib_entry : this->attributes){
+		if(!attrib_entry.second.equals(that.attributes.at(attrib_entry.first))){
 			return false;
 		}
 	}
@@ -76,35 +76,35 @@ bool model_base::auto_inc_pkey_col_exists() const{
 }
 
 void model_base::set_auto_inc_pkey(long value){
-	table_column* columnPtr = nullptr;
+	table_column* column_ptr = nullptr;
 	for(auto& column : schema_ref){
 		if(column.second.is_auto_increment() && column.second.is_primary_key()){
 			//TODO: check for multiple auto increment primary keys
-			columnPtr = &column.second;
+			column_ptr = &column.second;
 			break;
 		}
 	}
-	if(columnPtr == nullptr){
+	if(column_ptr == nullptr){
 		throw runtime_error("not auto increment primary key found");
 	}else{
 		//TODO: think of a cleaner way
 		//TODO: add tests for all types
-		if(columnPtr->get_type_info().wrapper_type_hash == typeid(Integer).hash_code()){
-			attributes.at(columnPtr->get_name()).setValue<int>((int)value);
-		}else if(columnPtr->get_type_info().wrapper_type_hash == typeid(Long).hash_code()){
-			attributes.at(columnPtr->get_name()).setValue<long>((long)value);
-		}else if(columnPtr->get_type_info().wrapper_type_hash == typeid(Float).hash_code()){
-			attributes.at(columnPtr->get_name()).setValue<float>((float)value);
-		}else if(columnPtr->get_type_info().wrapper_type_hash == typeid(Double).hash_code()){
-			attributes.at(columnPtr->get_name()).setValue<double>((double)value);
+		if(column_ptr->get_type_info().wrapper_type_hash == typeid(db_int).hash_code()){
+			attributes.at(column_ptr->get_name()).set_value<int>((int)value);
+		}else if(column_ptr->get_type_info().wrapper_type_hash == typeid(db_long).hash_code()){
+			attributes.at(column_ptr->get_name()).set_value<long>((long)value);
+		}else if(column_ptr->get_type_info().wrapper_type_hash == typeid(db_float).hash_code()){
+			attributes.at(column_ptr->get_name()).set_value<float>((float)value);
+		}else if(column_ptr->get_type_info().wrapper_type_hash == typeid(db_double).hash_code()){
+			attributes.at(column_ptr->get_name()).set_value<double>((double)value);
 		}else{
 			throw runtime_error("unsupported data type used for auto increment primary key");
 		}
 	}
 }
 
-void model_base::insert(bool updateAutoIncPKey){
-	db::get_default_session().insert(*this, updateAutoIncPKey);
+void model_base::insert(bool update_auto_inc_pkey){
+	db::get_default_session().insert(*this, update_auto_inc_pkey);
 }
 
 }

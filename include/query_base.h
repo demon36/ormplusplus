@@ -52,6 +52,6 @@ public:
 	virtual ~query_base();
 };
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */
 
 #endif /* INCLUDE_QUERY_BASE_H_ */

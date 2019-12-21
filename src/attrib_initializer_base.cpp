@@ -3,8 +3,8 @@
 
 namespace ormplusplus {
 
-attrib_initializer_base::attrib_initializer_base(nullable_field_base& NFBase, table_column* associatedColumn)
-: nfbase(NFBase), attrib_col_ptr(associatedColumn), skip_col_setup(associatedColumn == nullptr)
+attrib_initializer_base::attrib_initializer_base(nullable_field_base& _nfbase, table_column* associated_col)
+: nfbase(_nfbase), attrib_col_ptr(associated_col), skip_col_setup(associated_col == nullptr)
 {
 }
 
@@ -14,7 +14,7 @@ nullable_field_base& attrib_initializer_base::get_nfbase_ref() const
 }
 
 //TODO: when you enable using this class directly you would have to create more overloads for this
-//		function and/or parse string value to int/float/etc.. and set the NFBase value as well
+//		function and/or parse string value to int/float/etc.. and set the nfbase value as well
 attrib_initializer_base& attrib_initializer_base::with_default(const std::string& value){
 	if(!skip_col_setup){
 		attrib_col_ptr->set_default_value(value);
@@ -29,7 +29,7 @@ attrib_initializer_base& attrib_initializer_base::as_primary(){
 	return *this;
 }
 
-//AttributeInitializerBase& asIndex();//change columnDefs, does it apply on numerical types only?
+//attrib_initializer_base& as_index();//change column_defs, does it apply on numerical types only?
 
 attrib_initializer_base& attrib_initializer_base::as_nullable(bool value){
 	if(!skip_col_setup){
@@ -50,4 +50,4 @@ attrib_initializer_base::~attrib_initializer_base()
 {
 }
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */

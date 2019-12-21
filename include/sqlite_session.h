@@ -28,6 +28,6 @@ public:
 	virtual ~sqlite_session();
 };
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */
 
 #endif /* INCLUDE_SQLITE_SESSION_H_ */

@@ -9,8 +9,8 @@ using namespace std;
 
 namespace ormplusplus {
 
-type_info::type_info(const std::type_info& wrapperType, const std::type_info& primitiveType, bool _isIntegral, bool _isText)
-: wrapper_type_hash(wrapperType.hash_code()), primitive_type_hash(primitiveType.hash_code()), is_integral(_isIntegral), is_text(_isText), name(get_type_name(wrapperType))
+type_info::type_info(const std::type_info& wrapper_type, const std::type_info& primitive_type, bool _is_integral, bool _is_text)
+: wrapper_type_hash(wrapper_type.hash_code()), primitive_type_hash(primitive_type.hash_code()), is_integral(_is_integral), is_text(_is_text), name(get_type_name(wrapper_type))
 {}
 
 type_info::type_info(const type_info& that)
@@ -22,11 +22,11 @@ string type_info::get_type_name(const std::type_info& type){
 	int status;
 	char* demangled = abi::__cxa_demangle(type.name(),0,0,&status);
 	if(status != 0){
-		throw runtime_error("failed to demangle class name at ModelBase::getTypeName");
+		throw runtime_error("failed to demangle class name at model_base::get_type_name");
 	}
-	std::string demangledStr(demangled);
+	std::string demangled_str(demangled);
 	free(demangled);
-	return demangledStr;
+	return demangled_str;
 #else
 	//msvc & clang do not -presumably- mangle class names
 	//todo: test on both

@@ -4,23 +4,23 @@ using namespace std;
 
 namespace ormplusplus{
 
-query_condition::query_condition(const string& _columnName, const string& _operator, string _value)
-: col_name(_columnName), operator_(_operator), value(nullable_field_base::create(String::getTypeInfo(), _value))
+query_condition::query_condition(const string& _column_name, const string& _operator, string _value)
+: col_name(_column_name), operator_(_operator), value(nullable_field_base::create(db_string::get_type_info(), _value))
 {
 }
 
-query_condition::query_condition(const string& _columnName, const string& _operator, int _value)
-: col_name(_columnName), operator_(_operator), value(nullable_field_base::create(Integer::getTypeInfo(), _value))
+query_condition::query_condition(const string& _column_name, const string& _operator, int _value)
+: col_name(_column_name), operator_(_operator), value(nullable_field_base::create(db_int::get_type_info(), _value))
 {
 }
 
-query_condition::query_condition(const string& _columnName, const string& _operator, long _value)
-: col_name(_columnName), operator_(_operator), value(nullable_field_base::create(Long::getTypeInfo(), _value))
+query_condition::query_condition(const string& _column_name, const string& _operator, long _value)
+: col_name(_column_name), operator_(_operator), value(nullable_field_base::create(db_long::get_type_info(), _value))
 {
 }
 
-query_condition::query_condition(const string& _columnName, const string& _operator, Null _value)
-: col_name(_columnName), operator_(_operator), value(nullable_field_base::create(Null::getTypeInfo(), nullptr))
+query_condition::query_condition(const string& _column_name, const string& _operator, db_null _value)
+: col_name(_column_name), operator_(_operator), value(nullable_field_base::create(db_null::get_type_info(), nullptr))
 {
 }
 

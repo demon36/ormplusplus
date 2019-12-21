@@ -10,32 +10,32 @@ using namespace std;
 
 namespace ormplusplus {
 
-void mysql_session::mysql_query(const std::string& query){
+void mysql_session::mysql_query_(const std::string& query){
 	if (mysql_query((st_mysql*)session_ptr, query.c_str())) {
 		throw runtime_error(mysql_error((st_mysql*)session_ptr));
 	}
 }
 
-const type_info& mysql_session::get_type_info(int mySQLTypeEnum){
+const type_info& mysql_session::get_type_info(int mysql_type_enum){
 	//todo: revise typing setup
-	enum_field_types mySQLType = (enum_field_types)mySQLTypeEnum;
-	switch(mySQLType){
+	enum_field_types mysql_type = (enum_field_types)mysql_type_enum;
+	switch(mysql_type){
 //		case MYSQL_TYPE_BIT://todo: support bool
 		case MYSQL_TYPE_TINY:
 		case MYSQL_TYPE_SHORT:
 		case MYSQL_TYPE_INT24:
 		case MYSQL_TYPE_LONG:
-			return Integer::get_type_info();
+			return db_int::get_type_info();
 
 		case MYSQL_TYPE_LONGLONG:
-			return Long::get_type_info();
+			return db_long::get_type_info();
 
 
 		case MYSQL_TYPE_FLOAT:
-			return Float::get_type_info();
+			return db_float::get_type_info();
 		case MYSQL_TYPE_DOUBLE:
 		case MYSQL_TYPE_DECIMAL:
-			return Double::get_type_info();
+			return db_double::get_type_info();
 
 		case MYSQL_TYPE_DATE:
 		case MYSQL_TYPE_TIME:
@@ -43,16 +43,16 @@ const type_info& mysql_session::get_type_info(int mySQLTypeEnum){
 		case MYSQL_TYPE_TIMESTAMP:
 		case MYSQL_TYPE_YEAR:
 		case MYSQL_TYPE_NEWDATE:
-			return DateTime::get_type_info();
+			return db_datetime::get_type_info();
 
 		case MYSQL_TYPE_VARCHAR:
 		case MYSQL_TYPE_VAR_STRING:
 		case MYSQL_TYPE_STRING:
 		case MYSQL_TYPE_BLOB://todo: support blob
-			return String::get_type_info();
+			return db_string::get_type_info();
 
 		case MYSQL_TYPE_NULL:
-			return Null::get_type_info();
+			return db_null::get_type_info();
 
 		default:
 			throw runtime_error("unsupported type");
@@ -60,24 +60,25 @@ const type_info& mysql_session::get_type_info(int mySQLTypeEnum){
 }
 
 const map<string, type_info> mysql_session::type_names_map({
-	{"INT", Integer::get_type_info()},
-	{"BIGINT", Long::get_type_info()},
-	{"FLOAT", Float::get_type_info()},
-	{"DOUBLE", Double::get_type_info()},
-	{"VARCHAR", String::get_type_info()},
-	{"DATETIME", DateTime::get_type_info()},
+	{"INT", db_int::get_type_info()},
+	{"BIGINT", db_long::get_type_info()},
+	{"FLOAT", db_float::get_type_info()},
+	{"DOUBLE", db_double::get_type_info()},
+	{"VARCHAR", db_string::get_type_info()},
+	{"DATETIME", db_datetime::get_type_info()},
 });
 
-const type_info& mysql_session::get_type_info(const std::string& mySQLColTypeName){
-	string normalizedCaseName = mySQLColTypeName;
-	for(char &c: normalizedCaseName){
+const type_info& mysql_session::get_type_info(const std::string& mysql_type_name){
+	string normalized_case_name = mysql_type_name;
+	for(char &c: normalized_case_name){
 		c = (char)toupper(c);
 	}
 
-	if(type_names_map.find(normalizedCaseName) == type_names_map.end()){
-		throw out_of_range("MySQLSession::getTypeInfo called with unsupported type name");
+	if(type_names_map.find(normalized_case_name) == type_names_map.end()){
+		//todo: add exception macro with context details
+		throw out_of_range("mysql_session::get_type_info called with unsupported type name");
 	}else{
-		return type_names_map.find(normalizedCaseName)->second;
+		return type_names_map.find(normalized_case_name)->second;
 	}
 }
 
@@ -98,64 +99,64 @@ mysql_session::mysql_session(const string& host, const string& database, const s
 
 bool mysql_session::table_exists(const string& name){
 	string query = "SHOW TABLES LIKE '"+name+"';";
-	result_table foundTables = execute_flat(query);
-	return !foundTables.get_num_rows() == 0;
+	result_table found_tables = execute_flat(query);
+	return !found_tables.get_num_rows() == 0;
 }
 
 void mysql_session::create_table(const string& name, const table_schema& schema){
-	stringstream queryStream;
-	queryStream << "CREATE TABLE IF NOT EXISTS `"<< name <<"`(";
-	std::vector<table_column> columnsList;
-	for(auto& columnEntry : schema ) {
-		columnsList.push_back( columnEntry.second );
+	stringstream query_stream;
+	query_stream << "CREATE TABLE IF NOT EXISTS `"<< name <<"`(";
+	std::vector<table_column> cols_list;
+	for(auto& column_entry : schema ) {
+		cols_list.push_back( column_entry.second );
 	}
 
 
-	for(size_t i = 0; i < columnsList.size(); i++){
-		string DBTypeName;
-		for(auto& typeNameEntry : type_names_map){
-			if(typeNameEntry.second.wrapper_type_hash == columnsList[i].get_type_info().wrapper_type_hash){
-				DBTypeName = typeNameEntry.first;
+	for(size_t i = 0; i < cols_list.size(); i++){
+		string db_type_name;
+		for(auto& type_name_entry : type_names_map){
+			if(type_name_entry.second.wrapper_type_hash == cols_list[i].get_type_info().wrapper_type_hash){
+				db_type_name = type_name_entry.first;
 				break;
 			}
 		}
 
-		if(DBTypeName.empty()){
-			throw runtime_error("trying to create table with column '"+columnsList[i].get_name()+"' having unsupported type");
+		if(db_type_name.empty()){
+			throw runtime_error("trying to create table with column '"+cols_list[i].get_name()+"' having unsupported type");
 		}
 
-		queryStream << "`"<< columnsList[i].get_name() <<"` " <<  DBTypeName;
-		if(columnsList[i].is_text()){
-			queryStream << "(" << columnsList[i].get_length() << ")";
+		query_stream << "`"<< cols_list[i].get_name() <<"` " <<  db_type_name;
+		if(cols_list[i].is_text()){
+			query_stream << "(" << cols_list[i].get_length() << ")";
 		}
-		if(columnsList[i].is_auto_increment()){
-			queryStream << " AUTO_INCREMENT ";
+		if(cols_list[i].is_auto_increment()){
+			query_stream << " AUTO_INCREMENT ";
 		}
 
-		if(columnsList[i].has_default_value()){
-			if(columnsList[i].get_default_value().is_null()){
-				queryStream << " DEFAULT NULL ";
+		if(cols_list[i].has_default_value()){
+			if(cols_list[i].get_default_value().is_null()){
+				query_stream << " DEFAULT NULL ";
 			}else{
-				queryStream << " DEFAULT '" << columnsList[i].get_default_value() << "' ";
+				query_stream << " DEFAULT '" << cols_list[i].get_default_value() << "' ";
 			}
 		}
 
-		if(columnsList[i].is_primary_key()){
-			queryStream << " PRIMARY KEY ";
+		if(cols_list[i].is_primary_key()){
+			query_stream << " PRIMARY KEY ";
 		}
-		if(columnsList[i].is_nullable()){
-			queryStream << " NULL ";
+		if(cols_list[i].is_nullable()){
+			query_stream << " NULL ";
 		}else{
-			queryStream << " NOT NULL ";
+			query_stream << " NOT NULL ";
 		}
-		if(i < columnsList.size()-1){
-			queryStream << ", ";
+		if(i < cols_list.size()-1){
+			query_stream << ", ";
 		}
 	}
 
-	queryStream << ");";
+	query_stream << ");";
 
-	execute_void(queryStream.str());
+	execute_void(query_stream.str());
 }
 
 table_schema mysql_session::get_table_schema(const string& name){
@@ -165,71 +166,71 @@ table_schema mysql_session::get_table_schema(const string& name){
 	result_table result = execute_flat(query);
 	table_schema schema;
 	for(size_t i = 0; i < result.get_num_rows(); i++){
-		string columnName = result.get_field_value(i, "COLUMN_NAME").getValueRef<string>();
-		string DBColumnType = result.get_field_value(i, "DATA_TYPE").getValueRef<string>();
-		string extra = result.get_field_value(i, "EXTRA").getValueRef<string>();
-		long maxLength = result.get_field_value(i, "CHARACTER_MAXIMUM_LENGTH").is_null() ? -1 : result.get_field_value(i, "CHARACTER_MAXIMUM_LENGTH").getValueRef<long>();
-		long numPrecision = result.get_field_value(i, "NUMERIC_PRECISION").is_null() ? -1 : result.get_field_value(i, "NUMERIC_PRECISION").getValueRef<long>();
-		bool isNullable = result.get_field_value(i, "IS_NULLABLE").getValueRef<string>() == "YES";
-		bool isPKey = result.get_field_value(i, "COLUMN_KEY").getValueRef<string>() == "PRI";
-		bool isAutoIncrement = extra.find("auto_increment") != extra.npos;
+		string col_name = result.get_field_value(i, "COLUMN_NAME").get_value_ref<string>();
+		string db_col_type = result.get_field_value(i, "DATA_TYPE").get_value_ref<string>();
+		string extra = result.get_field_value(i, "EXTRA").get_value_ref<string>();
+		long max_len = result.get_field_value(i, "CHARACTER_MAXIMUM_LENGTH").is_null() ? -1 : result.get_field_value(i, "CHARACTER_MAXIMUM_LENGTH").get_value_ref<long>();
+		long num_precision = result.get_field_value(i, "NUMERIC_PRECISION").is_null() ? -1 : result.get_field_value(i, "NUMERIC_PRECISION").get_value_ref<long>();
+		bool is_nullable = result.get_field_value(i, "IS_NULLABLE").get_value_ref<string>() == "YES";
+		bool is_pkey = result.get_field_value(i, "COLUMN_KEY").get_value_ref<string>() == "PRI";
+		bool is_auto_inc = extra.find("auto_increment") != extra.npos;
 
-		table_column tempColumn(
-				columnName,
-				get_type_info(DBColumnType),
-				maxLength,
-				numPrecision,
-				isNullable,
-				isPKey,
-				isAutoIncrement
+		table_column tmp_col(
+				col_name,
+				get_type_info(db_col_type),
+				max_len,
+				num_precision,
+				is_nullable,
+				is_pkey,
+				is_auto_inc
 		);
 
 		if(!result.get_field_value(i, "COLUMN_DEFAULT").is_null()){
-			String defaultValue = result.get_field_value(i, "COLUMN_DEFAULT").getValueRef<string>();
-			if(defaultValue == "NULL"){
-				tempColumn.set_default_value(String());
-			}else if(tempColumn.get_type_info() == String::get_type_info()){
+			db_string default_value = result.get_field_value(i, "COLUMN_DEFAULT").get_value_ref<string>();
+			if(default_value == "NULL"){
+				tmp_col.set_default_value(db_string());
+			}else if(tmp_col.get_type_info() == db_string::get_type_info()){
 				//default value is wrapped in single quotations
-				tempColumn.set_default_value(defaultValue.getValueRef().substr(1, defaultValue.getValueRef().size()-2));
+				tmp_col.set_default_value(default_value.get_value_ref().substr(1, default_value.get_value_ref().size()-2));
 			}else{
-				tempColumn.set_default_value(defaultValue);
+				tmp_col.set_default_value(default_value);
 			}
 		}
 
-		schema.emplace(columnName, tempColumn);
+		schema.emplace(col_name, tmp_col);
 	}
 	return schema;
 }
 
-void mysql_session::insert(model_base& model, bool updateAutoIncPKey){
-	stringstream queryStream;
+void mysql_session::insert(model_base& model, bool update_auto_inc_pkey){
+	stringstream query_stream;
 	const table_schema schema = model.get_schema();
-	queryStream << "INSERT INTO " << model.get_table_name();
-	queryStream << " ( ";
+	query_stream << "INSERT INTO " << model.get_table_name();
+	query_stream << " ( ";
 	//will rely on map internal order, same with attribute values
-	print_col_names(queryStream, model.get_schema());
-	queryStream << " ) VALUES ( ";
-	print_attrib_values(queryStream, model.get_schema(), model.get_attribs());
-	queryStream << " );";
-	if(execute_void(queryStream.str()) != 1){
+	print_col_names(query_stream, model.get_schema());
+	query_stream << " ) VALUES ( ";
+	print_attrib_values(query_stream, model.get_schema(), model.get_attribs());
+	query_stream << " );";
+	if(execute_void(query_stream.str()) != 1){
 		throw runtime_error("failed to insert model");
 	}
 
-	if(updateAutoIncPKey && model.auto_inc_pkey_col_exists()){
-		long lastInsertId = mysql_insert_id((st_mysql*)session_ptr); //  result.begin()->get(0).convert<long>();
-		model.set_auto_inc_pkey(lastInsertId);
+	if(update_auto_inc_pkey && model.auto_inc_pkey_col_exists()){
+		long last_insert_id = mysql_insert_id((st_mysql*)session_ptr); //  result.begin()->get(0).convert<long>();
+		model.set_auto_inc_pkey(last_insert_id);
 	}
 	return;
 }
 
 result_table mysql_session::execute_flat(const query_base& query){
-	std::string queryString = build_query_string(query);
-	return execute_flat(queryString);
+	std::string query_string = build_query_string(query);
+	return execute_flat(query_string);
 }
 
 result_table mysql_session::execute_flat(const std::string& query){
 	ORMLOG(logger::lvl::DBUG, "executing query : " + query);
-	mysql_query(query);
+	mysql_query_(query);
 
 	MYSQL_RES* result = mysql_store_result((st_mysql*)session_ptr);
 
@@ -240,32 +241,32 @@ result_table mysql_session::execute_flat(const std::string& query){
 	MYSQL_ROW row;
 	MYSQL_FIELD *field;
 	vector<string> columns;
-	vector<const type_info*> columnTypes;
+	vector<const type_info*> col_types;
 
 	int num_fields = mysql_num_fields(result);
 
 	while((field = mysql_fetch_field(result)) != NULL){
 		columns.push_back(field->name);
-		columnTypes.push_back(&get_type_info(field->type));
+		col_types.push_back(&get_type_info(field->type));
 	}
 
-	result_table flatResults(columns, columnTypes);
+	result_table flat_results(columns, col_types);
 
 	while((row = mysql_fetch_row(result)) != NULL){
 		ORMLOG(logger::lvl::DBUG, "fetching new row");
-		size_t rowIdx = flatResults.add_row();
+		size_t row_idx = flat_results.add_row();
 		for(int i = 0; i < num_fields; i++){
-			flatResults.set_field_value(rowIdx, i, row[i]);
+			flat_results.set_field_value(row_idx, i, row[i]);
 		}
 	}
 
 	mysql_free_result(result);
-	return flatResults;
+	return flat_results;
 }
 
 std::size_t mysql_session::execute_void(const std::string& query){
 	ORMLOG(logger::lvl::DBUG, "executing query : " + query);
-	mysql_query(query);
+	mysql_query_(query);
 	return (size_t)mysql_affected_rows((st_mysql*)session_ptr);
 }
 
@@ -274,4 +275,4 @@ mysql_session::~mysql_session() {
 	mysql_close((st_mysql*)session_ptr);
 }
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */

@@ -1,7 +1,6 @@
 #ifndef INCLUDE_TYPE_INFO_H_
 #define INCLUDE_TYPE_INFO_H_
 
-#include <list>
 #include <string>
 
 namespace ormplusplus {
@@ -14,7 +13,7 @@ public:
 	type_info(const std::type_info& wrapper_type, const std::type_info& primitive_type, bool _is_integral, bool _is_text);
 	type_info(const type_info& that);
 
-	const size_t wrapper_type_hash; //like typeid(NullableField<long>)
+	const size_t wrapper_type_hash; //like typeid(nullable_field<long>)
 	const size_t primitive_type_hash; //like typeid(long)
 	const bool is_integral;
 	const bool is_text;

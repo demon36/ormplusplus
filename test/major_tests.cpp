@@ -5,48 +5,48 @@
 using namespace std;
 using namespace ormplusplus;
 
-#define ASSERT(expression) printTestResult(#expression, expression)
+#define ASSERT(expression) print_test_result(#expression, expression)
 
-void printTestResult(const string& expression, bool result){
-	ostream& targetStream = result ? cout : cerr ;
-	targetStream << "assertion `" << left << setw(60) << expression + "` ";
-	targetStream << " >>>>>>> " << right << setw(20) << (result ? "succeeded" : "failed") << endl;
+void print_test_result(const string& expression, bool result){
+	ostream& target_stream = result ? cout : cerr ;
+	target_stream << "assertion `" << left << setw(60) << expression + "` ";
+	target_stream << " >>>>>>> " << right << setw(20) << (result ? "succeeded" : "failed") << endl;
 }
 
-class Client : public model<Client>
+class client : public model<client>
 {
 public:
-	DEFINE_ATTRIB(Long, id).autoIncrement().asPrimary();
-	DEFINE_ATTRIB(String, name).withDefault("nameless");
-	DEFINE_ATTRIB(Integer, age).withDefault(5).asNullable();
-	DEFINE_ATTRIB(Integer, height);
-	DEFINE_ATTRIB(DateTime, dob).asNullable(false);
+	DEFINE_ATTRIB(db_long, id).auto_increment().as_primary();
+	DEFINE_ATTRIB(db_string, name).with_default("nameless");
+	DEFINE_ATTRIB(db_int, age).with_default(5).as_nullable();
+	DEFINE_ATTRIB(db_int, height);
+	DEFINE_ATTRIB(db_datetime, dob).as_nullable(false);
 
 	constexpr static const char* _id = "asdf"; //use instead of 2nd template parameter ??
 };
 
-class MiniBus : public model<MiniBus, _("minibuses")>
+class mini_bus : public model<mini_bus, _("minibuses")>
 {
 public:
-	DEFINE_ATTRIB(Integer, id).autoIncrement().asPrimary();
-	DEFINE_ATTRIB(String, model).withDefault("myVan");
+	DEFINE_ATTRIB(db_int, id).auto_increment().as_primary();
+	DEFINE_ATTRIB(db_string, model).with_default("my_van");
 };
 
 
-void testModelDefinition(){
-	ASSERT(MiniBus::getTableName() == "minibuses");
-	ASSERT(Client::getTableName() == "Client");
-	ASSERT(db::isUserModelClass<Client>());
-	ASSERT(!db::isUserModelClass<Integer>());
+void test_model_definition(){
+	ASSERT(mini_bus::get_table_name() == "minibuses");
+	ASSERT(client::get_table_name() == "Client");
+	ASSERT(db::is_user_model_class<client>());
+	ASSERT(!db::is_user_model_class<db_int>());
 
-	Client c;
-	ASSERT(c.id.isNull());
+	client c;
+	ASSERT(c.id.is_null());
 	ASSERT(c.name == "nameless");
 	ASSERT(c.age == 5);
 	ASSERT(c.age < 6);
-	ASSERT(c.height.isNull());
+	ASSERT(c.height.is_null());
 
-	const table_schema& schema = Client::getSchema();
+	const table_schema& schema = client::get_schema();
 	ASSERT(schema.at("id").is_auto_increment());
 	ASSERT(schema.at("id").is_primary_key());
 	ASSERT(schema.at("name").get_default_value() == "nameless");
@@ -62,16 +62,16 @@ void testModelDefinition(){
 	ASSERT(!schema.at("height").is_text());
 }
 
-void assertTableCreation(){
-	db::dropTable<Client>();
-	ASSERT(!db::tableExists<Client>());
-	db::createTable<Client>();
-	ASSERT(db::tableExists<Client>());
-	ASSERT(db::tableExists<Client>(true));
+void assert_table_creation(){
+	db::drop_table<client>();
+	ASSERT(!db::table_exists<client>());
+	db::create_table<client>();
+	ASSERT(db::table_exists<client>());
+	ASSERT(db::table_exists<client>(true));
 }
 
-void testSingleInsertAndSelect(){
-	Client c0;
+void test_single_insert_and_select(){
+	client c0;
 	c0.age = 15;
 	c0.name = "robert";
 	c0.height = 167;
@@ -80,30 +80,30 @@ void testSingleInsertAndSelect(){
 	c0.dob = dobtm;
 	c0.insert(true);
 
-	Client c1 = Client::where({
+	client c1 = client::where({
 		{"id", "=", c0.id}
-	}).selectOne();
+	}).select_one();
 
 	ASSERT(c0.equals(c1));//todo: fix this
 }
 
-void testMultiInsertAndSelect(){
-	std::vector<Client> clients(10);
+void test_multi_insert_and_select(){
+	std::vector<client> clients(10);
 }
 
 int main(int argc, char** argv)
 {
 	logger::set_level(logger::lvl::DBUG);
-	testModelDefinition();
-	map<string, shared_ptr<db_session_base>> dbSessions = {
+	test_model_definition();
+	map<string, shared_ptr<db_session_base>> db_sessions = {
 		{"mysql", make_shared<mysql_session>("localhost", "ormplusplus", "root", "root")},
 		{"sqlite", make_shared<sqlite_session>("testdb.sqlite")}
 	};
-	for(auto& sessionEntry : dbSessions){
-		cout<<"running tests on "<<sessionEntry.first<<" database"<<endl;
-		db::set_default_session(sessionEntry.second);
-		assertTableCreation();
-		testSingleInsertAndSelect();
+	for(auto& session_entry : db_sessions){
+		cout<<"running tests on "<<session_entry.first<<" database"<<endl;
+		db::set_default_session(session_entry.second);
+		assert_table_creation();
+		test_single_insert_and_select();
 		cout<<"==================================================="<<endl;
 	}
 	return 0;

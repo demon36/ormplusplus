@@ -1,8 +1,9 @@
 #ifndef INCLUDE_NULLABLE_FIELD_H_
 #define INCLUDE_NULLABLE_FIELD_H_
 
-#include "nullable_field_base.h"
 #include <memory>
+
+#include "nullable_field_base.h"
 #include "attrib_initializer_base.h"
 #include "type_info.h"
 
@@ -20,8 +21,8 @@ template<class primitive_type>
 std::istream& operator>>(std::istream&, const nullable_field<primitive_type>&);
 
 /**
- * this class can be used either as a shell for a NullableFieldBase that exists some where else <br>
- * or as a container for NullableFieldBase
+ * this class can be used either as a shell for a nullable_field_base that exists some where else <br>
+ * or as a container for nullable_field_base
  */
 template<class primitive_type>
 class nullable_field{
@@ -77,15 +78,15 @@ public:
 	{
 	}
 
-	nullable_field(nullable_field_base& nfbase) //todo: convert to NullableFieldBase&&
+	nullable_field(nullable_field_base& nfbase) //todo: convert to nullable_field_base&&
 	: nfbase_ptr(&nfbase),
 	  is_ptr_owner(false),
 	  value_ref(nfbase_ptr->get_value_ref<primitive_type>())
 	{
 	}
 
-	nullable_field(const attrib_initializer_base& attribInitializer)
-	: nullable_field(attribInitializer.get_nfbase_ref())
+	nullable_field(const attrib_initializer_base& attrib_initializer)
+	: nullable_field(attrib_initializer.get_nfbase_ref())
 	{
 	}
 
@@ -211,7 +212,7 @@ public:
 		return nfbase_ptr->get_value_ref<primitive_type>();
 	}
 
-	nullable_field_base& getBaseRef()
+	nullable_field_base& get_value_ref()
 	{
 		return *nfbase_ptr;
 	}
@@ -243,20 +244,20 @@ std::istream& operator>>(std::istream& is, const nullable_field<primitive_type>&
     return is;
 }
 
-//remember to add the necessary item to typeInfoMap at adding new specializations
-typedef nullable_field<int> Integer;
-typedef nullable_field<long> Long;
-typedef nullable_field<float> Float;
-typedef nullable_field<double> Double;
-typedef nullable_field<std::string> String;
-typedef nullable_field<::tm> DateTime;
+//remember to add conditions to nullable_field_base::is_integral and nullable_field_base::is_text at adding new specializations
+typedef nullable_field<int> db_int;
+typedef nullable_field<long> db_long;
+typedef nullable_field<float> db_float;
+typedef nullable_field<double> db_double;
+typedef nullable_field<std::string> db_string;
+typedef nullable_field<::tm> db_datetime;
 //TODO: is this specialization essential ?
-typedef nullable_field<nullptr_t> Null;
+typedef nullable_field<nullptr_t> db_null;
 
 
-//TODO: replace by an empty constructor in NullableField
+//TODO: replace by an empty constructor in nullable_field
 //to be used like if x == Null() -maybe?-
-//extern const Null NullValue(nullptr);
+//extern const Null null_value(nullptr);
 
 }
 

@@ -3,8 +3,8 @@
 
 namespace ormplusplus {
 
-query_base::query_base(const std::string& _tableName, const table_schema& _schema)
-: table_name(_tableName), schema(_schema)
+query_base::query_base(const std::string& _table_name, const table_schema& _schema)
+: table_name(_table_name), schema(_schema)
 {
 }
 
@@ -35,4 +35,4 @@ const std::vector<order_rule>& query_base::get_order_rules_ref() const{
 query_base::~query_base(){
 }
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */

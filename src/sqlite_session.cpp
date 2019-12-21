@@ -19,27 +19,27 @@ void* sqlite_session::sqlite_query(const std::string& query){
 /**
  * @see https://www.sqlite.org/c3ref/c_blob.html
  */
-const type_info& sqlite_session::get_type_info(int sqliteTypeId){
+const type_info& sqlite_session::get_type_info(int sqlite_type_id){
 	//todo: revise typing setup
-	//todo: use TypeInfo here
+	//todo: use type_info here
 	//todo: BROKEN LOGIC: sqlite fundamental datatypes cannot be mapped to ormplusplus data types
-	switch(sqliteTypeId){
+	switch(sqlite_type_id){
 		case SQLITE_INTEGER:
-			return Integer::get_type_info();
+			return db_int::get_type_info();
 //			return typeid(long).hash_code();
 
 		case SQLITE_FLOAT:
-			return Float::get_type_info();
+			return db_float::get_type_info();
 //			return typeid(double).hash_code();
 
 //		case SQLITE_TEXT:
 //			return typeid(tm).hash_code();
 
 		case SQLITE_TEXT:
-			return String::get_type_info();
+			return db_string::get_type_info();
 
 		case SQLITE_NULL:
-			return Null::get_type_info();
+			return db_null::get_type_info();
 
 		default:
 			throw runtime_error("unsupported type");
@@ -47,109 +47,109 @@ const type_info& sqlite_session::get_type_info(int sqliteTypeId){
 }
 
 const map<string, type_info> sqlite_session::type_names_map({
-	{"INT", Integer::get_type_info()},
-	{"INTEGER", Long::get_type_info()},
-	{"FLOAT", Float::get_type_info()},
-	{"DOUBLE", Double::get_type_info()},
-	{"VARCHAR", String::get_type_info()},
-	{"TEXT", String::get_type_info()},
-	{"DATETIME", DateTime::get_type_info()},
+	{"INT", db_int::get_type_info()},
+	{"INTEGER", db_long::get_type_info()},
+	{"FLOAT", db_float::get_type_info()},
+	{"DOUBLE", db_double::get_type_info()},
+	{"VARCHAR", db_string::get_type_info()},
+	{"TEXT", db_string::get_type_info()},
+	{"DATETIME", db_datetime::get_type_info()},
 });
 
-const type_info& sqlite_session::get_type_info(const std::string& mySQLColTypeName){
-	string normalizedCaseName = mySQLColTypeName;
-	for(char &c: normalizedCaseName){
+const type_info& sqlite_session::get_type_info(const std::string& sqlite_col_type_name){
+	string normalized_case_name = sqlite_col_type_name;
+	for(char &c: normalized_case_name){
 		c = (char)toupper(c);
 	}
 
 	//todo: add length to column info
 	//todo: fix this bs
-	if(normalizedCaseName.find("VARCHAR") == 0){
-		normalizedCaseName = "VARCHAR";
-	} else if(normalizedCaseName.find("TEXT") == 0){
-		normalizedCaseName = "TEXT";
+	if(normalized_case_name.find("VARCHAR") == 0){
+		normalized_case_name = "VARCHAR";
+	} else if(normalized_case_name.find("TEXT") == 0){
+		normalized_case_name = "TEXT";
 	}
 
-	if(type_names_map.find(normalizedCaseName) == type_names_map.end()){
-		throw out_of_range("SQLiteSession::getTypeInfo called with unsupported type name");
+	if(type_names_map.find(normalized_case_name) == type_names_map.end()){
+		throw out_of_range("sqlite_session::get_type_info called with unsupported type name");
 	}else{
-		return type_names_map.find(normalizedCaseName)->second;
+		return type_names_map.find(normalized_case_name)->second;
 	}
 }
 
-sqlite_session::sqlite_session(const string& dbPath){
-    if (sqlite3_open(dbPath.c_str(), (sqlite3**)&session_ptr) != SQLITE_OK) {
+sqlite_session::sqlite_session(const string& db_path){
+    if (sqlite3_open(db_path.c_str(), (sqlite3**)&session_ptr) != SQLITE_OK) {
         
         fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg((sqlite3*)session_ptr));
         sqlite3_close((sqlite3*)session_ptr);
         throw runtime_error(sqlite3_errmsg((sqlite3*)session_ptr));
     }
 
-	ORMLOG(logger::lvl::INFO, "connected to sqlite path " + dbPath);
+	ORMLOG(logger::lvl::INFO, "connected to sqlite path " + db_path);
 }
 
 bool sqlite_session::table_exists(const string& name){
 	string query = "SELECT name FROM sqlite_master WHERE type='table' AND name='"+name+"';";
-	result_table foundTables = execute_flat(query);
-	return !foundTables.get_num_rows() == 0;
+	result_table found_tables = execute_flat(query);
+	return !found_tables.get_num_rows() == 0;
 }
 
 void sqlite_session::create_table(const string& name, const table_schema& schema){
-	stringstream queryStream;
-	queryStream << "CREATE TABLE IF NOT EXISTS `"<< name <<"`(";
-	std::vector<table_column> columnsList;
-	for(auto& columnEntry : schema ) {
-		columnsList.push_back( columnEntry.second );
+	stringstream query_stream;
+	query_stream << "CREATE TABLE IF NOT EXISTS `"<< name <<"`(";
+	std::vector<table_column> columns_list;
+	for(auto& column_entry : schema ) {
+		columns_list.push_back( column_entry.second );
 	}
 
-	for(size_t i = 0; i < columnsList.size(); i++){
-		string DBTypeName;
-		for(auto& typeNameEntry : type_names_map){
-			if(typeNameEntry.second.wrapper_type_hash == columnsList[i].get_type_info().wrapper_type_hash){
-				DBTypeName = typeNameEntry.first;
+	for(size_t i = 0; i < columns_list.size(); i++){
+		string db_type_name;
+		for(auto& type_name_entry : type_names_map){
+			if(type_name_entry.second.wrapper_type_hash == columns_list[i].get_type_info().wrapper_type_hash){
+				db_type_name = type_name_entry.first;
 				break;
 			}
 		}
 
-		if(DBTypeName.empty()){
-			throw runtime_error("trying to create table with column '"+columnsList[i].get_name()+"' having unsupported type");
+		if(db_type_name.empty()){
+			throw runtime_error("trying to create table with column '"+columns_list[i].get_name()+"' having unsupported type");
 		}
 
-		queryStream << "`"<< columnsList[i].get_name() <<"` " <<  DBTypeName;
-		if(columnsList[i].is_text()){
-			queryStream << "(" << columnsList[i].get_length() << ")";
+		query_stream << "`"<< columns_list[i].get_name() <<"` " <<  db_type_name;
+		if(columns_list[i].is_text()){
+			query_stream << "(" << columns_list[i].get_length() << ")";
 		}
 
-		if(columnsList[i].has_default_value()){
-			if(columnsList[i].get_default_value().is_null()){
-				queryStream << " DEFAULT NULL ";
+		if(columns_list[i].has_default_value()){
+			if(columns_list[i].get_default_value().is_null()){
+				query_stream << " DEFAULT NULL ";
 			}else{
-				queryStream << " DEFAULT '" << columnsList[i].get_default_value() << "' ";
+				query_stream << " DEFAULT '" << columns_list[i].get_default_value() << "' ";
 			}
 		}
 
-		if(columnsList[i].is_primary_key()){
-			queryStream << " PRIMARY KEY ";
+		if(columns_list[i].is_primary_key()){
+			query_stream << " PRIMARY KEY ";
 		}
 
-		if(columnsList[i].is_auto_increment()){
-			queryStream << " AUTOINCREMENT ";
+		if(columns_list[i].is_auto_increment()){
+			query_stream << " AUTOINCREMENT ";
 		}
 
-		if(columnsList[i].is_nullable()){
-			queryStream << " NULL ";
+		if(columns_list[i].is_nullable()){
+			query_stream << " NULL ";
 		}else{
-			queryStream << " NOT NULL ";
+			query_stream << " NOT NULL ";
 		}
 
-		if(i < columnsList.size()-1){
-			queryStream << ", ";
+		if(i < columns_list.size()-1){
+			query_stream << ", ";
 		}
 	}
 
-	queryStream << ");";
+	query_stream << ");";
 
-	execute_void(queryStream.str());
+	execute_void(query_stream.str());
 }
 
 table_schema sqlite_session::get_table_schema(const string& name){
@@ -158,65 +158,65 @@ table_schema sqlite_session::get_table_schema(const string& name){
 	result_table result = execute_flat(query);
 	table_schema schema;
 	for(size_t i = 0; i < result.get_num_rows(); i++){
-		string columnName = result.get_field_value(i, "name").getValueRef<string>();
-		string DBColumnType = result.get_field_value(i, "type").getValueRef<string>();
-		long maxLength = -1;//todo: parse number between parentheses, ex: VARCHAR(34)
-		long numPrecision = -1;//todo: understand how sqlite does it
-		bool isNullable = result.get_field_value(i, "notnull").getValueRef<int>() == 0;
-		bool isPKey = result.get_field_value(i, "pk").getValueRef<int>() == 1;
-		bool isAutoIncrement = true;//todo: fetch autoincrement info, will probably need to parse the table creation sql :S
+		string column_name = result.get_field_value(i, "name").get_value_ref<string>();
+		string db_column_type = result.get_field_value(i, "type").get_value_ref<string>();
+		long max_length = -1;//todo: parse number between parentheses, ex: VARCHAR(34)
+		long num_precision = -1;//todo: understand how sqlite does it
+		bool is_nullable = result.get_field_value(i, "notnull").get_value_ref<int>() == 0;
+		bool is_pkey = result.get_field_value(i, "pk").get_value_ref<int>() == 1;
+		bool is_auto_increment = true;//todo: fetch autoincrement info, will probably need to parse the table creation sql :S
 
-		table_column tempColumn(
-				columnName,
-				get_type_info(DBColumnType),
-				maxLength,
-				numPrecision,
-				isNullable,
-				isPKey,
-				isAutoIncrement
+		table_column temp_column(
+				column_name,
+				get_type_info(db_column_type),
+				max_length,
+				num_precision,
+				is_nullable,
+				is_pkey,
+				is_auto_increment
 		);
 
 		if(!result.get_field_value(i, "dflt_value").is_null()){ //todo: add a test case for these conditions
-			String defaultValue = result.get_field_value(i, "dflt_value").getValueRef<string>();
-			if(defaultValue == "NULL"){
-				tempColumn.set_default_value(String());
-			}else if(tempColumn.get_type_info() == String::get_type_info()){
+			db_string default_value = result.get_field_value(i, "dflt_value").get_value_ref<string>();
+			if(default_value == "NULL"){
+				temp_column.set_default_value(db_string());
+			}else if(temp_column.get_type_info() == db_string::get_type_info()){
 				//default value is wrapped in single quotations
-				tempColumn.set_default_value(defaultValue.getValueRef().substr(1, defaultValue.getValueRef().size()-2));
+				temp_column.set_default_value(default_value.get_value_ref().substr(1, default_value.get_value_ref().size()-2));
 			}else{
-				tempColumn.set_default_value(defaultValue);
+				temp_column.set_default_value(default_value);
 			}
 		}
 
-		schema.emplace(columnName, tempColumn);
+		schema.emplace(column_name, temp_column);
 	}
 	return schema;
 }
 
-void sqlite_session::insert(model_base& model, bool updateAutoIncPKey){
-	stringstream queryStream;
+void sqlite_session::insert(model_base& model, bool update_auto_inc_pkey){
+	stringstream query_stream;
 	const table_schema schema = model.get_schema();
-	queryStream << "INSERT INTO " << model.get_table_name();
-	queryStream << " ( ";
+	query_stream << "INSERT INTO " << model.get_table_name();
+	query_stream << " ( ";
 	//will rely on map internal order, same with attribute values
-	print_col_names(queryStream, model.get_schema());
-	queryStream << " ) VALUES ( ";
-	print_attrib_values(queryStream, model.get_schema(), model.get_attribs());
-	queryStream << " );";
-	if(execute_void(queryStream.str()) != 1){
+	print_col_names(query_stream, model.get_schema());
+	query_stream << " ) VALUES ( ";
+	print_attrib_values(query_stream, model.get_schema(), model.get_attribs());
+	query_stream << " );";
+	if(execute_void(query_stream.str()) != 1){
 		throw runtime_error("failed to insert model");
 	}
 
-	if(updateAutoIncPKey && model.auto_inc_pkey_col_exists()){
-		long lastInsertId = sqlite3_last_insert_rowid((sqlite3*)session_ptr); //  result.begin()->get(0).convert<long>();
-		model.set_auto_inc_pkey(lastInsertId);
+	if(update_auto_inc_pkey && model.auto_inc_pkey_col_exists()){
+		long last_insert_id = sqlite3_last_insert_rowid((sqlite3*)session_ptr); //  result.begin()->get(0).convert<long>();
+		model.set_auto_inc_pkey(last_insert_id);
 	}
 	return;
 }
 
 result_table sqlite_session::execute_flat(const query_base& query){
-	std::string queryString = build_query_string(query);
-	return execute_flat(queryString);
+	std::string query_string = build_query_string(query);
+	return execute_flat(query_string);
 }
 
 result_table sqlite_session::execute_flat(const std::string& query){
@@ -224,7 +224,7 @@ result_table sqlite_session::execute_flat(const std::string& query){
 	sqlite3_stmt* stmt = (sqlite3_stmt*)sqlite_query(query);
 
 	vector<string> columns;
-	vector<const type_info*> columnTypes;
+	vector<const type_info*> column_types;
 
 	int retval = sqlite3_step(stmt);
 	if (retval != SQLITE_DONE && retval != SQLITE_ROW) {
@@ -234,26 +234,26 @@ result_table sqlite_session::execute_flat(const std::string& query){
 	int num_fields = sqlite3_column_count(stmt);
 	for(int i = 0; i < num_fields; i++){
 		columns.push_back(sqlite3_column_name(stmt, i));
-		const char* sqliteTypeName = sqlite3_column_decltype(stmt, i);
-		if(sqliteTypeName == NULL){
-			columnTypes.push_back(&get_type_info(sqlite3_column_type(stmt, i)));
+		const char* sqlite_type_name = sqlite3_column_decltype(stmt, i);
+		if(sqlite_type_name == NULL){
+			column_types.push_back(&get_type_info(sqlite3_column_type(stmt, i)));
 		} else {
-			columnTypes.push_back(&get_type_info(sqliteTypeName));
+			column_types.push_back(&get_type_info(sqlite_type_name));
 		}
 	}
 
-	result_table flatResults(columns, columnTypes);
+	result_table flat_results(columns, column_types);
 	while(retval == SQLITE_ROW){
 		ORMLOG(logger::lvl::DBUG, "fetching new row");
-		size_t rowIdx = flatResults.add_row();
+		size_t row_idx = flat_results.add_row();
 		for(int i = 0; i < num_fields; i++){
-			flatResults.set_field_value(rowIdx, i, (const char*)sqlite3_column_text(stmt, i));
+			flat_results.set_field_value(row_idx, i, (const char*)sqlite3_column_text(stmt, i));
 			//todo: make use of fns like sqlite3_column_int() for better performance
 		}
 		retval = sqlite3_step(stmt);
 	}
     sqlite3_finalize(stmt);
-	return flatResults;
+	return flat_results;
 }
 
 std::size_t sqlite_session::execute_void(const std::string& query){
@@ -272,4 +272,4 @@ sqlite_session::~sqlite_session() {
 	sqlite3_close((sqlite3*)session_ptr);
 }
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */

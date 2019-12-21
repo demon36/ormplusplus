@@ -12,11 +12,11 @@ using namespace std;
 namespace ormplusplus{
 
 table_column::table_column()
-: type(Null::get_type_info())//TODO: check the consequences
+: type(db_null::get_type_info())//TODO: check the consequences
 {}
 
-table_column::table_column(const string& _name, const type_info& _typeInfo, long _length, long _precision, bool _nullable, bool _pKey, bool _auto_increment)
-: name(_name), type(_typeInfo)
+table_column::table_column(const string& _name, const type_info& _type_info, long _length, long _precision, bool _nullable, bool _pkey, bool _auto_increment)
+: name(_name), type(_type_info)
 {
 	this->length = _length;
 	this->precision = _precision;
@@ -24,12 +24,12 @@ table_column::table_column(const string& _name, const type_info& _typeInfo, long
 	if(_nullable){//if column is nullable then default value is NULL
 		default_value_set = true;
 	}
-	this->is_pkey = _pKey;
+	this->is_pkey = _pkey;
 	this->is_auto_inc = _auto_increment;
 }
 
-table_column::table_column(const string& _name, const type_info& _typeInfo)
-: name(_name), type(_typeInfo)
+table_column::table_column(const string& _name, const type_info& _type_info)
+: name(_name), type(_type_info)
 {
 	if(is_integral()){
 		length = -1;
@@ -46,7 +46,7 @@ long table_column::get_length() const { return length; }
 long table_column::get_precision() const { return precision; }
 bool table_column::is_nullable() const { return nullable; }
 bool table_column::has_default_value() const { return default_value_set; }
-String table_column::get_default_value() const { return default_value; }
+db_string table_column::get_default_value() const { return default_value; }
 bool table_column::is_auto_increment() const { return is_auto_inc; }
 bool table_column::is_primary_key() const { return is_pkey; }
 
@@ -64,7 +64,7 @@ void table_column::set_precision(int value){
 	length = value;
 }
 
-//TODO: should this be setAsIndex ??
+//TODO: should this be set_as_index ??
 void table_column::set_primary(bool value){
 	is_pkey = value;
 }
@@ -75,16 +75,16 @@ void table_column::set_nullable(bool value){
 		default_value_set = true;
 	}
 	//todo: this probably needs a revisit, notice this scenario:
-	//use constructs TableColumn with nullable = true
-	//defaultValueSet gets set to true because NULL becomes the default value
-	//user calls setNullable(false)
-	//now we need to clear defaultValueSet
-	//but what if user already sat defaultValue to something different that NULL ?
-	//todo: change defaultValue representation to be compatible with database field
+	//use constructs table_column with nullable = true
+	//default_value_set gets set to true because NULL becomes the default value
+	//user calls set_nullable(false)
+	//now we need to clear default_value_set
+	//but what if user already sat default_value to something different that NULL ?
+	//todo: change default_value representation to be compatible with database field
 	//possible values: "NULL", "34", "'a string value'", "'NULL'"
 }
 
-void table_column::set_default_value(const String& value){
+void table_column::set_default_value(const db_string& value){
 	default_value = value;
 	default_value_set = true;
 }

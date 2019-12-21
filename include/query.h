@@ -8,14 +8,14 @@ namespace ormplusplus{
 
 /**
  * this class is responsible for storing query parameters and checking their
- * validity against model schema, and returning instance(s) of UserModel upon request
+ * validity against model schema, and returning instance(s) of user_model upon request
  */
 template<class user_model>
 class query : public query_base{
 public:
-	query() = delete;// : QueryBase(UserModel::getTableName()) {}
+	query() = delete;// : query_base(user_model::get_table_name()) {}
 	query(const query& _query) : query_base(_query) {}
-	query(const std::vector<query_condition>& _conditions) : query_base(user_model::getTableName(), user_model::getSchema()){
+	query(const std::vector<query_condition>& _conditions) : query_base(user_model::get_table_name(), user_model::get_schema()){
 		//TODO: assert conditions comply to column names and types
 		conditions = _conditions;
 	}
@@ -30,15 +30,15 @@ public:
 		this->limit = 1;
 		std::vector<user_model> objects = select();
 		if(objects.empty()){
-			throw std::runtime_error("Calling selectOne() on a query that returned zero elements");
+			throw std::runtime_error("Calling select_one() on a query that returned zero elements");
 		}else{
 			return objects[0].clone();
 		}
 	}
 
-//	operator std::vector<UserModel>(){
-//		std::vector<UserModel> modelsList;
-//		return modelsList;
+//	operator std::vector<user_model>(){
+//		std::vector<user_model> models_list;
+//		return models_list;
 //	}
 
 	//TODO: throw exception if a decorator got called twice

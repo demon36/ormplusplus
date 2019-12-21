@@ -13,7 +13,7 @@ namespace ormplusplus {
 class mysql_session : public db_session_base {
 private:
 	void* session_ptr;
-	void mysql_query(const std::string& query);
+	void mysql_query_(const std::string& query);
 	static const type_info& get_type_info(int mysql_type_enum);
 	static const type_info& get_type_info(const std::string& mysql_col_type_name);
 	static const std::map<std::string, type_info> type_names_map;
@@ -29,6 +29,6 @@ public:
 	virtual ~mysql_session();
 };
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */
 
 #endif /* INCLUDE_MYSQL_SESSION_H_ */

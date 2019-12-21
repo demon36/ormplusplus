@@ -13,11 +13,11 @@ ostream& operator<<(ostream& outstream, nullptr_t value){
 }
 
 nullable_field_base::nullable_field_base()
-: type_info_ref(Null::getTypeInfo())
+: type_info_ref(db_null::get_type_info())
 {}
 
-nullable_field_base::nullable_field_base(const type_info& typeInfo)
-: type_info_ref(typeInfo)
+nullable_field_base::nullable_field_base(const type_info& type_info)
+: type_info_ref(type_info)
 {
 	if(type_info_ref.primitive_type_hash == typeid(int).hash_code()){
 		primitive_value_ptr = new int(0);
@@ -35,7 +35,7 @@ nullable_field_base::nullable_field_base(const type_info& typeInfo)
 		//is this the best way to do it ?
 		primitive_value_ptr = new nullptr_t();
 	}else{
-		throw runtime_error("unsupported data type at NullableFieldBase construction");
+		throw runtime_error("unsupported data type at nullable_field_base construction");
 	}
 }
 
@@ -43,20 +43,20 @@ nullable_field_base::nullable_field_base(const nullable_field_base& that)
 : type_info_ref(that.type_info_ref), has_value(that.has_value)
 {
 	if(that.type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-		primitive_value_ptr = new int(that.getValueRef<int>());
+		primitive_value_ptr = new int(that.get_value_ref<int>());
 	}else if(that.type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-		primitive_value_ptr = new long(that.getValueRef<long>());
+		primitive_value_ptr = new long(that.get_value_ref<long>());
 	}else if(that.type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-		primitive_value_ptr = new float(that.getValueRef<float>());
+		primitive_value_ptr = new float(that.get_value_ref<float>());
 	}else if(that.type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-		primitive_value_ptr = new double(that.getValueRef<double>());
+		primitive_value_ptr = new double(that.get_value_ref<double>());
 	}else if(that.type_info_ref.primitive_type_hash == typeid(string).hash_code()){
-		primitive_value_ptr = new string(that.getValueRef<string>());
+		primitive_value_ptr = new string(that.get_value_ref<string>());
 	}else if(that.type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
-		primitive_value_ptr = new ::tm(that.getValueRef<::tm>());
+		primitive_value_ptr = new ::tm(that.get_value_ref<::tm>());
 	}else if(that.type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
 		//is this the best way to do it ?
-		primitive_value_ptr = new nullptr_t(that.getValueRef<nullptr_t>());
+		primitive_value_ptr = new nullptr_t(that.get_value_ref<nullptr_t>());
 	}
 }
 
@@ -70,24 +70,24 @@ nullable_field_base::nullable_field_base(nullable_field_base&& that)
 
 nullable_field_base& nullable_field_base::operator=(const nullable_field_base& that){
 	if(this->type_info_ref != that.type_info_ref){
-		throw runtime_error("calling NullableFieldBase::operator= with non-equal nullable field types");
+		throw runtime_error("calling nullable_field_base::operator= with non-equal nullable field types");
 	}else{
 		this->has_value = that.has_value;
 		if(that.type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-			this->getValueRef<int>() = that.getValueRef<int>();
+			this->get_value_ref<int>() = that.get_value_ref<int>();
 		}else if(that.type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-			this->getValueRef<long>() = that.getValueRef<long>();
+			this->get_value_ref<long>() = that.get_value_ref<long>();
 		}else if(that.type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-			this->getValueRef<float>() = that.getValueRef<float>();
+			this->get_value_ref<float>() = that.get_value_ref<float>();
 		}else if(that.type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-			this->getValueRef<double>() = that.getValueRef<double>();
+			this->get_value_ref<double>() = that.get_value_ref<double>();
 		}else if(that.type_info_ref.primitive_type_hash == typeid(string).hash_code()){
-			this->getValueRef<string>() = that.getValueRef<string>();
+			this->get_value_ref<string>() = that.get_value_ref<string>();
 		}else if(that.type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
-			this->getValueRef<::tm>() = that.getValueRef<::tm>();
+			this->get_value_ref<::tm>() = that.get_value_ref<::tm>();
 		}else if(that.type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
 			//is this the best way to do it ?
-			this->getValueRef<nullptr_t>() = that.getValueRef<nullptr_t>();
+			this->get_value_ref<nullptr_t>() = that.get_value_ref<nullptr_t>();
 		}
 		return *this;
 	}
@@ -99,18 +99,18 @@ bool nullable_field_base::equals(const nullable_field_base& that) const{
 	}
 
 	if(that.type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-		return this->getValueRef<int>() == that.getValueRef<int>();
+		return this->get_value_ref<int>() == that.get_value_ref<int>();
 	}else if(that.type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-		return this->getValueRef<long>() == that.getValueRef<long>();
+		return this->get_value_ref<long>() == that.get_value_ref<long>();
 	}else if(that.type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-		return this->getValueRef<float>() == that.getValueRef<float>();
+		return this->get_value_ref<float>() == that.get_value_ref<float>();
 	}else if(that.type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-		return this->getValueRef<double>() == that.getValueRef<double>();
+		return this->get_value_ref<double>() == that.get_value_ref<double>();
 	}else if(that.type_info_ref.primitive_type_hash == typeid(string).hash_code()){
-		return this->getValueRef<string>() == that.getValueRef<string>();
+		return this->get_value_ref<string>() == that.get_value_ref<string>();
 	}else if(that.type_info_ref.primitive_type_hash == typeid(tm).hash_code()){
-		tm& lhs = this->getValueRef<tm>();
-		tm& rhs = that.getValueRef<tm>();
+		tm& lhs = this->get_value_ref<tm>();
+		tm& rhs = that.get_value_ref<tm>();
 		return	lhs.tm_year == rhs.tm_year &&
 				lhs.tm_mon == rhs.tm_mon &&
 				lhs.tm_mday == rhs.tm_mday &&
@@ -119,9 +119,9 @@ bool nullable_field_base::equals(const nullable_field_base& that) const{
 				lhs.tm_min == rhs.tm_min &&
 				lhs.tm_sec == rhs.tm_sec;
 	}else if(that.type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
-		return this->getValueRef<nullptr_t>() == that.getValueRef<nullptr_t>();
+		return this->get_value_ref<nullptr_t>() == that.get_value_ref<nullptr_t>();
 	}else{
-		throw runtime_error("called NullableFieldBase::equals() with unsupported type");
+		throw runtime_error("called nullable_field_base::equals() with unsupported type");
 	}
 
 }
@@ -136,20 +136,20 @@ string nullable_field_base::to_string() const
 		return "NULL";
 	}
 	if(type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-		return to_string(*(int*)primitive_value_ptr);
+		return std::to_string(*(int*)primitive_value_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-		return to_string(*(long*)primitive_value_ptr);
+		return std::to_string(*(long*)primitive_value_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-		return to_string(*(float*)primitive_value_ptr);
+		return std::to_string(*(float*)primitive_value_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-		return to_string(*(double*)primitive_value_ptr);
+		return std::to_string(*(double*)primitive_value_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(string).hash_code()){
 		return *(string*)primitive_value_ptr;
 	}else if(type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
 		::tm& date = *(::tm*)primitive_value_ptr;
-	    char dateBuffer[100] = {0};
-	    std::strftime(dateBuffer, sizeof(dateBuffer), "%F %X", &date);
-		return dateBuffer;
+	    char date_buffer[100] = {0};
+	    std::strftime(date_buffer, sizeof(date_buffer), "%F %X", &date);
+		return date_buffer;
 	}else if(type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
 		return "NULL";
 	}
@@ -190,4 +190,4 @@ nullable_field_base::~nullable_field_base(){
 	}
 }
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */

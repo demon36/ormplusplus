@@ -15,7 +15,7 @@ class result_table final {
 	size_t num_rows = 0;
 	std::map<std::string, size_t> col_name_to_idx;
 	std::vector<const type_info*> col_types;
-	std::map<size_t, nullable_field_base> values;//map<rowIdx*numColumns+colId, value>
+	std::map<size_t, nullable_field_base> values;//map<row_idx*num_cols+col_id, value>
 	static nullable_field_base null_field;
 public:
 	result_table() = delete;
@@ -33,6 +33,6 @@ public:
 	~result_table();
 };
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */
 
 #endif /* INCLUDE_RESULT_TABLE_H_ */

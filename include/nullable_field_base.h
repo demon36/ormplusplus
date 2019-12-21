@@ -9,8 +9,8 @@
 
 namespace ormplusplus {
 
-//TODO: remove this after removing NullableField<nullptr_t>
-//needed for using NullableField<nullptr_t>
+//TODO: remove this after removing nullable_field<nullptr_t>
+//needed for using nullable_field<nullptr_t>
 std::ostream& operator<<(std::ostream& outstream, nullptr_t value);
 
 /**
@@ -53,7 +53,7 @@ public:
 		if(typeid(primitive_type).hash_code() == type_info_ref.primitive_type_hash){
 			return *(primitive_type*)primitive_value_ptr;
 		}else{
-			throw std::runtime_error("type mismatch at NullableFieldBase::getValueRef()");
+			throw std::runtime_error("type mismatch at nullable_field_base::get_value_ref()");
 		}
 	}
 
@@ -63,9 +63,9 @@ public:
 		//TODO: use enable if
 		if(typeid(primitive_type).hash_code() == type_info_ref.primitive_type_hash){
 			*(primitive_type*)primitive_value_ptr = value;
-			has_value = true;//todo: replace hasValue with valuePtr != nullptr
+			has_value = true;//todo: has_value has_value with value_ptr != nullptr
 		}else{
-			throw std::runtime_error("type mismatch at NullableFieldBase::setValue(value)");
+			throw std::runtime_error("type mismatch at nullable_field_base::set_value(value)");
 		}
 	}
 
@@ -80,6 +80,6 @@ public:
 	~nullable_field_base();
 };
 
-} /* namespace ORMPlusPlus */
+} /* namespace ormplusplus */
 
 #endif /* INCLUDE_NULLABLE_FIELD_BASE_H_ */

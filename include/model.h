@@ -23,11 +23,11 @@
 //creates a set of template parameters from a string literal
 #define _ typestring_is
 //TODO: facilitate writing conditions using sth like:
-//#define DEFINE_ATTRIB(DATATYPE, NAME) static std::string _ ## NAME(){static std::string _s = #NAME; return _s;}; DATATYPE NAME = initializeAttrib<DATATYPE>(#NAME)
+//#define DEFINE_ATTRIB(DATATYPE, NAME) static std::string _ ## NAME(){static std::string _s = #NAME; return _s;}; DATATYPE NAME = initialize_attrib<DATATYPE>(#NAME)
 //or a static reference that is initialized to a schema entry
-//this is better static const TableColumn& ID_(){ return schema[""]; };
-//so that queries can like where({MyModel::_ID(), "=", 3})
-#define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE NAME = initializeAttrib<DATATYPE>(#NAME)
+//this is better static const table_column& ID_(){ return schema[""]; };
+//so that queries can like where({my_model::_ID(), "=", 3})
+#define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE NAME = initialize_attrib<DATATYPE>(#NAME)
 
 namespace ormplusplus{
 
@@ -92,6 +92,10 @@ public:
 		return query.get();
 	}
 
+	static std::string get_table_name(){
+		return table_name_;
+	}
+
 	//TODO: implement nested conditions
 	static query<user_model> where(std::vector<query_condition> conditions){
 		return query<user_model>(conditions);
@@ -101,15 +105,15 @@ public:
 		return query<user_model>({condition});
 	}
 
-	//TODO: add another variant that takes no template parameters and performs the withDefault() check in runtime
+	//TODO: add another variant that takes no template parameters and performs the with_default() check in runtime
 	//		this will eliminate the need for macros
-	//TODO: should this fn be renamed to bindAttribute ?
+	//TODO: should this fn be renamed to bind_attribute ?
 	template<typename attrib_type>
-	attrib_initializer<attrib_type> initializeAttrib(const std::string& name){
-		bool columnAlreadyAdded = !add_col_if_not_exists(name, attrib_type::get_type_info());
-		//TODO: move logic to ModelBase
+	attrib_initializer<attrib_type> initialize_attrib(const std::string& name){
+		bool column_already_added = !add_col_if_not_exists(name, attrib_type::get_type_info());
+		//TODO: move logic to model_base
 		nullable_field_base& field = attributes.emplace(name, nullable_field_base(attrib_type::get_type_info())).first->second;
-		if(columnAlreadyAdded){
+		if(column_already_added){
 			return {field, nullptr};
 		}else{
 			return {field, &schema[name]};
@@ -121,7 +125,7 @@ public:
 	}
 
 	//todo: is this necessary ?
-	static const table_schema& get_schema() override {
+	static const table_schema& get_schema() {
 		//built schema by creating a model instance before processing the query
 		if(!schema_built){
 			user_model dummy_instance;

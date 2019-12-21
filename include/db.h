@@ -23,7 +23,7 @@ private:
 	}
 
 public:
-	//make sure template parameter is a child of Model<UserModel>
+	//make sure template parameter is a child of Model<user_model>
 	//TODO: check at compile time
 	template <class T>
 	static bool is_user_model_class(){
@@ -33,7 +33,7 @@ public:
 	template <class T>
 	static void assert_class_is_user_model(){
 		if(!is_user_model_class<T>()){
-			throw std::runtime_error("template parameter is not a legitimate child of ModelBase");
+			throw std::runtime_error("template parameter is not a legitimate child of model_base");
 		}
 	}
 
@@ -58,22 +58,22 @@ public:
 	template <class user_model>
 	static void create_table(){
 		assert_class_is_user_model<user_model>();
-		get_default_session().create_table(user_model::getTableName(), user_model::getSchema());
+		get_default_session().create_table(user_model::get_table_name(), user_model::get_schema());
 	}
 
 	template <class user_model>
 	static void drop_table(){
-		get_default_session().drop_table(user_model::getTableName());
+		get_default_session().drop_table(user_model::get_table_name());
 	}
 
 	template <class user_model>
 	static bool table_exists(bool check_schema = false){
 		assert_class_is_user_model<user_model>();
-		table_schema schema = user_model::getSchema();
+		table_schema schema = user_model::get_schema();
 		if(check_schema){
-			return get_default_session().table_exists(user_model::getTableName(), schema);
+			return get_default_session().table_exists(user_model::get_table_name(), schema);
 		}else{
-			return get_default_session().table_exists(user_model::getTableName());
+			return get_default_session().table_exists(user_model::get_table_name());
 		}
 	}
 
