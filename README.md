@@ -7,35 +7,35 @@ Targeting SQLite & MySQL support, others can be added in the future
 [![codecov](https://codecov.io/gh/demon36/ormplusplus/branch/master/graph/badge.svg)](https://codecov.io/gh/demon36/ormplusplus)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-### Usage example
+### Usage example -not fully working yet- 
 ```cpp
-BOUND_MODEL(Client, "client_info")
+BOUND_MODEL(client, "client_info")
 {
 public:
-	DEFINE_ATTRIB(String, name).withDefault("nameless");
-	DEFINE_ATTRIB(Integer, age).withDefault(5);
-	DEFINE_ATTRIB(Integer, height);
+	DEFINE_ATTRIB(db_string, name).with_default("nameless");
+	DEFINE_ATTRIB(db_int, age).with_default(5);
+	DEFINE_ATTRIB(db_int, height);
 };
 
 int main(int argc, char** argv)
 {
-	DB::setDefaultSession(make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root"));
+	db::set_default_session(make_shared<mysql_session>("localhost", "ormplusplus", "root", "root"));
 	
-	if(!DB::tableExists<Client>()){
-		DB::createTable<Client>();
+	if(!db::table_exists<client>()){
+		db::create_table<client>();
 	}
 
-	std::vector<Client> allClients = Client::get();
-	std::vector<Client> youngClients = Client::where({
+	std::vector<client> all_clients = client::get();
+	std::vector<client> young_clients = client::where({
 		{"age", "<", 45},
-		{"name", "=", NullValue},
+		{"name", "=", null_value},
 	}).orderBy({
-		{"age", SortDir::Asc},
-		{"height", SortDir::Desc},
+		{"age", sort_dir::asc},
+		{"height", sort_dir::desc},
 	}).limit(100).get();
 	
-	Client c0 = Client::where({"id", 542}).findFirst();
-	Client c1;
+	client c0 = client::where({"id", 542}).find_first();
+	client c1;
 	c1.name = "myname";
 	c1.age = 25;
 	c1.save();
@@ -52,33 +52,27 @@ int main(int argc, char** argv)
 - [x] put DB supported types in one place
 - [x] update tests
 - [x] use logging
-- [x] add basic support for sqlite
-- [ ] insert one
-- [ ] select one
-- [ ] insert many
-- [ ] select many
-- [ ] delete one
-- [ ] update one
-- [ ] delete many
-- [ ] update many
-- [ ] query order by, limit
-- [ ] query group by, having
 - [x] get rid of Poco dependency
-- [ ] autosave
+- [x] add basic support for sqlite
+- [ ] select, insert, update, delete one
+- [ ] select, insert, update, delete many
+- [ ] order by, limit, group by, having
+- [ ] insert or update if exists
 - [ ] nested where conditions
 - [ ] aggregate fns (AVG, COUNT, SUM, MAX, MIN)
-- [ ] insert or update if exists
-- [ ] separate sqlite and mysql dependencies
-- [ ] add support for mongodb
+- [ ] separate sqlite and mysql compile time dependencies
+- [ ] autosave
 - [ ] check thread safety
 - [ ] relational models (maybe?)
 - [ ] transactions (maybe?)
 
 ### build instructions
 - install mysql and sqlite c connectors
+
 ``
 sudo apt-get install default-libmysqlclient-dev libsqlite3-dev #on debian bullseye
 ``
+
 - run make
 
 ### guidelines

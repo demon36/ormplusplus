@@ -35,7 +35,7 @@ public:
 
 void test_model_definition(){
 	ASSERT(mini_bus::get_table_name() == "minibuses");
-	ASSERT(client::get_table_name() == "Client");
+	ASSERT(client::get_table_name() == "client");
 	ASSERT(db::is_user_model_class<client>());
 	ASSERT(!db::is_user_model_class<db_int>());
 

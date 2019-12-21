@@ -212,7 +212,7 @@ public:
 		return nfbase_ptr->get_value_ref<primitive_type>();
 	}
 
-	nullable_field_base& get_value_ref()
+	nullable_field_base& get_base_ref()
 	{
 		return *nfbase_ptr;
 	}
