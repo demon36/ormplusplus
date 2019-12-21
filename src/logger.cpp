@@ -1,5 +1,4 @@
-#include "Logger.h"
-
+#include <logger.h>
 #include <iomanip>
 #include <chrono>
 
@@ -11,35 +10,35 @@ using namespace std;
 #define PATH_SEPARATOR "/"
 #endif
 
-namespace ORMPlusPlus {
-	fstream Logger::logFile;
-	bool Logger::isHandleOpen = false;
-	Logger::Lv Logger::m_level = Lv::WARNING;
+namespace ormplusplus {
+	fstream logger::log_file;
+	bool logger::is_handle_open = false;
+	logger::lvl logger::m_level = lvl::WARNING;
 	//TODO: make thread safe
 	//TODO: add rotation maybe
-	void Logger::useFile(const string& fileName){
-		if(isHandleOpen){
-			logFile.close();
-			isHandleOpen = false;
-			logFile.open(fileName, ios::out);
-			isHandleOpen = true;
+	void logger::use_file(const string& fileName){
+		if(is_handle_open){
+			log_file.close();
+			is_handle_open = false;
+			log_file.open(fileName, ios::out);
+			is_handle_open = true;
 		}else{
-			logFile.open(fileName, ios::out | ios::app);
-			isHandleOpen = true;
+			log_file.open(fileName, ios::out | ios::app);
+			is_handle_open = true;
 		}
 	}
 
-	void Logger::setLevel(Lv value){
+	void logger::set_level(lvl value){
 		m_level = value;
 	}
 
-	void Logger::log(string module, Lv level, const string& msg){
+	void logger::log(string module, lvl level, const string& msg){
 		if(level < m_level){
 			return;
 		}
-		if(!isHandleOpen){
-			logFile.open(DEFAULT_LOG_FILE, ios::out | ios::app);
-			isHandleOpen = true;
+		if(!is_handle_open){
+			log_file.open(DEFAULT_LOG_FILE, ios::out | ios::app);
+			is_handle_open = true;
 		}
 		size_t slashIndex = module.rfind(PATH_SEPARATOR);
 		if(slashIndex != module.npos){
@@ -50,22 +49,22 @@ namespace ORMPlusPlus {
 	    char dateBuffer[100] = {0};
 	    std::strftime(dateBuffer, sizeof(dateBuffer), "%F %X", std::localtime(&now));
 
-		logFile << dateBuffer << " | " << left << setw(7) << levelToString(level) << " | ";
-		logFile << left << setw(20) << module << " | " << msg << endl;
+		log_file << dateBuffer << " | " << left << setw(7) << levelToString(level) << " | ";
+		log_file << left << setw(20) << module << " | " << msg << endl;
 	}
 
-	std::string Logger::levelToString(Lv level){
+	std::string logger::levelToString(lvl level){
 		switch(level){
-			case Lv::DBUG:
+			case lvl::DBUG:
 				return "DEBUG";
 				break;
-			case Lv::INFO:
+			case lvl::INFO:
 				return "INFO";
 				break;
-			case Lv::WARNING:
+			case lvl::WARNING:
 				return "WARNING";
 				break;
-			case Lv::ERROR:
+			case lvl::ERROR:
 				return "ERROR";
 				break;
 			default:

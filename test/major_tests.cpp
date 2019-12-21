@@ -1,10 +1,9 @@
+#include <logger.h>
 #include "ormplusplus.h"
-#include "Logger.h"
-
 #include <iomanip>
 
 using namespace std;
-using namespace ORMPlusPlus;
+using namespace ormplusplus;
 
 #define ASSERT(expression) printTestResult(#expression, expression)
 
@@ -14,7 +13,7 @@ void printTestResult(const string& expression, bool result){
 	targetStream << " >>>>>>> " << right << setw(20) << (result ? "succeeded" : "failed") << endl;
 }
 
-class Client : public Model<Client>
+class Client : public model<Client>
 {
 public:
 	DEFINE_ATTRIB(Long, id).autoIncrement().asPrimary();
@@ -26,7 +25,7 @@ public:
 	constexpr static const char* _id = "asdf"; //use instead of 2nd template parameter ??
 };
 
-class MiniBus : public Model<MiniBus, _("minibuses")>
+class MiniBus : public model<MiniBus, _("minibuses")>
 {
 public:
 	DEFINE_ATTRIB(Integer, id).autoIncrement().asPrimary();
@@ -37,8 +36,8 @@ public:
 void testModelDefinition(){
 	ASSERT(MiniBus::getTableName() == "minibuses");
 	ASSERT(Client::getTableName() == "Client");
-	ASSERT(DB::isUserModelClass<Client>());
-	ASSERT(!DB::isUserModelClass<Integer>());
+	ASSERT(db::isUserModelClass<Client>());
+	ASSERT(!db::isUserModelClass<Integer>());
 
 	Client c;
 	ASSERT(c.id.isNull());
@@ -47,28 +46,28 @@ void testModelDefinition(){
 	ASSERT(c.age < 6);
 	ASSERT(c.height.isNull());
 
-	const TableSchema& schema = Client::getSchema();
-	ASSERT(schema.at("id").isAutoIncrement());
-	ASSERT(schema.at("id").isPrimary());
-	ASSERT(schema.at("name").getDefaultValue() == "nameless");
-	ASSERT(schema.at("name").isText());
-	ASSERT(!schema.at("name").isIntegral());
-	ASSERT(schema.at("age").getDefaultValue() == "5");
-	ASSERT(schema.at("age").isNullable());
-	ASSERT(!schema.at("height").isAutoIncrement());
-	ASSERT(!schema.at("height").isNullable());
-	ASSERT(schema.at("height").isIntegral());
-	ASSERT(schema.at("height").hasDefaultValue() == false);
-	ASSERT(!schema.at("height").isPrimary());
-	ASSERT(!schema.at("height").isText());
+	const table_schema& schema = Client::getSchema();
+	ASSERT(schema.at("id").is_auto_increment());
+	ASSERT(schema.at("id").is_primary_key());
+	ASSERT(schema.at("name").get_default_value() == "nameless");
+	ASSERT(schema.at("name").is_text());
+	ASSERT(!schema.at("name").is_integral());
+	ASSERT(schema.at("age").get_default_value() == "5");
+	ASSERT(schema.at("age").is_nullable());
+	ASSERT(!schema.at("height").is_auto_increment());
+	ASSERT(!schema.at("height").is_nullable());
+	ASSERT(schema.at("height").is_integral());
+	ASSERT(schema.at("height").has_default_value() == false);
+	ASSERT(!schema.at("height").is_primary_key());
+	ASSERT(!schema.at("height").is_text());
 }
 
 void assertTableCreation(){
-	DB::dropTable<Client>();
-	ASSERT(!DB::tableExists<Client>());
-	DB::createTable<Client>();
-	ASSERT(DB::tableExists<Client>());
-	ASSERT(DB::tableExists<Client>(true));
+	db::dropTable<Client>();
+	ASSERT(!db::tableExists<Client>());
+	db::createTable<Client>();
+	ASSERT(db::tableExists<Client>());
+	ASSERT(db::tableExists<Client>(true));
 }
 
 void testSingleInsertAndSelect(){
@@ -94,15 +93,15 @@ void testMultiInsertAndSelect(){
 
 int main(int argc, char** argv)
 {
-	Logger::setLevel(Logger::Lv::DBUG);
+	logger::set_level(logger::lvl::DBUG);
 	testModelDefinition();
-	map<string, shared_ptr<DBSessionBase>> dbSessions = {
-		{"mysql", make_shared<MySQLSession>("localhost", "ormplusplus", "root", "root")},
-		{"sqlite", make_shared<SQLiteSession>("testdb.sqlite")}
+	map<string, shared_ptr<db_session_base>> dbSessions = {
+		{"mysql", make_shared<mysql_session>("localhost", "ormplusplus", "root", "root")},
+		{"sqlite", make_shared<sqlite_session>("testdb.sqlite")}
 	};
 	for(auto& sessionEntry : dbSessions){
 		cout<<"running tests on "<<sessionEntry.first<<" database"<<endl;
-		DB::setDefaultSession(sessionEntry.second);
+		db::set_default_session(sessionEntry.second);
 		assertTableCreation();
 		testSingleInsertAndSelect();
 		cout<<"==================================================="<<endl;

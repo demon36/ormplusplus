@@ -1,47 +1,47 @@
-#include "DBSessionBase.h"
+#include "db_session_base.h"
 
 #include <sstream>
 
 using namespace std;
-namespace ORMPlusPlus {
+namespace ormplusplus {
 
-DBSessionBase::DBSessionBase() {
+db_session_base::db_session_base() {
 	// TODO Auto-generated constructor stub
 }
 
-void DBSessionBase::dropTable(const std::string& name){
-	string queryString = "DROP TABLE IF EXISTS `" + name + "`;";
-	executeVoid(queryString);
+void db_session_base::drop_table(const std::string& name){
+	string query_string = "DROP TABLE IF EXISTS `" + name + "`;";
+	execute_void(query_string);
 }
 
-bool DBSessionBase::tableExists(const std::string& name, TableSchema& schema){
-	auto foundSchema = getTableSchema(name);
+bool db_session_base::table_exists(const std::string& name, table_schema& schema){
+	auto foundSchema = get_table_schema(name);
 	for(auto& column : schema){
-		TableColumn& foundColumn = foundSchema[column.first];
+		table_column& foundColumn = foundSchema[column.first];
 		if(column.second != foundColumn){
 			return false;
 		}
-		if(column.second.isIntegral() && column.second.getPrecision() > foundColumn.getPrecision()){
+		if(column.second.is_integral() && column.second.get_precision() > foundColumn.get_precision()){
 			return false;
 		}
 		//TODO: can it be both ??
-		if(column.second.isText() && column.second.getLength() > foundColumn.getLength()){
+		if(column.second.is_text() && column.second.get_length() > foundColumn.get_length()){
 			return false;
 		}
 	}
 	return true;
 }
 
-std::string DBSessionBase::buildQueryString(const QueryBase& query){
+std::string db_session_base::build_query_string(const query_base& query){
 	std::stringstream queryStream;
-	const std::vector<QueryCondition>& conditions = query.getConditionsRef();
-	const std::vector<OrderRule>& orderRules = query.getOrderRulesRef();
+	const std::vector<query_condition>& conditions = query.getConditionsRef();
+	const std::vector<order_rule>& orderRules = query.getOrderRulesRef();
 	int limit = query.getLimit();
 
 	//TODO: use logging for raw queries
-	if(query.getType() == QueryType::_Null){
+	if(query.getType() == query_type::_Null){
 		throw std::runtime_error("try to execute a query with null type");
-	}else if(query.getType() == QueryType::_Select){
+	}else if(query.getType() == query_type::_Select){
 		queryStream << "select ";
 		printColumnNames(queryStream, query.getTableSchema());
 		queryStream << " from " << query.getTableName();
@@ -80,21 +80,21 @@ std::string DBSessionBase::buildQueryString(const QueryBase& query){
 
 		return queryStream.str();
 
-	}else if(query.getType() == QueryType::_Insert){
+	}else if(query.getType() == query_type::_Insert){
 		throw std::runtime_error("unimplemented");
-	}else if(query.getType() == QueryType::_Delete){
+	}else if(query.getType() == query_type::_Delete){
 		throw std::runtime_error("unimplemented");
-	}else if(query.getType() == QueryType::_Update){
+	}else if(query.getType() == query_type::_Update){
 		throw std::runtime_error("unimplemented");
 	}
 	throw std::runtime_error("unsupported QueryType");
 }
 
-DBSessionBase::~DBSessionBase() {
+db_session_base::~db_session_base() {
 	// TODO Auto-generated destructor stub
 }
 
-void DBSessionBase::printColumnNames(std::ostream& stream, const TableSchema& schema){
+void db_session_base::printColumnNames(std::ostream& stream, const table_schema& schema){
 	for(auto columnIt = schema.begin(); columnIt != schema.end(); ++columnIt){
 		stream << " `" << columnIt->first << "`";
 		if(std::next(columnIt) != schema.end()){
@@ -103,7 +103,7 @@ void DBSessionBase::printColumnNames(std::ostream& stream, const TableSchema& sc
 	}
 }
 
-void DBSessionBase::printAttribValues(std::ostream& stream, const TableSchema& schema, const AttributesMap& attribs){
+void db_session_base::printAttribValues(std::ostream& stream, const table_schema& schema, const AttributesMap& attribs){
 	for(auto columnIt = schema.begin(); columnIt != schema.end(); ++columnIt){
 		//TODO: override operatpr << for nullable field base
 		if(!columnIt->second.isIntegral()){

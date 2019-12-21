@@ -1,7 +1,7 @@
 #ifndef ORMPLUSPLUS_H
 #define ORMPLUSPLUS_H
-#include "Model.h"
-#include "DB.h"
-#include "MySQLSession.h"
-#include "SQLiteSession.h"
+#include "db.h"
+#include "model.h"
+#include "mysql_session.h"
+#include "sqlite_session.h"
 #endif
