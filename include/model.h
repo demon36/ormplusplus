@@ -17,8 +17,8 @@
 #define GET_MACRO(_1,_2,NAME,...) NAME
 #define BOUND_MODEL(...) GET_MACRO(__VA_ARGS__, BOUND_MODEL_2, BOUND_MODEL_1)(__VA_ARGS__)
 
-#define BOUND_MODEL_1(CLASS_NAME) class CLASS_NAME : public ormplusplus::model<CLASS_NAME>
-#define BOUND_MODEL_2(CLASS_NAME, TABLE_NAME) class CLASS_NAME : public ormplusplus::model<CLASS_NAME, typestring_is(TABLE_NAME)>
+#define BOUND_MODEL_1(CLASS_NAME) struct CLASS_NAME : public ormplusplus::model<CLASS_NAME>
+#define BOUND_MODEL_2(CLASS_NAME, TABLE_NAME) struct CLASS_NAME : public ormplusplus::model<CLASS_NAME, typestring_is(TABLE_NAME)>
 
 //creates a set of template parameters from a string literal
 #define _ typestring_is

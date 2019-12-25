@@ -26,7 +26,7 @@ public:
 	template<class primitive_type>
 	static nullable_field_base create(const type_info& type, const primitive_type& value){
 		nullable_field_base instance(type);
-		instance.set_value<primitive_type>(value);
+		instance.set_value_unsafe<primitive_type>(value);
 		return instance;
 	}
 
@@ -67,6 +67,12 @@ public:
 		}else{
 			throw std::runtime_error("type mismatch at nullable_field_base::set_value(value)");
 		}
+	}
+
+	template<class primitive_type>
+	void set_value_unsafe(const primitive_type& value){
+		*(primitive_type*)primitive_value_ptr = value;
+		has_value = true;
 	}
 
 	bool equals(const nullable_field_base& that) const;

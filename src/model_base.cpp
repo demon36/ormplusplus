@@ -87,16 +87,10 @@ void model_base::set_auto_inc_pkey(long value){
 	if(column_ptr == nullptr){
 		throw runtime_error("not auto increment primary key found");
 	}else{
-		//TODO: think of a cleaner way
-		//TODO: add tests for all types
-		if(column_ptr->get_type_info().wrapper_type_hash == typeid(db_int).hash_code()){
-			attributes.at(column_ptr->get_name()).set_value<int>((int)value);
-		}else if(column_ptr->get_type_info().wrapper_type_hash == typeid(db_long).hash_code()){
-			attributes.at(column_ptr->get_name()).set_value<long>((long)value);
-		}else if(column_ptr->get_type_info().wrapper_type_hash == typeid(db_float).hash_code()){
-			attributes.at(column_ptr->get_name()).set_value<float>((float)value);
-		}else if(column_ptr->get_type_info().wrapper_type_hash == typeid(db_double).hash_code()){
-			attributes.at(column_ptr->get_name()).set_value<double>((double)value);
+		if(column_ptr->get_type_info() == db_int::get_type_info()){
+			attributes.at(column_ptr->get_name()).set_value_unsafe<int>((int)value);//todo: use safer cast
+		}else if(column_ptr->get_type_info() == db_long::get_type_info()){
+			attributes.at(column_ptr->get_name()).set_value_unsafe<long>((long)value);
 		}else{
 			throw runtime_error("unsupported data type used for auto increment primary key");
 		}

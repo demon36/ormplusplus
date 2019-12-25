@@ -50,7 +50,7 @@ else
 $(error "allowed BUILD values are debug, release, coverage")
 endif
 
-all: shared test
+all: shared static test
 
 shared: depend $(LIB_DIR)/$(SO_FILE) $(LIB_DIR)/$(SO_DBG_FILE)
 

@@ -93,7 +93,7 @@ public:
 	nullable_field(const primitive_type& value)
 	: nullable_field()
 	{
-		nfbase_ptr->set_value<primitive_type>(value);
+		nfbase_ptr->set_value_unsafe<primitive_type>(value);
 	}
 
 	nullable_field& operator=(const nullable_field& that)
@@ -104,7 +104,7 @@ public:
 
 	nullable_field& operator=(const primitive_type& value)
 	{
-		nfbase_ptr->set_value<primitive_type>(value);
+		nfbase_ptr->set_value_unsafe<primitive_type>(value);
 		return *this;
 	}
 
