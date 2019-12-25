@@ -1,14 +1,14 @@
 * todo
 ** DONE use struct tm instead of Poco::DateTime
 ** DONE getrid of poco
-** TODO revise NullableField typing system
-** TODO add more description to type hash attributes
-** TODO separate TypeInfo in its own files
+** DONE revise NullableField typing system
+** DONE add more description to type info attributes
+** DONE separate TypeInfo in its own files
 ** DONE fix failing test by unifying datetime usage
-** TODO add date utils
+** add date utils
 ** support date time zones
 ** TODO change the way TableColumn.defaultValue is represented
-** add support for sqlite
+** DONE add basic support for sqlite
 ** remove DBsession refs from Model
 ** remove the nasty string template parameter header
 ** support this syntax:
@@ -45,6 +45,7 @@ DB::defaultSession().saveMany(clients);
 ** decrease layers
 ** replace DBSessions interface with compiletime driver selection flags
 ** always use actual datatypes int32_t
+** check if static_assert can be of use
 * questions
 ** what attribute initialization method should I support?
 *** Integer age = bindColumn("age").autoinc().withDefault(34);
