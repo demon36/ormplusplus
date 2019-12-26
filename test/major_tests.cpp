@@ -18,13 +18,29 @@ class client : public model<client>
 public:
 	DEFINE_ATTRIB(db_long, id).auto_increment().as_primary();
 	DEFINE_ATTRIB(db_string, name).with_default("nameless");
-	DEFINE_ATTRIB(db_int, age).with_default(5).as_nullable();
-	DEFINE_ATTRIB(db_int, height);
+	DEFINE_ATTRIB(db_int, age).with_default("5").as_nullable();
+	db_int height = initialize_attrib("height");
+	/* todo:
+	 * what if:
+	 * there is initialize_attrib("height") that return an instance of attribute initializer virus
+	 * that holds some dna -column info- and a reference to the hidden evil -model_base-
+	 * and then it feeds itself into  db_int which in turn call initializer.run() which in turn
+	 * takes a ref to the int value and stores it in the evil hand -attribs map- so that evil can
+	 * control the user model
+	 *
+	 * advantages:
+	 * more flat model
+	 * easier binding: db_int age = initialize_attrib("height").with_default("");
+	 *
+	 * disadvantages/concerns:
+	 * order of destruction
+	 *
+	 *
+	 * */
 	DEFINE_ATTRIB(db_datetime, dob).as_nullable(false);
 
 	constexpr static const char* _id = "asdf"; //use instead of 2nd template parameter ??
 };
-
 class mini_bus : public model<mini_bus, _("minibuses")>
 {
 public:
@@ -49,10 +65,10 @@ void test_model_definition(){
 	const table_schema& schema = client::get_schema();
 	ASSERT(schema.at("id").is_auto_increment());
 	ASSERT(schema.at("id").is_primary_key());
-	ASSERT(schema.at("name").get_default_value() == "nameless");
+	ASSERT(schema.at("name").get_default_value().val == "nameless");
 	ASSERT(schema.at("name").is_text());
 	ASSERT(!schema.at("name").is_integral());
-	ASSERT(schema.at("age").get_default_value() == "5");
+	ASSERT(schema.at("age").get_default_value().val == "5");
 	ASSERT(schema.at("age").is_nullable());
 	ASSERT(!schema.at("height").is_auto_increment());
 	ASSERT(!schema.at("height").is_nullable());

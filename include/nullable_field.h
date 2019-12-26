@@ -3,8 +3,8 @@
 
 #include <memory>
 
-#include "nullable_field_base.h"
-#include "attrib_initializer_base.h"
+#include "attrib_initializer.h"
+#include "nullable_field_handle.h"
 #include "type_info.h"
 
 namespace ormplusplus{
@@ -12,6 +12,7 @@ namespace ormplusplus{
 /**
  * Facilitates interaction with the nullable field
  */
+//todo: remove unnecessary fw declarations
 template <class primitive_type>
 class nullable_field;
 
@@ -26,10 +27,11 @@ std::istream& operator>>(std::istream&, const nullable_field<primitive_type>&);
  */
 template<class primitive_type>
 class nullable_field{
+public:
+	//todo: decrease visibility
+	primitive_type value;
+	bool _is_null = true;
 private:
-	nullable_field_base* nfbase_ptr = nullptr;
-	bool is_ptr_owner = false;//should be false if used as shell
-	primitive_type& value_ref;//useful at debugging
 	static std::unique_ptr<type_info> type_info_ptr;
 
 	static void assert_lhs_not_null(const nullable_field& lhs){
@@ -50,61 +52,77 @@ public:
 			type_info_ptr.reset(new type_info(
 					typeid(nullable_field<primitive_type>),
 					typeid(primitive_type),
-					nullable_field_base::is_integral(typeid(primitive_type)),
-					nullable_field_base::is_text(typeid(primitive_type))
+					nullable_field_handle::is_integral(typeid(primitive_type)),
+					nullable_field_handle::is_text(typeid(primitive_type))
 				));
 		}
 		return *type_info_ptr;
 	}
 
 	nullable_field()
-	: nfbase_ptr(new nullable_field_base(get_type_info())),
-	  is_ptr_owner(true),
-	  value_ref(nfbase_ptr->get_value_ref<primitive_type>())
 	{
 	}
 
 	nullable_field(const nullable_field& that)
-	: nfbase_ptr(new nullable_field_base(*that.nfbase_ptr)),
-	  is_ptr_owner(true),
-	  value_ref(nfbase_ptr->get_value_ref<primitive_type>())
+	: value(that.value)
 	{
+		_is_null = false;
 	}
 
-	nullable_field(const nullable_field&& that)
-	: nfbase_ptr(new nullable_field_base(std::move(*that.nfbase_ptr))),
-	  is_ptr_owner(true),
-	  value_ref(nfbase_ptr->get_value_ref<primitive_type>())
-	{
-	}
+	//todo: is this safe ?
+	nullable_field(nullable_field&& that) = default;
 
+	/*
 	nullable_field(nullable_field_base& nfbase) //todo: convert to nullable_field_base&&
 	: nfbase_ptr(&nfbase),
 	  is_ptr_owner(false),
 	  value_ref(nfbase_ptr->get_value_ref<primitive_type>())
 	{
 	}
+	*/
 
-	nullable_field(const attrib_initializer_base& attrib_initializer)
-	: nullable_field(attrib_initializer.get_nfbase_ref())
+
+	nullable_field(attrib_initializer attrib_germ)
 	{
+//		static bool add_col_if_not_exists(const std::string& name, const type_info& type)
+		if(attrib_germ.schema_ref.find(attrib_germ.attrib_col.get_name()) == attrib_germ.schema_ref.end()){
+			attrib_germ.schema_ref.emplace(attrib_germ.attrib_col.get_name(), attrib_germ.attrib_col);
+		}
+
+		attrib_germ.model_base_ref.get_attribs().emplace(
+				attrib_germ.attrib_col.get_name(), nullable_field_handle::create(get_type_info(), &value, _is_null)
+				).first->second;
+		//todo: probably replace with
+		//attrib_germ.get_model_base_ref.swallow(attrib_germ, *this);
+		if(attrib_germ.attrib_col.has_default_value()){
+			//todo: replace this with sth from the old implementation
+			std::stringstream tempss(attrib_germ.attrib_col.get_default_value().val);
+//			tempss >> value;//todo: implement from_string
+			_is_null = attrib_germ.attrib_col.get_default_value().is_null;
+		}
 	}
 
-	nullable_field(const primitive_type& value)
-	: nullable_field()
+	nullable_field(const primitive_type& _value)
+	: value(_value)
 	{
-		nfbase_ptr->set_value_unsafe<primitive_type>(value);
+		_is_null = false;
+	}
+
+	const primitive_type& get_value_ref(){
+		return value;
 	}
 
 	nullable_field& operator=(const nullable_field& that)
 	{
-		nfbase_ptr->operator=(*that.nfbase_ptr);
+		value = that.value;
+		_is_null = false;
 		return *this;
 	}
 
-	nullable_field& operator=(const primitive_type& value)
+	nullable_field& operator=(const primitive_type& _value)
 	{
-		nfbase_ptr->set_value_unsafe<primitive_type>(value);
+		value = _value;
+		_is_null = false;
 		return *this;
 	}
 
@@ -115,111 +133,99 @@ public:
 		}else if(this->is_null() || that.is_null()){
 			return false;
 		}else{
-			return this->get_value_ref() == that.get_value_ref();
+			return this->value == that.value;
 		}
 	}
 
-	bool operator==(const primitive_type& value) const
+	bool operator==(const primitive_type& _value) const
 	{
 		if(this->is_null()){
 			return false;
 		}else{
-			return this->get_value_ref() == value;
+			return this->value == _value;
 		}
 	}
 
 	bool operator!=(const nullable_field& that) const
 	{
-		return !operator==(that.get_value_ref());
+		return !operator==(that.value);
 	}
 
-	bool operator!=(const primitive_type& value) const
+	bool operator!=(const primitive_type& _value) const
 	{
-		return !operator==(value);
+		return !operator==(_value);
 	}
 
 	bool operator>(const nullable_field& that) const
 	{
 		assert_lhs_not_null(*this);
 		assert_rhs_not_null(that);
-		return this->get_value_ref() > that.get_value_ref();
+		return this->value > that.value;
 	}
 
-	bool operator>(const primitive_type& value) const
+	bool operator>(const primitive_type& _value) const
 	{
 		assert_lhs_not_null(*this);
-		return this->get_value_ref() > value;
+		return this->value > _value;
 	}
 
 	bool operator>=(const nullable_field& that) const
 	{
 		assert_lhs_not_null(*this);
 		assert_rhs_not_null(that);
-		return this->get_value_ref() >= that.get_value_ref();
+		return this->value >= that.value;
 	}
 
-	bool operator>=(const primitive_type& value) const
+	bool operator>=(const primitive_type& _value) const
 	{
 		assert_lhs_not_null(*this);
-		return this->get_value_ref() >= value;
+		return this->value >= _value;
 	}
 
 	bool operator<(const nullable_field& that) const
 	{
 		assert_lhs_not_null(*this);
 		assert_rhs_not_null(that);
-		return this->get_value_ref() < that.get_value_ref();
+		return this->value < that.value;
 	}
 
-	bool operator<(const primitive_type& value) const
+	bool operator<(const primitive_type& _value) const
 	{
 		assert_lhs_not_null(*this);
-		return this->get_value_ref() < value;
+		return this->value < _value;
 	}
 
 	bool operator<=(const nullable_field& that) const
 	{
 		assert_lhs_not_null(*this);
 		assert_rhs_not_null(that);
-		return this->get_value_ref() <= that.get_value_ref();
+		return this->value <= that.value;
 	}
 
-	bool operator<=(const primitive_type& value) const
+	bool operator<=(const primitive_type& _value) const
 	{
 		assert_lhs_not_null(*this);
-		return this->get_value_ref() <= value;
+		return this->value <= _value;
 	}
 
 	operator primitive_type()
 	{
-		return get_value_ref();
+		return value;
 	}
 
 	std::string to_string() const
 	{
-		return nfbase_ptr->to_string();
+		return to_string(value);
 	}
 
 	~nullable_field()
 	{
-		if(is_ptr_owner && nfbase_ptr != nullptr){
-			delete nfbase_ptr;
-		}
-	}
-
-	primitive_type& get_value_ref() const
-	{
-		return nfbase_ptr->get_value_ref<primitive_type>();
-	}
-
-	nullable_field_base& get_base_ref()
-	{
-		return *nfbase_ptr;
+		//todo: might need to inform model_base that is fields has been invalidated
 	}
 
 	bool is_null() const
 	{
-		return nfbase_ptr->is_null();
+		return _is_null;
 	}
 
 	friend std::ostream& operator<< <>(std::ostream&, const nullable_field&);
@@ -233,14 +239,15 @@ std::unique_ptr<type_info> nullable_field<primitive_type>::type_info_ptr;
 template<class primitive_type>
 std::ostream& operator<<(std::ostream& os, const nullable_field<primitive_type>& field)
 {
-	os << field.get_value_ref();
+	os << field.value;
     return os;
 }
 
 template<class primitive_type>
 std::istream& operator>>(std::istream& is, const nullable_field<primitive_type>& field)
 {
-	is >> field.get_value_ref();
+	is >> field.value;
+	field.has_value = true;
     return is;
 }
 
@@ -257,7 +264,7 @@ typedef nullable_field<nullptr_t> db_null;
 
 //TODO: replace by an empty constructor in nullable_field
 //to be used like if x == Null() -maybe?-
-//extern const Null null_value(nullptr);
+extern const db_null null_value;
 
 }
 

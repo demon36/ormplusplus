@@ -43,9 +43,15 @@ public:
 			//TODO: no getter here ?
 			//TODO: are result columns guaranteed to have same attributes order?
 			//todo: optimize the extra copying
-			std::map<std::string, nullable_field_base>& obj_attribs = obj.attributes;
+
+			//todo: remove the default ctor of the nullable_field_handle
+			//remove the creator if possible
+			//add nullable_field from_string fn for parsing database return data
+			//add and use get_field_value that takes a nullable_field_handle& to fill with string data
+			//so u have to move code in set_field_value to get_field_value
+			std::map<std::string, nullable_field_handle>& obj_attribs = obj.attributes;
 			for(auto& attrib_element : obj_attribs){
-				attrib_element.second = result.get_field_value(i, attrib_element.first);
+				result.get_field_value(i, attrib_element.first, attrib_element.second);
 			}
 			results.emplace_back(obj.clone());
 		}

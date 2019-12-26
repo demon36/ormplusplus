@@ -5,12 +5,12 @@
 #include <map>
 #include <memory>
 
+#include "nullable_field_handle.h"
 #include "table_column.h"
-#include "nullable_field_base.h"
 
 namespace ormplusplus{
 
-typedef std::map<std::string, nullable_field_base> attribs_map;
+typedef std::map<std::string, nullable_field_handle> attribs_map;
 
 class model_base{
 	friend class db_session_base;
@@ -26,7 +26,7 @@ public:
 	std::string get_table_name() const;
 	const table_schema& get_schema() const;
 	void set_attribs(const attribs_map& values);
-	const attribs_map& get_attribs() const;
+	attribs_map& get_attribs();//todo: make reference const
 	/**
 	 * @return empty string if no primary key columns with auto increment values
 	 */

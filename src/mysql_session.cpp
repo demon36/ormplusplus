@@ -134,10 +134,10 @@ void mysql_session::create_table(const string& name, const table_schema& schema)
 		}
 
 		if(cols_list[i].has_default_value()){
-			if(cols_list[i].get_default_value().is_null()){
+			if(cols_list[i].get_default_value().is_null){
 				query_stream << " DEFAULT NULL ";
 			}else{
-				query_stream << " DEFAULT '" << cols_list[i].get_default_value() << "' ";
+				query_stream << " DEFAULT '" << cols_list[i].get_default_value().val << "' ";
 			}
 		}
 
@@ -166,13 +166,14 @@ table_schema mysql_session::get_table_schema(const string& name){
 	result_table result = execute_flat(query);
 	table_schema schema;
 	for(size_t i = 0; i < result.get_num_rows(); i++){
-		string col_name = result.get_field_value(i, "COLUMN_NAME").get_value_ref<string>();
-		string db_col_type = result.get_field_value(i, "DATA_TYPE").get_value_ref<string>();
-		string extra = result.get_field_value(i, "EXTRA").get_value_ref<string>();
-		long max_len = result.get_field_value(i, "CHARACTER_MAXIMUM_LENGTH").is_null() ? -1 : result.get_field_value(i, "CHARACTER_MAXIMUM_LENGTH").get_value_ref<long>();
-		long num_precision = result.get_field_value(i, "NUMERIC_PRECISION").is_null() ? -1 : result.get_field_value(i, "NUMERIC_PRECISION").get_value_ref<long>();
-		bool is_nullable = result.get_field_value(i, "IS_NULLABLE").get_value_ref<string>() == "YES";
-		bool is_pkey = result.get_field_value(i, "COLUMN_KEY").get_value_ref<string>() == "PRI";
+		string col_name = result.get_raw_field_value(i, "COLUMN_NAME").val;
+		string db_col_type = result.get_raw_field_value(i, "DATA_TYPE").val;
+		string extra = result.get_raw_field_value(i, "EXTRA").val;
+		//todo: clean this mess
+		long max_len = result.get_raw_field_value(i, "CHARACTER_MAXIMUM_LENGTH").is_null ? -1 : stol(result.get_raw_field_value(i, "CHARACTER_MAXIMUM_LENGTH").val.c_str());
+		long num_precision = result.get_raw_field_value(i, "NUMERIC_PRECISION").is_null ? -1 : stol(result.get_raw_field_value(i, "NUMERIC_PRECISION").val.c_str());
+		bool is_nullable = result.get_raw_field_value(i, "IS_NULLABLE").val == "YES";
+		bool is_pkey = result.get_raw_field_value(i, "COLUMN_KEY").val == "PRI";
 		bool is_auto_inc = extra.find("auto_increment") != extra.npos;
 
 		table_column tmp_col(
@@ -185,15 +186,15 @@ table_schema mysql_session::get_table_schema(const string& name){
 				is_auto_inc
 		);
 
-		if(!result.get_field_value(i, "COLUMN_DEFAULT").is_null()){
-			db_string default_value = result.get_field_value(i, "COLUMN_DEFAULT").get_value_ref<string>();
+		if(!result.get_raw_field_value(i, "COLUMN_DEFAULT").is_null){
+			db_string default_value = result.get_raw_field_value(i, "COLUMN_DEFAULT").val;
 			if(default_value == "NULL"){
-				tmp_col.set_default_value(db_string());
+				tmp_col.set_default_value("", true);//todo: enhance this
 			}else if(tmp_col.get_type_info() == db_string::get_type_info()){
 				//default value is wrapped in single quotations
-				tmp_col.set_default_value(default_value.get_value_ref().substr(1, default_value.get_value_ref().size()-2));
+				tmp_col.set_default_value(default_value.get_value_ref().substr(1, default_value.get_value_ref().size()-2), false);
 			}else{
-				tmp_col.set_default_value(default_value);
+				tmp_col.set_default_value(default_value, false);
 			}
 		}
 

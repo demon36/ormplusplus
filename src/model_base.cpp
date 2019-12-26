@@ -53,7 +53,7 @@ void model_base::set_attribs(const attribs_map& values){
 	}
 }
 
-const attribs_map& model_base::get_attribs() const{
+attribs_map& model_base::get_attribs(){
 	return attributes;
 }
 

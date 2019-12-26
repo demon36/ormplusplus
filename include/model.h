@@ -27,7 +27,7 @@
 //or a static reference that is initialized to a schema entry
 //this is better static const table_column& ID_(){ return schema[""]; };
 //so that queries can like where({my_model::_ID(), "=", 3})
-#define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE NAME = initialize_attrib<DATATYPE>(#NAME)
+#define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE NAME = initialize_attrib(#NAME)
 
 namespace ormplusplus{
 
@@ -40,19 +40,6 @@ protected:
 	static table_schema schema;
 	//set to true after first instance get created
 	static bool schema_built;
-
-	/**
-	 * adds a column to model schema
-	 * @return true at success, false if already exists
-	 */
-	static bool add_col_if_not_exists(const std::string& name, const type_info& type){
-		if(col_exists(name)){
-			return false;
-		}else{
-			schema.emplace(name, table_column(name, type));
-			return true;
-		}
-	}
 public:
 
 	model<user_model, table_name>()
@@ -108,16 +95,20 @@ public:
 	//TODO: add another variant that takes no template parameters and performs the with_default() check in runtime
 	//		this will eliminate the need for macros
 	//TODO: should this fn be renamed to bind_attribute ?
-	template<typename attrib_type>
-	attrib_initializer<attrib_type> initialize_attrib(const std::string& name){
-		bool column_already_added = !add_col_if_not_exists(name, attrib_type::get_type_info());
-		//TODO: move logic to model_base
-		nullable_field_base& field = attributes.emplace(name, nullable_field_base(attrib_type::get_type_info())).first->second;
+	attrib_initializer initialize_attrib(const std::string& name){
+		//todo: do not pass schema if already initialized or column has been already added
+		//todo: reduce args, probably no need to pass the whole schema and the whole model_base
+		//todo: check of col is already added
+
+		return attrib_initializer(name, get_schema(), *this, schema_built);
+
+		/*
 		if(column_already_added){
 			return {field, nullptr};
 		}else{
 			return {field, &schema[name]};
 		}
+		*/
 	}
 
 	static bool col_exists(std::string name) {
@@ -125,7 +116,7 @@ public:
 	}
 
 	//todo: is this necessary ?
-	static const table_schema& get_schema() {
+	static table_schema& get_schema() {
 		//built schema by creating a model instance before processing the query
 		if(!schema_built){
 			user_model dummy_instance;

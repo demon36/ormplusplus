@@ -1,7 +1,7 @@
+#include <nullable_field_handle.h>
 #include <algorithm>
 #include <chrono>
 
-#include "nullable_field_base.h"
 #include "nullable_field.h"
 
 using namespace std;
@@ -12,11 +12,27 @@ ostream& operator<<(ostream& outstream, nullptr_t value){
 	return outstream;
 }
 
-nullable_field_base::nullable_field_base()
-: type_info_ref(db_null::get_type_info())
+/*
+nullable_field_handle::nullable_field_handle()
+: type_info_ref(db_null::get_type_info()), has_value(null_value._is_null)
 {}
+*/
 
-nullable_field_base::nullable_field_base(const type_info& type_info)
+nullable_field_handle::nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool& _has_value)
+: primitive_value_ptr(_primitive_value_ptr), type_info_ref(type), has_value(_has_value)
+{
+}
+
+nullable_field_handle nullable_field_handle::create(const type_info& type, void* _primitive_value_ptr, bool _has_value){
+	nullable_field_handle instance(type, _primitive_value_ptr, _has_value);
+	return instance;
+}
+
+void destroy_unsafe(){
+}
+
+/*
+nullable_field_handle::nullable_field_handle(const type_info& type_info)
 : type_info_ref(type_info)
 {
 	if(type_info_ref.primitive_type_hash == typeid(int).hash_code()){
@@ -38,8 +54,9 @@ nullable_field_base::nullable_field_base(const type_info& type_info)
 		throw runtime_error("unsupported data type at nullable_field_base construction");
 	}
 }
+*/
 
-nullable_field_base::nullable_field_base(const nullable_field_base& that)
+nullable_field_handle::nullable_field_handle(const nullable_field_handle& that)
 : type_info_ref(that.type_info_ref), has_value(that.has_value)
 {
 	if(that.type_info_ref.primitive_type_hash == typeid(int).hash_code()){
@@ -60,7 +77,7 @@ nullable_field_base::nullable_field_base(const nullable_field_base& that)
 	}
 }
 
-nullable_field_base::nullable_field_base(nullable_field_base&& that)
+nullable_field_handle::nullable_field_handle(nullable_field_handle&& that)
 : type_info_ref(that.type_info_ref), has_value(that.has_value)
 {
 	this->primitive_value_ptr = that.primitive_value_ptr;
@@ -68,7 +85,7 @@ nullable_field_base::nullable_field_base(nullable_field_base&& that)
 	that.primitive_value_ptr = nullptr;
 }
 
-nullable_field_base& nullable_field_base::operator=(const nullable_field_base& that){
+nullable_field_handle& nullable_field_handle::operator=(const nullable_field_handle& that){
 	if(this->type_info_ref != that.type_info_ref){
 		throw runtime_error("calling nullable_field_base::operator= with non-equal nullable field types");
 	}else{
@@ -93,7 +110,7 @@ nullable_field_base& nullable_field_base::operator=(const nullable_field_base& t
 	}
 }
 
-bool nullable_field_base::equals(const nullable_field_base& that) const{
+bool nullable_field_handle::equals(const nullable_field_handle& that) const{
 	if(this->type_info_ref != that.type_info_ref){
 		return false;
 	}
@@ -126,11 +143,11 @@ bool nullable_field_base::equals(const nullable_field_base& that) const{
 
 }
 
-bool nullable_field_base::is_null() const {
+bool nullable_field_handle::is_null() const {
 	return !has_value;
 }
 
-string nullable_field_base::to_string() const
+string nullable_field_handle::to_string() const
 {
 	if(is_null()){
 		return "NULL";
@@ -156,19 +173,19 @@ string nullable_field_base::to_string() const
 	throw runtime_error("unresolved type");
 }
 
-const type_info& nullable_field_base::get_type() const{
+const type_info& nullable_field_handle::get_type() const{
 	return type_info_ref;
 }
 
-bool nullable_field_base::is_integral(const std::type_info& type){
+bool nullable_field_handle::is_integral(const std::type_info& type){
 	return type == typeid(int) || type == typeid(long) || type == typeid(double) || type == typeid(float);
 }
 
-bool nullable_field_base::is_text(const std::type_info& type){
+bool nullable_field_handle::is_text(const std::type_info& type){
 	return type == typeid(string);//todo: is blob text ?
 }
 
-nullable_field_base::~nullable_field_base(){
+nullable_field_handle::~nullable_field_handle(){
 	if(primitive_value_ptr == nullptr){
 		return;
 	}
@@ -189,5 +206,7 @@ nullable_field_base::~nullable_field_base(){
 		delete (nullptr_t*)primitive_value_ptr;
 	}
 }
+
+const db_null null_value(nullptr);
 
 } /* namespace ormplusplus */

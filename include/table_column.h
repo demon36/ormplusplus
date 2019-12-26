@@ -3,9 +3,14 @@
 
 #include <map>
 
-#include "nullable_field.h"
+#include "type_info.h"
 
 namespace ormplusplus{
+
+struct opt_string{
+	std::string val;
+	bool is_null;
+};
 
 /**
  * 	responsible for storing column data that is used to create a table
@@ -19,13 +24,15 @@ private:
 	long precision = -1;
 	bool nullable = false;
 	bool default_value_set = false;
-	db_string default_value;//default value can be non-existent, NULL or "NULL" (or any other string)
+	//todo: get rid of unique_ptr
+	opt_string default_value;//default value can be non-existent, NULL or "NULL" (or any other string)
 	bool is_pkey = false;
 	bool is_auto_inc = false;
 public:
 	table_column();
-	table_column(const std::string& _name, const type_info& _type_info, long _length, long _precision, bool _is_nullable, bool _is_pkey, bool _is_auto_inc);
+	table_column(const std::string& _name);
 	table_column(const std::string& _name, const type_info& _type_info);
+	table_column(const std::string& _name, const type_info& _type_info, long _length, long _precision, bool _is_nullable, bool _is_pkey, bool _is_auto_inc);
 
 	std::string get_name() const;
 	const type_info& get_type_info() const;
@@ -33,7 +40,7 @@ public:
 	long get_precision() const;
 	bool is_nullable() const;
 	bool has_default_value() const;
-	db_string get_default_value() const;
+	opt_string get_default_value() const;
 	bool is_primary_key() const;//todo: possible to make these attribs public ?
 	bool is_auto_increment() const;
 	bool is_integral() const;
@@ -43,7 +50,7 @@ public:
 	void set_precision(int value);
 	void set_primary(bool value);
 	void set_nullable(bool value);
-	void set_default_value(const db_string& value);
+	void set_default_value(const std::string& value, bool is_null);
 	void set_auto_increment(bool value);
 
 	bool operator==(const table_column& that);

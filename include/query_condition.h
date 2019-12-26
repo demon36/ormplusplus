@@ -11,7 +11,10 @@ class query_condition{
 private:
 	std::string col_name;
 	std::string operator_;
-	nullable_field_base value;
+	std::string value;
+	//todo: implement those using nullable_field_base::create() & nullable_field_base::destroy()
+//	nullable_field_handle value_handle;
+//	void* value_ptr;
 //	query_condition(std::string _col_name, std::string _operator);
 public:
 	query_condition(const std::string& _col_name, const std::string& _operator, const char* _value);
