@@ -56,10 +56,7 @@ public:
 		//TODO: assert not null
 		//TODO: use enable if
 		if(typeid(primitive_type).hash_code() == type_info_ref.primitive_type_hash){
-			if(get_primitive_value_ptr() == nullptr){
-				get_primitive_value_ptr() = new primitive_type();
-			}
-			*(primitive_type*)get_primitive_value_ptr() = value;
+			*(primitive_type*)primitive_value_ptr = value;
 			(*is_null_ptr) = false;
 		}else{
 			throw std::runtime_error("type mismatch at nullable_field_base::set_value(value)");
@@ -70,7 +67,7 @@ public:
 
 	template<class primitive_type>
 	void set_value_unsafe(const primitive_type& value){
-		*(primitive_type*)get_primitive_value_ptr() = value;
+		*(primitive_type*)primitive_value_ptr = value;
 		(*is_null_ptr) = false;
 	}
 

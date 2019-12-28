@@ -20,23 +20,6 @@ public:
 	DEFINE_ATTRIB(db_string, name).with_default("nameless");
 	DEFINE_ATTRIB(db_int, age).with_default("5").as_nullable();
 	db_int height = initialize_attrib("height");
-	/* todo:
-	 * what if:
-	 * there is initialize_attrib("height") that return an instance of attribute initializer virus
-	 * that holds some dna -column info- and a reference to the hidden evil -model_base-
-	 * and then it feeds itself into  db_int which in turn call initializer.run() which in turn
-	 * takes a ref to the int value and stores it in the evil hand -attribs map- so that evil can
-	 * control the user model
-	 *
-	 * advantages:
-	 * more flat model
-	 * easier binding: db_int age = initialize_attrib("height").with_default("");
-	 *
-	 * disadvantages/concerns:
-	 * order of destruction
-	 *
-	 *
-	 * */
 	DEFINE_ATTRIB(db_datetime, dob).as_nullable(false);
 
 	constexpr static const char* _id = "asdf"; //use instead of 2nd template parameter ??
