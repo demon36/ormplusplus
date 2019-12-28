@@ -36,11 +36,10 @@ public:
 	 */
 	template<class user_model>
 	std::vector<user_model> execute(const query_base& query){
-		std::vector<user_model> results;
-
 		result_table result = execute_flat(query);
+		std::vector<user_model> result_models(result.get_num_rows());
+
 		for(size_t i = 0; i < result.get_num_rows(); i++){
-			user_model obj;
 			//TODO: no getter here ?
 			//TODO: are result columns guaranteed to have same attributes order?
 			//todo: optimize the extra copying
@@ -50,14 +49,12 @@ public:
 			//add nullable_field from_string fn for parsing database return data
 			//add and use get_field_value that takes a nullable_field_handle& to fill with string data
 			//so u have to move code in set_field_value to get_field_value
-			std::map<std::string, nullable_field_handle>& obj_attribs = obj.attributes;
+			std::map<std::string, nullable_field_handle>& obj_attribs = result_models[i].attributes;
 			for(auto& attrib_element : obj_attribs){
 				result.get_field_value(i, attrib_element.first, attrib_element.second);
 			}
-			results.emplace_back(obj.clone());
 		}
-		std::cout<<results[0].get_attribs().size()<<std::endl;
-		return results;
+		return result_models;
 	}
 
 	virtual result_table execute_flat(const query_base& query) = 0;

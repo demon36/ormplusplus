@@ -32,6 +32,14 @@ model_base::model_base(const model_base& that)
 	}
 }
 
+model_base::model_base(model_base&& that)
+: model_base(that.table_name_ref, that.schema_ref)
+{
+	for(auto& element : this->attributes){
+		nullable_field_handle::move(that.attributes.at(element.first), element.second);
+	}
+}
+
 table_column& model_base::get_col_ref(const std::string& name) const{
 	auto column = schema_ref.find(name);
 	if(column == schema_ref.end()){

@@ -18,14 +18,49 @@ nullable_field_handle::nullable_field_handle()
 {}
 */
 
-nullable_field_handle::nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool& _is_null)
-: primitive_value_ptr(_primitive_value_ptr), type_info_ref(type), m_is_null(_is_null)
+nullable_field_handle::nullable_field_handle(const type_info& type, void** _primitive_value_ptr)
+: primitive_value_ptr_ptr(_primitive_value_ptr), type_info_ref(type)
 {
+}
+
+void nullable_field_handle::move(nullable_field_handle& src, nullable_field_handle& dest)
+{
+	if(dest.is_null()){
+		src.clear_value();
+	} else {
+		*src.primitive_value_ptr_ptr = *dest.primitive_value_ptr_ptr;
+	}
 }
 
 void destroy_unsafe(){
 }
 
+void nullable_field_handle::clear_value(){
+	if(get_primitive_value_ptr() == nullptr){
+		return;
+	}
+
+	if(type_info_ref.primitive_type_hash == typeid(int).hash_code()){
+		delete (int*)get_primitive_value_ptr();
+	}else if(type_info_ref.primitive_type_hash == typeid(long).hash_code()){
+		delete (long*)get_primitive_value_ptr();
+	}else if(type_info_ref.primitive_type_hash == typeid(float).hash_code()){
+		delete (float*)get_primitive_value_ptr();
+	}else if(type_info_ref.primitive_type_hash == typeid(double).hash_code()){
+		delete (double*)get_primitive_value_ptr();
+	}else if(type_info_ref.primitive_type_hash == typeid(string).hash_code()){
+		delete (string*)get_primitive_value_ptr();
+	}else if(type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
+		delete (::tm*)get_primitive_value_ptr();
+	}else if(type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
+		delete (nullptr_t*)get_primitive_value_ptr();
+	}
+}
+
+nullable_field_handle::nullable_field_handle(const nullable_field_handle& that)
+: primitive_value_ptr_ptr(that.primitive_value_ptr_ptr), type_info_ref(that.type_info_ref)
+{
+}
 /*
 nullable_field_handle::nullable_field_handle(const type_info& type_info)
 : type_info_ref(type_info)
@@ -85,26 +120,27 @@ nullable_field_handle::nullable_field_handle(nullable_field_handle&& that)
 nullable_field_handle& nullable_field_handle::operator=(const nullable_field_handle& that){
 	if(this->type_info_ref != that.type_info_ref){
 		throw runtime_error("calling nullable_field_base::operator= with non-equal nullable field types");
+	}else if (that.is_null()){
+		clear_value();
 	}else{
-		this->m_is_null = that.m_is_null;
 		if(that.type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-			this->get_value_ref<int>() = that.get_value_ref<int>();
-		}else if(that.type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-			this->get_value_ref<long>() = that.get_value_ref<long>();
+			this->set_value_unsafe<int>(that.get_value_ref<int>());//todo: add copy_value<primitive_types>(src,dest)
+		}else if(that.type_info_ref.primitive_type_hash == typeid(long).hash_code()){//todo: enhance comparison
+			this->set_value_unsafe<long>(that.get_value_ref<long>());
 		}else if(that.type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-			this->get_value_ref<float>() = that.get_value_ref<float>();
+			this->set_value_unsafe<float>(that.get_value_ref<float>());
 		}else if(that.type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-			this->get_value_ref<double>() = that.get_value_ref<double>();
+			this->set_value_unsafe<double>(that.get_value_ref<double>());
 		}else if(that.type_info_ref.primitive_type_hash == typeid(string).hash_code()){
-			this->get_value_ref<string>() = that.get_value_ref<string>();
+			this->set_value_unsafe<string>(that.get_value_ref<string>());//todo: use bare char*
 		}else if(that.type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
-			this->get_value_ref<::tm>() = that.get_value_ref<::tm>();
+			this->set_value_unsafe<tm>(that.get_value_ref<tm>());
 		}else if(that.type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
 			//is this the best way to do it ?
 			this->get_value_ref<nullptr_t>() = that.get_value_ref<nullptr_t>();
 		}
-		return *this;
 	}
+	return *this;
 }
 
 bool nullable_field_handle::equals(const nullable_field_handle& that) const{
@@ -141,7 +177,7 @@ bool nullable_field_handle::equals(const nullable_field_handle& that) const{
 }
 
 bool nullable_field_handle::is_null() const {
-	return m_is_null;
+	return *primitive_value_ptr_ptr == nullptr;
 }
 
 string nullable_field_handle::to_string() const
@@ -150,17 +186,17 @@ string nullable_field_handle::to_string() const
 		return "NULL";
 	}
 	if(type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-		return std::to_string(*(int*)primitive_value_ptr);
+		return std::to_string(**(int**)primitive_value_ptr_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-		return std::to_string(*(long*)primitive_value_ptr);
+		return std::to_string(**(long**)primitive_value_ptr_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-		return std::to_string(*(float*)primitive_value_ptr);
+		return std::to_string(**(float**)primitive_value_ptr_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-		return std::to_string(*(double*)primitive_value_ptr);
+		return std::to_string(**(double**)primitive_value_ptr_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(string).hash_code()){
-		return *(string*)primitive_value_ptr;
+		return **(string**)primitive_value_ptr_ptr;
 	}else if(type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
-		::tm& date = *(::tm*)primitive_value_ptr;
+		::tm& date = **(::tm**)primitive_value_ptr_ptr;
 	    char date_buffer[100] = {0};
 	    std::strftime(date_buffer, sizeof(date_buffer), "%F %X", &date);
 		return date_buffer;
@@ -184,24 +220,24 @@ bool nullable_field_handle::is_text(const std::type_info& type){
 
 nullable_field_handle::~nullable_field_handle(){
 	return;//do not destroy what is not yours
-	if(primitive_value_ptr == nullptr){
+	if(get_primitive_value_ptr() == nullptr){
 		return;
 	}
 
 	if(type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-		delete (int*)primitive_value_ptr;
+		delete (int*)get_primitive_value_ptr();
 	}else if(type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-		delete (long*)primitive_value_ptr;
+		delete (long*)get_primitive_value_ptr();
 	}else if(type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-		delete (float*)primitive_value_ptr;
+		delete (float*)get_primitive_value_ptr();
 	}else if(type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-		delete (double*)primitive_value_ptr;
+		delete (double*)get_primitive_value_ptr();
 	}else if(type_info_ref.primitive_type_hash == typeid(string).hash_code()){
-		delete (string*)primitive_value_ptr;
+		delete (string*)get_primitive_value_ptr();
 	}else if(type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
-		delete (::tm*)primitive_value_ptr;
+		delete (::tm*)get_primitive_value_ptr();
 	}else if(type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
-		delete (nullptr_t*)primitive_value_ptr;
+		delete (nullptr_t*)get_primitive_value_ptr();
 	}
 }
 

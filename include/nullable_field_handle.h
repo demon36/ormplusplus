@@ -18,13 +18,13 @@ std::ostream& operator<<(std::ostream& outstream, nullptr_t value);
  */
 class nullable_field_handle{
 private:
-	void* primitive_value_ptr;
+	void** primitive_value_ptr_ptr;
 	const type_info& type_info_ref;
 
-
+	void*& get_primitive_value_ptr(){
+		return *primitive_value_ptr_ptr;
+	}
 public:
-	bool& m_is_null;//todo: make this private and add fn clear_value()//todo: use bool* for more flexibility
-
 	/*
 	template<class primitive_type>
 	static nullable_field_handle create(const type_info& type, const primitive_type& value){
@@ -34,8 +34,8 @@ public:
 	}
 	*/
 
-	nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool& _is_null);
-
+	nullable_field_handle(const type_info& type, void** _primitive_value_ptr);
+	static void move(nullable_field_handle& src, nullable_field_handle& dest);
 	/*
 	static nullable_field_handle create(const type_info& type){
 		return nullable_field_handle(type);//todo: is this ok ?
@@ -45,7 +45,7 @@ public:
 	//todo: remove unneeded ctors
 //	nullable_field_handle();
 
-	nullable_field_handle(const nullable_field_handle& that) = delete;
+	nullable_field_handle(const nullable_field_handle& that);
 	nullable_field_handle(nullable_field_handle&& that) = delete;
 	nullable_field_handle& operator=(const nullable_field_handle& that);
 
@@ -56,7 +56,6 @@ public:
 			throw std::runtime_error("trying to assign nullable field to non-compatible type value");
 		}
 		get_value_ref<primitive_type>() = value;
-		m_is_null = false;
 		return *this;
 	}
 
@@ -64,7 +63,7 @@ public:
 	primitive_type& get_value_ref() const{
 		//TODO: assert not null
 		if(typeid(primitive_type).hash_code() == type_info_ref.primitive_type_hash){
-			return *(primitive_type*)primitive_value_ptr;
+			return **(primitive_type**)primitive_value_ptr_ptr;
 		}else{
 			throw std::runtime_error("type mismatch at nullable_field_base::get_value_ref()");
 		}
@@ -75,17 +74,23 @@ public:
 		//TODO: assert not null
 		//TODO: use enable if
 		if(typeid(primitive_type).hash_code() == type_info_ref.primitive_type_hash){
-			*(primitive_type*)primitive_value_ptr = value;
-			m_is_null = false;
+			if(get_primitive_value_ptr() == nullptr){
+				get_primitive_value_ptr() = new primitive_type();
+			}
+			*(primitive_type*)get_primitive_value_ptr() = value;
 		}else{
 			throw std::runtime_error("type mismatch at nullable_field_base::set_value(value)");
 		}
 	}
 
+	void clear_value();
+
 	template<class primitive_type>
 	void set_value_unsafe(const primitive_type& value){
-		*(primitive_type*)primitive_value_ptr = value;
-		m_is_null = false;
+		if(get_primitive_value_ptr() == nullptr){
+			get_primitive_value_ptr() = new primitive_type();
+		}
+		*(primitive_type*)get_primitive_value_ptr() = value;
 	}
 
 	bool equals(const nullable_field_handle& that) const;

@@ -49,7 +49,10 @@ public:
 	}
 
 	model<user_model, table_name>(const model<user_model, table_name>& that) = delete;
-	model<user_model, table_name>(model<user_model, table_name>&& that) = default;
+	model<user_model, table_name>(model<user_model, table_name>&& that)
+	: model_base(that)
+	{
+	}
 
 	static void copy(const model<user_model, table_name>& src, model<user_model, table_name>& dest){
 		dest.set_attribs(src.attributes);

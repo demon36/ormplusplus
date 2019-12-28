@@ -11,9 +11,8 @@ attrib_initializer::attrib_initializer(const std::string& col_name, table_schema
 
 attrib_initializer& attrib_initializer::with_default(const string& value) {
 	//TODO: check operator= is implemented correctly
-	if(!skip_col_setup){
-		attrib_col.set_default_value(value, false);
-	}
+	//this should be set even if skip_col_setup is set because it affects object creation
+	attrib_col.set_default_value(value, false);
 	return *this;
 }
 

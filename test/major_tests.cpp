@@ -88,6 +88,8 @@ void assert_table_creation(){
 
 void test_single_insert_and_select(){
 	client c0;
+	attribs_map& temp = c0.get_attribs();
+	temp.size();
 	c0.age = 15;
 	c0.name = "robert";
 	c0.height = 167;
@@ -95,6 +97,7 @@ void test_single_insert_and_select(){
 	strptime("1993-09-30 17:20:21", "%Y-%m-%d %H:%M:%S", &dobtm);
 	c0.dob = dobtm;
 	c0.insert(true);
+
 
 	client c1 = client::where({
 		{"id", "=", c0.id}

@@ -22,6 +22,7 @@ protected:
 public:
 	model_base(const std::string& table_name, table_schema& schema);
 	model_base(const model_base& that);
+	model_base(model_base&& that);
 	table_column& get_col_ref(const std::string& name) const;
 	std::string get_table_name() const;
 	const table_schema& get_schema() const;
