@@ -18,8 +18,8 @@ nullable_field_handle::nullable_field_handle()
 {}
 */
 
-nullable_field_handle::nullable_field_handle(const type_info& type, void** _primitive_value_ptr)
-: primitive_value_ptr_ptr(_primitive_value_ptr), type_info_ref(type)
+nullable_field_handle::nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool* _is_null_ptr)
+: primitive_value_ptr(_primitive_value_ptr), is_null_ptr(_is_null_ptr), type_info_ref(type)
 {
 }
 
@@ -28,7 +28,7 @@ void nullable_field_handle::move(nullable_field_handle& src, nullable_field_hand
 	if(dest.is_null()){
 		src.clear_value();
 	} else {
-		*src.primitive_value_ptr_ptr = *dest.primitive_value_ptr_ptr;
+		src.primitive_value_ptr = dest.primitive_value_ptr;
 	}
 }
 
@@ -36,31 +36,14 @@ void destroy_unsafe(){
 }
 
 void nullable_field_handle::clear_value(){
-	if(get_primitive_value_ptr() == nullptr){
-		return;
-	}
-
-	if(type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-		delete (int*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-		delete (long*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-		delete (float*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-		delete (double*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(string).hash_code()){
-		delete (string*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
-		delete (::tm*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
-		delete (nullptr_t*)get_primitive_value_ptr();
-	}
+	*is_null_ptr = true;
 }
 
 nullable_field_handle::nullable_field_handle(const nullable_field_handle& that)
-: primitive_value_ptr_ptr(that.primitive_value_ptr_ptr), type_info_ref(that.type_info_ref)
+: primitive_value_ptr(that.primitive_value_ptr), is_null_ptr(that.is_null_ptr), type_info_ref(that.type_info_ref)
 {
 }
+
 /*
 nullable_field_handle::nullable_field_handle(const type_info& type_info)
 : type_info_ref(type_info)
@@ -177,7 +160,7 @@ bool nullable_field_handle::equals(const nullable_field_handle& that) const{
 }
 
 bool nullable_field_handle::is_null() const {
-	return *primitive_value_ptr_ptr == nullptr;
+	return *is_null_ptr;
 }
 
 string nullable_field_handle::to_string() const
@@ -186,17 +169,17 @@ string nullable_field_handle::to_string() const
 		return "NULL";
 	}
 	if(type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-		return std::to_string(**(int**)primitive_value_ptr_ptr);
+		return std::to_string(*(int*)primitive_value_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-		return std::to_string(**(long**)primitive_value_ptr_ptr);
+		return std::to_string(*(long*)primitive_value_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-		return std::to_string(**(float**)primitive_value_ptr_ptr);
+		return std::to_string(*(float*)primitive_value_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-		return std::to_string(**(double**)primitive_value_ptr_ptr);
+		return std::to_string(*(double*)primitive_value_ptr);
 	}else if(type_info_ref.primitive_type_hash == typeid(string).hash_code()){
-		return **(string**)primitive_value_ptr_ptr;
+		return *(string*)primitive_value_ptr;
 	}else if(type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
-		::tm& date = **(::tm**)primitive_value_ptr_ptr;
+		::tm& date = *(::tm*)primitive_value_ptr;
 	    char date_buffer[100] = {0};
 	    std::strftime(date_buffer, sizeof(date_buffer), "%F %X", &date);
 		return date_buffer;
@@ -220,6 +203,7 @@ bool nullable_field_handle::is_text(const std::type_info& type){
 
 nullable_field_handle::~nullable_field_handle(){
 	return;//do not destroy what is not yours
+	//todo: clean this up
 	if(get_primitive_value_ptr() == nullptr){
 		return;
 	}

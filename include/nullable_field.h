@@ -29,7 +29,8 @@ std::istream& operator>>(std::istream&, const nullable_field<primitive_type>&);
 template<class primitive_type>
 class nullable_field{
 private:
-	primitive_type* value = nullptr;
+	primitive_type value;
+	bool m_is_null = true;
 	static std::unique_ptr<type_info> type_info_ptr;
 
 	static void assert_lhs_not_null(const nullable_field& lhs){
@@ -66,22 +67,17 @@ public:
 		if(that.is_null()){
 			this->clear_value();
 		}else{
-			this->set_value(*that.value);
+			this->set_value(that.value);
 		}
 	}
 
 	void clear_value(){
-		if(value != nullptr){
-			delete value;
-			value = nullptr;
-		}
+		m_is_null = true;
 	}
 
 	void set_value(const primitive_type& _value){
-		if(value == nullptr){
-			value = new primitive_type();
-		}
-		*value = _value;
+		value = _value;
+		m_is_null = false;
 	}
 
 	//todo: is this safe ?
@@ -112,8 +108,8 @@ public:
 			std::string default_val = attrib_germ.attrib_col.get_default_value().val;
 			//todo: unify this accross the code
 			if(!attrib_germ.attrib_col.get_default_value().is_null){
-				value = new primitive_type();
-				from_string(attrib_germ.attrib_col.get_default_value().val, *value);
+				from_string(attrib_germ.attrib_col.get_default_value().val, value);
+				m_is_null = false;
 			}
 		}
 
@@ -124,18 +120,18 @@ public:
 		}
 
 		attrib_germ.model_base_ref.get_attribs().emplace(
-				attrib_germ.attrib_col.get_name(), nullable_field_handle(get_type_info(), (void**)&value)
+				attrib_germ.attrib_col.get_name(), nullable_field_handle(get_type_info(), &value, &m_is_null)
 			);
 
 	}
 
 	nullable_field(const primitive_type& _value)
+	: value(_value)
 	{
-		set_value(_value);
 	}
 
 	const primitive_type& get_value_ref(){
-		return *value;
+		return value;
 	}
 
 	nullable_field& operator=(const nullable_field& that)
@@ -143,7 +139,7 @@ public:
 		if(that.is_null()){
 			this->clear_value();
 		}else{
-			this->set_value(*that.value);
+			this->set_value(that.value);
 		}
 		return *this;
 	}
@@ -161,7 +157,7 @@ public:
 		}else if(this->is_null() || that.is_null()){
 			return false;
 		}else{
-			return *this->value == *that.value;
+			return this->value == that.value;
 		}
 	}
 
@@ -170,7 +166,7 @@ public:
 		if(this->is_null()){
 			return false;
 		}else{
-			return *this->value == _value;
+			return this->value == _value;
 		}
 	}
 
@@ -188,57 +184,57 @@ public:
 	{
 		assert_lhs_not_null(*this);
 		assert_rhs_not_null(that);
-		return *this->value > *that.value;
+		return this->value > that.value;
 	}
 
 	bool operator>(const primitive_type& _value) const
 	{
 		assert_lhs_not_null(*this);
-		return *this->value > _value;
+		return this->value > _value;
 	}
 
 	bool operator>=(const nullable_field& that) const
 	{
 		assert_lhs_not_null(*this);
 		assert_rhs_not_null(that);
-		return *this->value >= *that.value;
+		return this->value >= that.value;
 	}
 
 	bool operator>=(const primitive_type& _value) const
 	{
 		assert_lhs_not_null(*this);
-		return *this->value >= _value;
+		return this->value >= _value;
 	}
 
 	bool operator<(const nullable_field& that) const
 	{
 		assert_lhs_not_null(*this);
 		assert_rhs_not_null(that);
-		return *this->value < *that.value;
+		return this->value < that.value;
 	}
 
 	bool operator<(const primitive_type& _value) const
 	{
 		assert_lhs_not_null(*this);
-		return *this->value < _value;
+		return this->value < _value;
 	}
 
 	bool operator<=(const nullable_field& that) const
 	{
 		assert_lhs_not_null(*this);
 		assert_rhs_not_null(that);
-		return *this->value <= *that.value;
+		return this->value <= that.value;
 	}
 
 	bool operator<=(const primitive_type& _value) const
 	{
 		assert_lhs_not_null(*this);
-		return *this->value <= _value;
+		return this->value <= _value;
 	}
 
 	operator primitive_type()
 	{
-		return *value;
+		return value;
 	}
 
 	std::string to_string() const
@@ -248,15 +244,12 @@ public:
 
 	~nullable_field()
 	{
-		if(value != nullptr){
-			delete value;
-		}
 		//todo: might need to inform model_base that is fields has been invalidated
 	}
 
 	bool is_null() const
 	{
-		return value == nullptr;
+		return m_is_null;
 	}
 
 	friend std::ostream& operator<< <>(std::ostream&, const nullable_field&);

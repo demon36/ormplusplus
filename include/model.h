@@ -61,8 +61,6 @@ public:
 	user_model clone(){
 		user_model obj;
 		copy(*this, obj);
-		std::cout<<this->get_attribs().size()<<std::endl;
-		std::cout<<obj.get_attribs().size()<<std::endl;
 		return obj;
 	}
 
