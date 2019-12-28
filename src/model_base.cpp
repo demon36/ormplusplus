@@ -5,19 +5,6 @@ using namespace std;
 
 namespace ormplusplus{
 
-//void model_base::add_column(std::string name, data_type type){
-//	columns[name] = table_column();
-//	columns[name].set_type(type);
-//}
-
-//vector<Table_column> model_base::get_columns(){
-//	vector<table_column> _columns;
-//	for(auto& column : columns){
-//		_columns.push_back(column.second);
-//	}
-//	return _columns;
-//}
-
 model_base::model_base(const string& table_name, table_schema& schema)
 : table_name_ref(table_name), schema_ref(schema)
 {

@@ -22,33 +22,13 @@ private:
 	bool* is_null_ptr = nullptr;
 	const type_info& type_info_ref;
 
-	void* get_primitive_value_ptr(){
-		return primitive_value_ptr;
-	}
 public:
-	/*
-	template<class primitive_type>
-	static nullable_field_handle create(const type_info& type, const primitive_type& value){
-		nullable_field_handle instance(type);
-		instance.set_value_unsafe<primitive_type>(value);
-		return instance;
-	}
-	*/
-
 	nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool* _is_null_ptr);
-	static void move(nullable_field_handle& src, nullable_field_handle& dest);
-	/*
-	static nullable_field_handle create(const type_info& type){
-		return nullable_field_handle(type);//todo: is this ok ?
-	}
-	*/
-
-	//todo: remove unneeded ctors
-//	nullable_field_handle();
-
 	nullable_field_handle(const nullable_field_handle& that);
 	nullable_field_handle(nullable_field_handle&& that) = delete;
 	nullable_field_handle& operator=(const nullable_field_handle& that);
+
+	static void move(nullable_field_handle& src, nullable_field_handle& dest);
 
 	template<class primitive_type>
 	nullable_field_handle& operator=(const primitive_type& value){

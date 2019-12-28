@@ -98,7 +98,6 @@ void test_single_insert_and_select(){
 	c0.dob = dobtm;
 	c0.insert(true);
 
-
 	client c1 = client::where({
 		{"id", "=", c0.id}
 	}).select_one();

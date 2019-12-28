@@ -12,12 +12,6 @@ ostream& operator<<(ostream& outstream, nullptr_t value){
 	return outstream;
 }
 
-/*
-nullable_field_handle::nullable_field_handle()
-: type_info_ref(db_null::get_type_info()), has_value(null_value._is_null)
-{}
-*/
-
 nullable_field_handle::nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool* _is_null_ptr)
 : primitive_value_ptr(_primitive_value_ptr), is_null_ptr(_is_null_ptr), type_info_ref(type)
 {
@@ -32,9 +26,6 @@ void nullable_field_handle::move(nullable_field_handle& src, nullable_field_hand
 	}
 }
 
-void destroy_unsafe(){
-}
-
 void nullable_field_handle::clear_value(){
 	*is_null_ptr = true;
 }
@@ -44,62 +35,6 @@ nullable_field_handle::nullable_field_handle(const nullable_field_handle& that)
 {
 }
 
-/*
-nullable_field_handle::nullable_field_handle(const type_info& type_info)
-: type_info_ref(type_info)
-{
-	if(type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-		primitive_value_ptr = new int(0);
-	}else if(type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-		primitive_value_ptr = new long(0);
-	}else if(type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-		primitive_value_ptr = new float(0);
-	}else if(type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-		primitive_value_ptr = new double(0);
-	}else if(type_info_ref.primitive_type_hash == typeid(string).hash_code()){
-		primitive_value_ptr = new string("");
-	}else if(type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
-		primitive_value_ptr = new ::tm();
-	}else if(type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
-		//is this the best way to do it ?
-		primitive_value_ptr = new nullptr_t();
-	}else{
-		throw runtime_error("unsupported data type at nullable_field_base construction");
-	}
-}
-*/
-
-/*
-nullable_field_handle::nullable_field_handle(const nullable_field_handle& that)
-: type_info_ref(that.type_info_ref), m_is_null(that.m_is_null)
-{
-	if(that.type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-		primitive_value_ptr = new int(that.get_value_ref<int>());
-	}else if(that.type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-		primitive_value_ptr = new long(that.get_value_ref<long>());
-	}else if(that.type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-		primitive_value_ptr = new float(that.get_value_ref<float>());
-	}else if(that.type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-		primitive_value_ptr = new double(that.get_value_ref<double>());
-	}else if(that.type_info_ref.primitive_type_hash == typeid(string).hash_code()){
-		primitive_value_ptr = new string(that.get_value_ref<string>());
-	}else if(that.type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
-		primitive_value_ptr = new ::tm(that.get_value_ref<::tm>());
-	}else if(that.type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
-		//is this the best way to do it ?
-		primitive_value_ptr = new nullptr_t(that.get_value_ref<nullptr_t>());
-	}
-}
-
-nullable_field_handle::nullable_field_handle(nullable_field_handle&& that)
-: type_info_ref(that.type_info_ref), m_is_null(that.m_is_null)
-{
-	this->primitive_value_ptr = that.primitive_value_ptr;
-	that.m_is_null = true;
-	that.primitive_value_ptr = nullptr;
-}
-
-*/
 nullable_field_handle& nullable_field_handle::operator=(const nullable_field_handle& that){
 	if(this->type_info_ref != that.type_info_ref){
 		throw runtime_error("calling nullable_field_base::operator= with non-equal nullable field types");
@@ -202,27 +137,6 @@ bool nullable_field_handle::is_text(const std::type_info& type){
 }
 
 nullable_field_handle::~nullable_field_handle(){
-	return;//do not destroy what is not yours
-	//todo: clean this up
-	if(get_primitive_value_ptr() == nullptr){
-		return;
-	}
-
-	if(type_info_ref.primitive_type_hash == typeid(int).hash_code()){
-		delete (int*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(long).hash_code()){
-		delete (long*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(float).hash_code()){
-		delete (float*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(double).hash_code()){
-		delete (double*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(string).hash_code()){
-		delete (string*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
-		delete (::tm*)get_primitive_value_ptr();
-	}else if(type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
-		delete (nullptr_t*)get_primitive_value_ptr();
-	}
 }
 
 const db_null null_value(nullptr);
