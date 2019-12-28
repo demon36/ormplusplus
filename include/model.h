@@ -39,7 +39,7 @@ protected:
 	static std::string table_name_;
 	static table_schema schema;
 	//set to true after first instance get created
-	static bool schema_built;
+	static volatile bool schema_built;
 public:
 
 	model<user_model, table_name>()
@@ -51,15 +51,17 @@ public:
 	model<user_model, table_name>(const model<user_model, table_name>& that) = delete;
 	model<user_model, table_name>(model<user_model, table_name>&& that) = default;
 
-	static void copy(const model<user_model, table_name>& src, user_model& dest){
+	static void copy(const model<user_model, table_name>& src, model<user_model, table_name>& dest){
 		dest.set_attribs(src.attributes);
 	}
 
 	user_model clone(){
 		user_model obj;
 		copy(*this, obj);
+		std::cout<<this->get_attribs().size()<<std::endl;
+		std::cout<<obj.get_attribs().size()<<std::endl;
 		return obj;
-	};
+	}
 
 	static std::vector<user_model> clone(const std::vector<user_model>& source){
 		std::vector<user_model> target(source.size());
@@ -99,8 +101,7 @@ public:
 		//todo: do not pass schema if already initialized or column has been already added
 		//todo: reduce args, probably no need to pass the whole schema and the whole model_base
 		//todo: check of col is already added
-
-		return attrib_initializer(name, get_schema(), *this, schema_built);
+		return attrib_initializer(name, get_schema(), *this);
 
 		/*
 		if(column_already_added){
@@ -135,7 +136,7 @@ std::string model<user_model, table_name>::table_name_ =
 		type_info::get_type_name(typeid(user_model)) : table_name::data();
 
 template<class user_model, class table_name>
-bool model<user_model, table_name>::schema_built = false;
+volatile bool model<user_model, table_name>::schema_built = false;
 
 }
 

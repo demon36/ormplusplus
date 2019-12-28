@@ -2,6 +2,7 @@
 #define INCLUDE_NULLABLE_FIELD_H_
 
 #include <memory>
+#include <type_traits>
 
 #include "attrib_initializer.h"
 #include "nullable_field_handle.h"
@@ -81,25 +82,36 @@ public:
 	}
 	*/
 
+	static void from_string(const std::string& src, int& dest)			{ dest = stoi(src); }
+	static void from_string(const std::string& src, long& dest)			{ dest = stol(src); }
+	static void from_string(const std::string& src, float& dest)		{ dest = stof(src); }
+	static void from_string(const std::string& src, double& dest)		{ dest = stod(src); }
+	static void from_string(const std::string& src, std::string& dest)	{ dest = src; }
+	static void from_string(const std::string& src, tm& dest)			{ strptime(src.c_str(), "%Y-%m-%d %H:%M:%S", &dest); }
 
 	nullable_field(attrib_initializer attrib_germ)
 	{
+		//todo: probably replace with
+		//attrib_germ.get_model_base_ref.swallow(attrib_germ, *this);
+		if(attrib_germ.attrib_col.has_default_value()){
+			//todo: replace this with sth from the old implementation
+			std::string default_val = attrib_germ.attrib_col.get_default_value().val;
+			//todo: unify this accross the code
+			from_string(attrib_germ.attrib_col.get_default_value().val, value);
+			_is_null = attrib_germ.attrib_col.get_default_value().is_null;
+		}
+
 //		static bool add_col_if_not_exists(const std::string& name, const type_info& type)
+		attrib_germ.attrib_col.set_type_info(nullable_field<primitive_type>::get_type_info());
 		if(attrib_germ.schema_ref.find(attrib_germ.attrib_col.get_name()) == attrib_germ.schema_ref.end()){
 			attrib_germ.schema_ref.emplace(attrib_germ.attrib_col.get_name(), attrib_germ.attrib_col);
 		}
 
 		attrib_germ.model_base_ref.get_attribs().emplace(
-				attrib_germ.attrib_col.get_name(), nullable_field_handle::create(get_type_info(), &value, _is_null)
+				std::piecewise_construct,
+				std::forward_as_tuple(attrib_germ.attrib_col.get_name()), std::forward_as_tuple(get_type_info(), &value, _is_null)
 				).first->second;
-		//todo: probably replace with
-		//attrib_germ.get_model_base_ref.swallow(attrib_germ, *this);
-		if(attrib_germ.attrib_col.has_default_value()){
-			//todo: replace this with sth from the old implementation
-			std::stringstream tempss(attrib_germ.attrib_col.get_default_value().val);
-//			tempss >> value;//todo: implement from_string
-			_is_null = attrib_germ.attrib_col.get_default_value().is_null;
-		}
+
 	}
 
 	nullable_field(const primitive_type& _value)
@@ -260,7 +272,6 @@ typedef nullable_field<std::string> db_string;
 typedef nullable_field<::tm> db_datetime;
 //TODO: is this specialization essential ?
 typedef nullable_field<nullptr_t> db_null;
-
 
 //TODO: replace by an empty constructor in nullable_field
 //to be used like if x == Null() -maybe?-

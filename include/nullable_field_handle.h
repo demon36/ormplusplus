@@ -21,10 +21,9 @@ private:
 	void* primitive_value_ptr;
 	const type_info& type_info_ref;
 
-	nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool& _has_value);
 
 public:
-	bool& has_value;//todo: make this private and add fn clear_value()//todo: use bool* for more flexibility
+	bool& m_is_null;//todo: make this private and add fn clear_value()//todo: use bool* for more flexibility
 
 	/*
 	template<class primitive_type>
@@ -35,7 +34,7 @@ public:
 	}
 	*/
 
-	static nullable_field_handle create(const type_info& type, void* _primitive_value_ptr, bool _has_value);
+	nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool& _is_null);
 
 	/*
 	static nullable_field_handle create(const type_info& type){
@@ -46,8 +45,8 @@ public:
 	//todo: remove unneeded ctors
 //	nullable_field_handle();
 
-	nullable_field_handle(const nullable_field_handle& that);
-	nullable_field_handle(nullable_field_handle&& that);
+	nullable_field_handle(const nullable_field_handle& that) = delete;
+	nullable_field_handle(nullable_field_handle&& that) = delete;
 	nullable_field_handle& operator=(const nullable_field_handle& that);
 
 	template<class primitive_type>
@@ -57,7 +56,7 @@ public:
 			throw std::runtime_error("trying to assign nullable field to non-compatible type value");
 		}
 		get_value_ref<primitive_type>() = value;
-		has_value = true;
+		m_is_null = false;
 		return *this;
 	}
 
@@ -77,7 +76,7 @@ public:
 		//TODO: use enable if
 		if(typeid(primitive_type).hash_code() == type_info_ref.primitive_type_hash){
 			*(primitive_type*)primitive_value_ptr = value;
-			has_value = true;//todo: has_value has_value with value_ptr != nullptr
+			m_is_null = false;
 		}else{
 			throw std::runtime_error("type mismatch at nullable_field_base::set_value(value)");
 		}
@@ -86,7 +85,7 @@ public:
 	template<class primitive_type>
 	void set_value_unsafe(const primitive_type& value){
 		*(primitive_type*)primitive_value_ptr = value;
-		has_value = true;
+		m_is_null = false;
 	}
 
 	bool equals(const nullable_field_handle& that) const;

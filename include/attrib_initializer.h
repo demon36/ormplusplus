@@ -27,7 +27,7 @@ public:
 	 * @param _associated_col pointer to associated column to be initialized, nullptr in case it is already setup
 	 */
 	//TODO: use table_column& + bool or table_column*
-	attrib_initializer(const std::string& col_name, table_schema& _schema_ref, model_base& _model_base_ref, bool schema_built);
+	attrib_initializer(const std::string& col_name, table_schema& _schema_ref, model_base& _model_base_ref);
 
 	//TODO: since this is the only thing that implied making this class a template class
 	//		we can just make 2 variants of it, a safe variant with template argument

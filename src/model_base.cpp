@@ -26,8 +26,9 @@ model_base::model_base(const string& table_name, table_schema& schema)
 model_base::model_base(const model_base& that)
 : model_base(that.table_name_ref, that.schema_ref)
 {
-	for(auto& element : that.attributes){
-		this->attributes.emplace(element.first, element.second);
+	for(auto& element : this->attributes){
+		element.second = that.attributes.at(element.first);
+//		this->attributes.emplace(element.first, element.second);
 	}
 }
 

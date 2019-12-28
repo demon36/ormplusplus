@@ -18,14 +18,9 @@ nullable_field_handle::nullable_field_handle()
 {}
 */
 
-nullable_field_handle::nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool& _has_value)
-: primitive_value_ptr(_primitive_value_ptr), type_info_ref(type), has_value(_has_value)
+nullable_field_handle::nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool& _is_null)
+: primitive_value_ptr(_primitive_value_ptr), type_info_ref(type), m_is_null(_is_null)
 {
-}
-
-nullable_field_handle nullable_field_handle::create(const type_info& type, void* _primitive_value_ptr, bool _has_value){
-	nullable_field_handle instance(type, _primitive_value_ptr, _has_value);
-	return instance;
 }
 
 void destroy_unsafe(){
@@ -56,8 +51,9 @@ nullable_field_handle::nullable_field_handle(const type_info& type_info)
 }
 */
 
+/*
 nullable_field_handle::nullable_field_handle(const nullable_field_handle& that)
-: type_info_ref(that.type_info_ref), has_value(that.has_value)
+: type_info_ref(that.type_info_ref), m_is_null(that.m_is_null)
 {
 	if(that.type_info_ref.primitive_type_hash == typeid(int).hash_code()){
 		primitive_value_ptr = new int(that.get_value_ref<int>());
@@ -78,18 +74,19 @@ nullable_field_handle::nullable_field_handle(const nullable_field_handle& that)
 }
 
 nullable_field_handle::nullable_field_handle(nullable_field_handle&& that)
-: type_info_ref(that.type_info_ref), has_value(that.has_value)
+: type_info_ref(that.type_info_ref), m_is_null(that.m_is_null)
 {
 	this->primitive_value_ptr = that.primitive_value_ptr;
-	that.has_value = false;
+	that.m_is_null = true;
 	that.primitive_value_ptr = nullptr;
 }
 
+*/
 nullable_field_handle& nullable_field_handle::operator=(const nullable_field_handle& that){
 	if(this->type_info_ref != that.type_info_ref){
 		throw runtime_error("calling nullable_field_base::operator= with non-equal nullable field types");
 	}else{
-		this->has_value = that.has_value;
+		this->m_is_null = that.m_is_null;
 		if(that.type_info_ref.primitive_type_hash == typeid(int).hash_code()){
 			this->get_value_ref<int>() = that.get_value_ref<int>();
 		}else if(that.type_info_ref.primitive_type_hash == typeid(long).hash_code()){
@@ -144,7 +141,7 @@ bool nullable_field_handle::equals(const nullable_field_handle& that) const{
 }
 
 bool nullable_field_handle::is_null() const {
-	return !has_value;
+	return m_is_null;
 }
 
 string nullable_field_handle::to_string() const
@@ -186,6 +183,7 @@ bool nullable_field_handle::is_text(const std::type_info& type){
 }
 
 nullable_field_handle::~nullable_field_handle(){
+	return;//do not destroy what is not yours
 	if(primitive_value_ptr == nullptr){
 		return;
 	}

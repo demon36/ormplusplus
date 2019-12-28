@@ -6,6 +6,7 @@
 #include "model_base.h"
 #include "result_table.h"
 
+#include "iostream"//todo: remove after testing
 namespace ormplusplus {
 
 class db_session_base {
@@ -55,6 +56,7 @@ public:
 			}
 			results.emplace_back(obj.clone());
 		}
+		std::cout<<results[0].get_attribs().size()<<std::endl;
 		return results;
 	}
 

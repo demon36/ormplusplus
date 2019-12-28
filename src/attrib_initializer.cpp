@@ -4,8 +4,8 @@ using namespace std;
 
 namespace ormplusplus{
 
-attrib_initializer::attrib_initializer(const std::string& col_name, table_schema& _schema_ref, model_base& _model_base_ref, bool schema_built)
-: attrib_col(col_name), schema_ref(_schema_ref), model_base_ref(_model_base_ref), skip_col_setup(schema_built)
+attrib_initializer::attrib_initializer(const std::string& col_name, table_schema& _schema_ref, model_base& _model_base_ref)
+: attrib_col(col_name), schema_ref(_schema_ref), model_base_ref(_model_base_ref), skip_col_setup(_schema_ref.find(col_name) != _schema_ref.end())
 {
 }
 

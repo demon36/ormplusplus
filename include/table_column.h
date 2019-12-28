@@ -5,6 +5,9 @@
 
 #include "type_info.h"
 
+#define DEFAULT_STRING_LENGTH 1024
+#define DEFAULT_NUM_PRECISION 10
+
 namespace ormplusplus{
 
 struct opt_string{
@@ -19,9 +22,9 @@ struct opt_string{
 class table_column{
 private:
 	const std::string name;
-	const type_info& type;
-	long length = -1;//todo: use nullable type for length and precision to avoid comparing them when checking table schema exists
-	long precision = -1;
+	const type_info* type = nullptr;//todo: is this safe
+	long length = DEFAULT_STRING_LENGTH;//todo: use nullable type for length and precision to avoid comparing them when checking table schema exists
+	long precision = DEFAULT_NUM_PRECISION;
 	bool nullable = false;
 	bool default_value_set = false;
 	//todo: get rid of unique_ptr
@@ -29,7 +32,7 @@ private:
 	bool is_pkey = false;
 	bool is_auto_inc = false;
 public:
-	table_column();
+	table_column();//todo: remove this ctor
 	table_column(const std::string& _name);
 	table_column(const std::string& _name, const type_info& _type_info);
 	table_column(const std::string& _name, const type_info& _type_info, long _length, long _precision, bool _is_nullable, bool _is_pkey, bool _is_auto_inc);
@@ -46,6 +49,7 @@ public:
 	bool is_integral() const;
 	bool is_text() const;
 
+	void set_type_info(const type_info& _type);//todo: use a mutable reference to sth constants -how?-
 	void set_length(int value);
 	void set_precision(int value);
 	void set_primary(bool value);

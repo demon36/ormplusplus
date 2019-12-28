@@ -71,12 +71,7 @@ opt_string result_table::get_raw_field_value(size_t row_idx, const std::string& 
 		throw std::out_of_range("trying to set field value for a column that does not exist");
 	}
 
-	auto found_value_iter = values.find(row_idx*num_cols + col_idx);
-	if(found_value_iter == values.end()){
-		return found_value_iter->second;//todo: get rid of unneeded copying
-	}else{
-		return {"", true};
-	}
+	return values[row_idx*num_cols + col_idx];//todo: get rid of unneeded copying
 }
 
 void result_table::get_field_value(size_t row_idx, size_t col_idx, nullable_field_handle& field_handle){
@@ -89,8 +84,9 @@ void result_table::get_field_value(size_t row_idx, size_t col_idx, nullable_fiel
 
 	auto found_value_iter = values.find(row_idx*num_cols + col_idx);
 	if(found_value_iter == values.end() || found_value_iter->second.is_null){
-		field_handle.has_value = false;
+		field_handle.m_is_null = true;
 	}else{
+		field_handle.m_is_null = false;
 		opt_string opt_value = found_value_iter->second;
 		const type_info& column_type = *col_types[col_idx];
 		string value = opt_value.val;
