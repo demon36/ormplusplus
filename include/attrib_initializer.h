@@ -1,9 +1,17 @@
 #ifndef INCLUDE_ATTRIB_INITIALIZER_H_
 #define INCLUDE_ATTRIB_INITIALIZER_H_
 
-#include "model_base.h"
+#include <map>
+
+#include "type_info.h"
 
 namespace ormplusplus{
+
+class table_column;
+class model_base;
+class opt_string;
+
+typedef std::map<std::string, table_column> table_schema;
 
 /**
  * used at initialization of user model attributes, attrib_type is one of nullable_field<T> specializations<br>
@@ -12,16 +20,15 @@ namespace ormplusplus{
  */
 //todo: move implementation to attrib_initializer.cpp
 class attrib_initializer{
-//todo: decrease visibility where needed
-public:
-	table_column attrib_col;
+	table_column* attrib_col = nullptr;
 	table_schema& schema_ref;
 	model_base& model_base_ref;
 	//denotes that the schema entry for this model property has been already added
 	const bool skip_col_setup = false;
 public:
-//	attrib_initializer(attrib_initializer& that) = delete;
-
+	attrib_initializer() = delete;
+	attrib_initializer(const attrib_initializer& that);
+	attrib_initializer(attrib_initializer&& that);
 	/**
 	 * @param _nfbase reference to field to be initialized
 	 * @param _associated_col pointer to associated column to be initialized, nullptr in case it is already setup
@@ -67,6 +74,11 @@ public:
 	//attrib_initializer& as_index();//change column_defs, does it apply on numerical types only?
 
 	attrib_initializer& as_nullable(bool value = true);
+
+	bool has_default_value();
+	opt_string get_default_value();
+
+	void initialize_field(const type_info& type, void* primitive_value_ptr, bool* is_null);
 
 	~attrib_initializer();
 

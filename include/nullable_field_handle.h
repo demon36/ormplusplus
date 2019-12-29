@@ -25,7 +25,7 @@ private:
 public:
 	nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool* _is_null_ptr);
 	nullable_field_handle(const nullable_field_handle& that);
-	nullable_field_handle(nullable_field_handle&& that) = delete;
+	nullable_field_handle(nullable_field_handle&& that) = default;
 	nullable_field_handle& operator=(const nullable_field_handle& that);
 
 	static void move(nullable_field_handle& src, nullable_field_handle& dest);

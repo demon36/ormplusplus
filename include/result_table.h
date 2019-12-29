@@ -29,7 +29,12 @@ public:
 	void get_field_value(size_t row_idx, size_t col_idx, nullable_field_handle& field_handle);
 	void get_field_value(size_t row_idx, const std::string& col_name, nullable_field_handle& field_handle);
 	template<class nullable_field_t>
-	nullable_field_t& get_field_value(size_t row_idx, size_t col_idx);
+	nullable_field_t get_field_value(size_t row_idx, const std::string& col_name){
+		nullable_field_t nullable_value;
+		nullable_field_handle handle = nullable_value.get_handle();
+		get_field_value(row_idx, col_name, handle);
+		return nullable_value;
+	}
 
 	~result_table();
 };

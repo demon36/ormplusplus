@@ -1,10 +1,11 @@
-#include <logger.h>
 #include <typeindex>
 #include <vector>
 
 #include <mysql/mysql.h>
 #include <mysql_session.h>
 
+#include "nullable_field.h"
+#include "logger.h"
 
 using namespace std;
 
@@ -129,15 +130,19 @@ void mysql_session::create_table(const string& name, const table_schema& schema)
 		if(cols_list[i].is_text()){
 			query_stream << "(" << cols_list[i].get_length() << ")";
 		}
+		if(cols_list[i].is_integral() && !cols_list[i].get_precision().is_null()){//todo: support floating point number scale https://dev.mysql.com/doc/refman/5.7/en/fixed-point-types.html
+			query_stream << "(" << cols_list[i].get_precision() << ")";
+		}
+
 		if(cols_list[i].is_auto_increment()){
 			query_stream << " AUTO_INCREMENT ";
 		}
 
 		if(cols_list[i].has_default_value()){
-			if(cols_list[i].get_default_value().is_null){
+			if(cols_list[i].get_default_value().is_null()){
 				query_stream << " DEFAULT NULL ";
 			}else{
-				query_stream << " DEFAULT '" << cols_list[i].get_default_value().val << "' ";
+				query_stream << " DEFAULT '" << cols_list[i].get_default_value() << "' ";
 			}
 		}
 
@@ -170,8 +175,8 @@ table_schema mysql_session::get_table_schema(const string& name){
 		string db_col_type = result.get_raw_field_value(i, "DATA_TYPE").val;
 		string extra = result.get_raw_field_value(i, "EXTRA").val;
 		//todo: clean this mess
-		long max_len = result.get_raw_field_value(i, "CHARACTER_MAXIMUM_LENGTH").is_null ? -1 : stol(result.get_raw_field_value(i, "CHARACTER_MAXIMUM_LENGTH").val.c_str());
-		long num_precision = result.get_raw_field_value(i, "NUMERIC_PRECISION").is_null ? -1 : stol(result.get_raw_field_value(i, "NUMERIC_PRECISION").val.c_str());
+		db_long max_len = result.get_field_value<db_long>(i, "CHARACTER_MAXIMUM_LENGTH");
+		db_long num_precision = result.get_field_value<db_long>(i, "NUMERIC_PRECISION");
 		bool is_nullable = result.get_raw_field_value(i, "IS_NULLABLE").val == "YES";
 		bool is_pkey = result.get_raw_field_value(i, "COLUMN_KEY").val == "PRI";
 		bool is_auto_inc = extra.find("auto_increment") != extra.npos;
@@ -186,15 +191,15 @@ table_schema mysql_session::get_table_schema(const string& name){
 				is_auto_inc
 		);
 
-		if(!result.get_raw_field_value(i, "COLUMN_DEFAULT").is_null){
-			db_string default_value = result.get_raw_field_value(i, "COLUMN_DEFAULT").val;
+		db_string default_value = result.get_field_value<db_string>(i, "COLUMN_DEFAULT");
+		if(!default_value.is_null()){
 			if(default_value == "NULL"){
-				tmp_col.set_default_value("", true);//todo: enhance this
+				tmp_col.set_default_value(db_string());//todo: enhance this
 			}else if(tmp_col.get_type_info() == db_string::get_type_info()){
 				//default value is wrapped in single quotations
-				tmp_col.set_default_value(default_value.get_value_ref().substr(1, default_value.get_value_ref().size()-2), false);
+				tmp_col.set_default_value(db_string(default_value.get_value_ref().substr(1, default_value.get_value_ref().size()-2)));
 			}else{
-				tmp_col.set_default_value(default_value, false);
+				tmp_col.set_default_value(db_string(default_value));
 			}
 		}
 

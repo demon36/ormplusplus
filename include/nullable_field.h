@@ -101,37 +101,31 @@ public:
 
 	nullable_field(attrib_initializer attrib_germ)
 	{
-		//todo: probably replace with
-		//attrib_germ.get_model_base_ref.swallow(attrib_germ, *this);
-		if(attrib_germ.attrib_col.has_default_value()){
+		if(attrib_germ.has_default_value()){
 			//todo: replace this with sth from the old implementation
-			std::string default_val = attrib_germ.attrib_col.get_default_value().val;
 			//todo: unify this accross the code
-			if(!attrib_germ.attrib_col.get_default_value().is_null){
-				from_string(attrib_germ.attrib_col.get_default_value().val, value);
+			if(attrib_germ.get_default_value().is_null){
+				m_is_null = true;
+			} else {
+				std::string default_val = attrib_germ.get_default_value().val;
+				from_string(attrib_germ.get_default_value().val, value);
 				m_is_null = false;
 			}
 		}
-
-//		static bool add_col_if_not_exists(const std::string& name, const type_info& type)
-		attrib_germ.attrib_col.set_type_info(nullable_field<primitive_type>::get_type_info());
-		if(attrib_germ.schema_ref.find(attrib_germ.attrib_col.get_name()) == attrib_germ.schema_ref.end()){
-			attrib_germ.schema_ref.emplace(attrib_germ.attrib_col.get_name(), attrib_germ.attrib_col);
-		}
-
-		attrib_germ.model_base_ref.get_attribs().emplace(
-				attrib_germ.attrib_col.get_name(), nullable_field_handle(get_type_info(), &value, &m_is_null)
-			);
-
+		attrib_germ.initialize_field(nullable_field<primitive_type>::get_type_info(), &value, &m_is_null);//the missing ring
 	}
 
 	nullable_field(const primitive_type& _value)
-	: value(_value)
+	: value(_value), m_is_null(false)
 	{
 	}
 
 	const primitive_type& get_value_ref(){
 		return value;
+	}
+
+	nullable_field_handle get_handle(){
+		return {nullable_field<primitive_type>::get_type_info(), &value, &m_is_null};
 	}
 
 	nullable_field& operator=(const nullable_field& that)
@@ -263,7 +257,7 @@ std::unique_ptr<type_info> nullable_field<primitive_type>::type_info_ptr;
 template<class primitive_type>
 std::ostream& operator<<(std::ostream& os, const nullable_field<primitive_type>& field)
 {
-	os << *field.value;
+	os << field.value;
     return os;
 }
 

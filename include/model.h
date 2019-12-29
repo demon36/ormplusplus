@@ -102,7 +102,7 @@ public:
 		//todo: do not pass schema if already initialized or column has been already added
 		//todo: reduce args, probably no need to pass the whole schema and the whole model_base
 		//todo: check of col is already added
-		return attrib_initializer(name, get_schema(), *this);
+		return {name, get_schema(), *this};
 
 		/*
 		if(column_already_added){

@@ -5,6 +5,11 @@
 
 namespace ormplusplus {
 
+struct opt_string{
+	std::string val;
+	bool is_null;
+};
+
 class type_info
 {
 public:

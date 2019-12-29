@@ -1,8 +1,7 @@
-#include <nullable_field_handle.h>
 #include <algorithm>
 #include <chrono>
 
-#include "nullable_field.h"
+#include "nullable_field_handle.h"
 
 using namespace std;
 
@@ -139,6 +138,6 @@ bool nullable_field_handle::is_text(const std::type_info& type){
 nullable_field_handle::~nullable_field_handle(){
 }
 
-const db_null null_value(nullptr);
+//const db_null null_value(nullptr);
 
 } /* namespace ormplusplus */

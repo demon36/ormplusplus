@@ -4,16 +4,9 @@
 #include <map>
 
 #include "type_info.h"
-
-#define DEFAULT_STRING_LENGTH 1024
-#define DEFAULT_NUM_PRECISION 10
+#include "nullable_field.h"
 
 namespace ormplusplus{
-
-struct opt_string{
-	std::string val;
-	bool is_null;
-};
 
 /**
  * 	responsible for storing column data that is used to create a table
@@ -22,43 +15,41 @@ struct opt_string{
 class table_column{
 private:
 	const std::string name;
-	const type_info* type = nullptr;//todo: is this safe
-	long length = DEFAULT_STRING_LENGTH;//todo: use nullable type for length and precision to avoid comparing them when checking table schema exists
-	long precision = DEFAULT_NUM_PRECISION;
+	const type_info* type = nullptr;//todo: is this safe ?
+	db_long length;
+	db_long precision;
 	bool nullable = false;
 	bool default_value_set = false;
-	//todo: get rid of unique_ptr
-	opt_string default_value;//default value can be non-existent, NULL or "NULL" (or any other string)
+	db_string default_value;//default value can be non-existent, NULL or "NULL" (or any other string)
 	bool is_pkey = false;
 	bool is_auto_inc = false;
 public:
 	table_column();//todo: remove this ctor
 	table_column(const std::string& _name);
-	table_column(const std::string& _name, const type_info& _type_info);
-	table_column(const std::string& _name, const type_info& _type_info, long _length, long _precision, bool _is_nullable, bool _is_pkey, bool _is_auto_inc);
+	table_column(const std::string& _name, const type_info& _type_info, db_long _length, db_long _precision, bool _is_nullable, bool _is_pkey, bool _is_auto_inc);
 
+	//todo: remove useless getters/setters
 	std::string get_name() const;
 	const type_info& get_type_info() const;
-	long get_length() const;
-	long get_precision() const;
+	db_long get_length() const;
+	db_long get_precision() const;
 	bool is_nullable() const;
 	bool has_default_value() const;
-	opt_string get_default_value() const;
+	db_string get_default_value() const;
 	bool is_primary_key() const;//todo: possible to make these attribs public ?
 	bool is_auto_increment() const;
 	bool is_integral() const;
 	bool is_text() const;
 
 	void set_type_info(const type_info& _type);//todo: use a mutable reference to sth constants -how?-
-	void set_length(int value);
-	void set_precision(int value);
+	void set_length(const db_long& nullable_value);
+	void set_precision(const db_long& nullable_value);
 	void set_primary(bool value);
 	void set_nullable(bool value);
-	void set_default_value(const std::string& value, bool is_null);
+	void set_default_value(const db_string& nullable_value);
 	void set_auto_increment(bool value);
 
-	bool operator==(const table_column& that);
-	bool operator!=(const table_column& that);
+	bool equals(const table_column& that, bool ignore_precision);
 
 };
 

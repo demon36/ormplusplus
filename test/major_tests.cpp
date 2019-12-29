@@ -16,19 +16,20 @@ void print_test_result(const string& expression, bool result){
 class client : public model<client>
 {
 public:
-	DEFINE_ATTRIB(db_long, id).auto_increment().as_primary();
-	DEFINE_ATTRIB(db_string, name).with_default("nameless");
-	DEFINE_ATTRIB(db_int, age).with_default("5").as_nullable();
+	db_long id = initialize_attrib("id").auto_increment().as_primary();
+	db_string name = initialize_attrib("name").with_default("nameless");
+	db_int age = initialize_attrib("age").with_default("5").as_nullable();
 	db_int height = initialize_attrib("height");
-	DEFINE_ATTRIB(db_datetime, dob).as_nullable(false);
+	db_datetime dob = initialize_attrib("dob").as_nullable(false);
 
-	constexpr static const char* _id = "asdf"; //use instead of 2nd template parameter ??
+	constexpr static const char* _id = "asdf"; //todo: use instead of 2nd template parameter ??
 };
+
 class mini_bus : public model<mini_bus, _("minibuses")>
 {
 public:
-	DEFINE_ATTRIB(db_int, id).auto_increment().as_primary();
-	DEFINE_ATTRIB(db_string, model).with_default("my_van");
+	db_int id = initialize_attrib("id").auto_increment().as_primary();
+	db_string model = initialize_attrib("model").with_default("my_van");
 };
 
 
@@ -48,10 +49,10 @@ void test_model_definition(){
 	const table_schema& schema = client::get_schema();
 	ASSERT(schema.at("id").is_auto_increment());
 	ASSERT(schema.at("id").is_primary_key());
-	ASSERT(schema.at("name").get_default_value().val == "nameless");
+	ASSERT(schema.at("name").get_default_value() == "nameless");
 	ASSERT(schema.at("name").is_text());
 	ASSERT(!schema.at("name").is_integral());
-	ASSERT(schema.at("age").get_default_value().val == "5");
+	ASSERT(schema.at("age").get_default_value() == "5");
 	ASSERT(schema.at("age").is_nullable());
 	ASSERT(!schema.at("height").is_auto_increment());
 	ASSERT(!schema.at("height").is_nullable());
@@ -109,6 +110,3 @@ int main(int argc, char** argv)
 	}
 	return 0;
 }
-
-
-

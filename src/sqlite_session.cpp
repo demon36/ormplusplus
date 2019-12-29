@@ -121,10 +121,10 @@ void sqlite_session::create_table(const string& name, const table_schema& schema
 		}
 
 		if(columns_list[i].has_default_value()){
-			if(columns_list[i].get_default_value().is_null){
+			if(columns_list[i].get_default_value().is_null()){
 				query_stream << " DEFAULT NULL ";
 			}else{
-				query_stream << " DEFAULT '" << columns_list[i].get_default_value().val << "' ";
+				query_stream << " DEFAULT '" << columns_list[i].get_default_value() << "' ";
 			}
 		}
 
@@ -160,8 +160,8 @@ table_schema sqlite_session::get_table_schema(const string& name){
 	for(size_t i = 0; i < result.get_num_rows(); i++){
 		string column_name = result.get_raw_field_value(i, "name").val;
 		string db_column_type = result.get_raw_field_value(i, "type").val;
-		long max_length = -1;//todo: parse number between parentheses, ex: VARCHAR(34)
-		long num_precision = -1;//todo: understand how sqlite does it
+		db_long max_length;//todo: parse number between parentheses, ex: VARCHAR(34)
+		db_long num_precision;//todo: understand how sqlite does it
 		bool is_nullable = stoi(result.get_raw_field_value(i, "notnull").val.c_str()) == 0;
 		bool is_pkey = stoi(result.get_raw_field_value(i, "pk").val.c_str()) == 1;
 		bool is_auto_increment = true;//todo: fetch autoincrement info, will probably need to parse the table creation sql :S
@@ -176,15 +176,16 @@ table_schema sqlite_session::get_table_schema(const string& name){
 				is_auto_increment
 		);
 
-		if(!result.get_raw_field_value(i, "dflt_value").is_null){ //todo: add a test case for these conditions
-			db_string default_value = result.get_raw_field_value(i, "dflt_value").val;
+		db_string default_value = result.get_field_value<db_string>(i, "dflt_value");
+		if(!default_value.is_null()){ //todo: add a test case for these conditions
 			if(default_value == "NULL"){
-				temp_column.set_default_value("", true);
+				temp_column.set_default_value(db_string());
 			}else if(temp_column.get_type_info() == db_string::get_type_info()){
 				//default value is wrapped in single quotations
-				temp_column.set_default_value(default_value.get_value_ref().substr(1, default_value.get_value_ref().size()-2), false);
+				//todo: add and use a util fn
+				temp_column.set_default_value(default_value.get_value_ref().substr(1, default_value.get_value_ref().size()-2));
 			}else{
-				temp_column.set_default_value(default_value, false);
+				temp_column.set_default_value(default_value.get_value_ref());
 			}
 		}
 

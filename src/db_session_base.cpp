@@ -18,14 +18,7 @@ bool db_session_base::table_exists(const std::string& name, table_schema& schema
 	auto found_schema = get_table_schema(name);
 	for(auto& column : schema){
 		table_column& found_column = found_schema[column.first];
-		if(column.second != found_column){
-			return false;
-		}
-		if(column.second.is_integral() && column.second.get_precision() > found_column.get_precision()){
-			return false;
-		}
-		//TODO: can it be both ??
-		if(column.second.is_text() && column.second.get_length() > found_column.get_length()){
+		if(!column.second.equals(found_column, column.second.get_precision().is_null())){
 			return false;
 		}
 	}

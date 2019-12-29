@@ -119,11 +119,6 @@ void result_table::get_field_value(size_t row_idx, const std::string& col_name, 
 	return get_field_value(row_idx, get_col_idx(col_name), field_handle);
 }
 
-template<class primitive_type>
-primitive_type& result_table::get_field_value(size_t row_idx, size_t col_idx){
-
-}
-
 result_table::~result_table() {
 }
 
