@@ -10,7 +10,7 @@
 
 namespace ormplusplus{
 
-template<class user_model, class table_name>
+template<class user_model>
 class model;
 class model_base;
 

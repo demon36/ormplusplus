@@ -13,23 +13,20 @@ void print_test_result(const string& expression, bool result){
 	target_stream << " >>>>>>> " << right << setw(20) << (result ? "succeeded" : "failed") << endl;
 }
 
-class client : public model<client>
+struct client : public model<client>
 {
-public:
 	db_long id = initialize_attrib("id").auto_increment().as_primary();
 	db_string name = initialize_attrib("name").with_default("nameless");
 	db_int age = initialize_attrib("age").with_default("5").as_nullable();
 	db_int height = initialize_attrib("height");
 	db_datetime dob = initialize_attrib("dob").as_nullable(false);
-
-	constexpr static const char* _id = "asdf"; //todo: use instead of 2nd template parameter ??
 };
 
-class mini_bus : public model<mini_bus, _("minibuses")>
+struct mini_bus : public model<mini_bus>
 {
-public:
 	db_int id = initialize_attrib("id").auto_increment().as_primary();
 	db_string model = initialize_attrib("model").with_default("my_van");
+	constexpr static const char* table_name = "minibuses";
 };
 
 
@@ -86,7 +83,7 @@ void test_single_insert_and_select(){
 		{"id", "=", c0.id}
 	}).select_one();
 
-	ASSERT(c0.equals(c1));//todo: fix this
+	ASSERT(c0.equals(c1));
 }
 
 void test_multi_insert_and_select(){

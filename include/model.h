@@ -1,37 +1,22 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <iostream>
 #include <vector>
-#include <map>
-#include <memory>
 
 #include "attrib_initializer.h"
-#include "typestring.hh"
-
 #include "model_base.h"
 #include "query.h"
 
-//TODO: get rid of model binding macros
-//macro overloading
-#define GET_MACRO(_1,_2,NAME,...) NAME
-#define BOUND_MODEL(...) GET_MACRO(__VA_ARGS__, BOUND_MODEL_2, BOUND_MODEL_1)(__VA_ARGS__)
-
-#define BOUND_MODEL_1(CLASS_NAME) struct CLASS_NAME : public ormplusplus::model<CLASS_NAME>
-#define BOUND_MODEL_2(CLASS_NAME, TABLE_NAME) struct CLASS_NAME : public ormplusplus::model<CLASS_NAME, typestring_is(TABLE_NAME)>
-
-//creates a set of template parameters from a string literal
-#define _ typestring_is
 //TODO: facilitate writing conditions using sth like:
 //#define DEFINE_ATTRIB(DATATYPE, NAME) static std::string _ ## NAME(){static std::string _s = #NAME; return _s;}; DATATYPE NAME = initialize_attrib<DATATYPE>(#NAME)
 //or a static reference that is initialized to a schema entry
 //this is better static const table_column& ID_(){ return schema[""]; };
 //so that queries can like where({my_model::_ID(), "=", 3})
-#define DEFINE_ATTRIB(DATATYPE, NAME) DATATYPE NAME = initialize_attrib(#NAME)
+#define DEFINE_FIELD(DATATYPE, NAME) DATATYPE NAME = initialize_attrib(#NAME)
 
 namespace ormplusplus{
 
-template<class user_model, class table_name = typestring_is("")>
+template<class user_model>
 class model : public model_base
 {
 private:
@@ -40,21 +25,24 @@ protected:
 	static table_schema schema;
 	//set to true after first instance get created
 	static volatile bool schema_built;
+	constexpr static const char* table_name = nullptr;
+
+	model<user_model>(model<user_model>&& that)
+	: model_base(that)
+	{
+	}
 public:
 
-	model<user_model, table_name>()
+	model<user_model>()
 	: model_base(table_name_, schema)
 	{
 		schema_built = true;
 	}
 
-	model<user_model, table_name>(const model<user_model, table_name>& that) = delete;
-	model<user_model, table_name>(model<user_model, table_name>&& that)
-	: model_base(that)
-	{
-	}
+	model<user_model>(const model<user_model>& that) = delete;
 
-	static void copy(const model<user_model, table_name>& src, model<user_model, table_name>& dest){
+
+	static void copy(const model<user_model>& src, model<user_model>& dest){
 		dest.set_attribs(src.attributes);
 	}
 
@@ -72,7 +60,7 @@ public:
 		return target;
 	}
 
-	model<user_model, table_name>& operator=(model<user_model, table_name>& that){
+	model<user_model>& operator=(model<user_model>& that){
 		this->attributes = that.attributes;
 		return *this;
 	}
@@ -113,7 +101,7 @@ public:
 		*/
 	}
 
-	static bool col_exists(std::string name) {
+	static bool col_exists(const std::string& name) {
 		return get_schema().find(name) != get_schema().end();
 	}
 
@@ -125,19 +113,21 @@ public:
 		}
 		return schema;
 	}
+
+	virtual ~model(){}
 		
 };
 
-template<class user_model, class table_name>
-table_schema model<user_model, table_name>::schema;
+template<class user_model>
+table_schema model<user_model>::schema;
 
-template<class user_model, class table_name>
-std::string model<user_model, table_name>::table_name_ =
-		std::string(table_name::data()).empty() ?
-		type_info::get_type_name(typeid(user_model)) : table_name::data();
+template<class user_model>
+std::string model<user_model>::table_name_ =
+		user_model::table_name == nullptr ?
+		type_info::get_type_name(typeid(user_model)) : user_model::table_name;
 
-template<class user_model, class table_name>
-volatile bool model<user_model, table_name>::schema_built = false;
+template<class user_model>
+volatile bool model<user_model>::schema_built = false;
 
 }
 
