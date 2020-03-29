@@ -118,6 +118,11 @@ protected:
 	 */
 	//TODO: commas needed
 	static void print_attrib_values(std::ostream& stream, const table_schema& schema, const attribs_map& attribs);
+
+	/**
+	 * @return whether or not the db driver supports checking if a column has auto-increment set
+	 */
+	virtual bool supports_autoincrement_check() = 0;
 };
 
 } /* namespace ormplusplus */

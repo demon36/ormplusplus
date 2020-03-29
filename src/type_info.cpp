@@ -17,6 +17,7 @@ type_info::type_info(const type_info& that)
 : wrapper_type_hash(that.wrapper_type_hash), primitive_type_hash(that.primitive_type_hash), is_integral(that.is_integral), is_text(that.is_text), name(that.name)
 {}
 
+//TODO: convert to template fn
 string type_info::get_type_name(const std::type_info& type){
 #ifdef __GNUC__
 	int status;

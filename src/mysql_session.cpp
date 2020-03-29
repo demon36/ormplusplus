@@ -17,6 +17,10 @@ void mysql_session::mysql_query_(const std::string& query){
 	}
 }
 
+bool mysql_session::supports_autoincrement_check(){
+	return true;
+}
+
 const type_info& mysql_session::get_type_info(int mysql_type_enum){
 	//todo: revise typing setup
 	enum_field_types mysql_type = (enum_field_types)mysql_type_enum;
@@ -130,9 +134,6 @@ void mysql_session::create_table(const string& name, const table_schema& schema)
 		if(cols_list[i].is_text()){
 			query_stream << "(" << cols_list[i].get_length() << ")";
 		}
-		if(cols_list[i].is_integral() && !cols_list[i].get_precision().is_null()){//todo: support floating point number scale https://dev.mysql.com/doc/refman/5.7/en/fixed-point-types.html
-			query_stream << "(" << cols_list[i].get_precision() << ")";
-		}
 
 		if(cols_list[i].is_auto_increment()){
 			query_stream << " AUTO_INCREMENT ";
@@ -166,7 +167,7 @@ void mysql_session::create_table(const string& name, const table_schema& schema)
 
 table_schema mysql_session::get_table_schema(const string& name){
 	//TODO: use an ORM class for schema
-	string query = "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, IS_NULLABLE, COLUMN_DEFAULT, COLUMN_KEY, EXTRA "
+	string query = "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE, COLUMN_DEFAULT, COLUMN_KEY, EXTRA "
 			"FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '"+name+"';";
 	result_table result = execute_flat(query);
 	table_schema schema;
@@ -176,7 +177,6 @@ table_schema mysql_session::get_table_schema(const string& name){
 		string extra = result.get_raw_field_value(i, "EXTRA").val;
 		//todo: clean this mess
 		db_long max_len = result.get_field_value<db_long>(i, "CHARACTER_MAXIMUM_LENGTH");
-		db_long num_precision = result.get_field_value<db_long>(i, "NUMERIC_PRECISION");
 		bool is_nullable = result.get_raw_field_value(i, "IS_NULLABLE").val == "YES";
 		bool is_pkey = result.get_raw_field_value(i, "COLUMN_KEY").val == "PRI";
 		bool is_auto_inc = extra.find("auto_increment") != extra.npos;
@@ -185,7 +185,6 @@ table_schema mysql_session::get_table_schema(const string& name){
 				col_name,
 				get_type_info(db_col_type),
 				max_len,
-				num_precision,
 				is_nullable,
 				is_pkey,
 				is_auto_inc

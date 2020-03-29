@@ -19,7 +19,7 @@ bool db_session_base::table_exists(const std::string& name, table_schema& model_
 
 	for(auto& column : model_schema){
 		table_column& found_column = db_schema[column.first];
-		if(!column.second.equals(found_column, column.second.get_precision().is_null())){
+		if(!column.second.equals(found_column, !supports_autoincrement_check())){
 			return false;
 		}
 	}

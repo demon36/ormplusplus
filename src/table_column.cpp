@@ -1,7 +1,6 @@
 #include "table_column.h"
 
 #define DEFAULT_STRING_LENGTH 1024
-#define DEFAULT_NUM_PRECISION 12
 
 using namespace std;
 
@@ -16,11 +15,10 @@ table_column::table_column(const string& _name)
 {
 }
 
-table_column::table_column(const string& _name, const type_info& _type_info, db_long _length, db_long _precision, bool _nullable, bool _pkey, bool _auto_increment)
+table_column::table_column(const string& _name, const type_info& _type_info, db_long _length, bool _nullable, bool _pkey, bool _auto_increment)
 : name(_name), type(&_type_info)
 {
 	this->length = _length;
-	this->precision = _precision;
 	this->nullable = _nullable;
 	if(_nullable){//if column is nullable then default value is NULL
 		default_value_set = true;
@@ -32,7 +30,6 @@ table_column::table_column(const string& _name, const type_info& _type_info, db_
 string table_column::get_name() const { return name; }
 const type_info& table_column::get_type_info() const { return *type; }
 db_long table_column::get_length() const { return length; }
-db_long table_column::get_precision() const { return precision; }
 bool table_column::is_nullable() const { return nullable; }
 bool table_column::has_default_value() const { return default_value_set; }
 db_string table_column::get_default_value () const { return default_value; }
@@ -43,20 +40,14 @@ void table_column::set_type_info(const type_info& _type){
 	type = &_type;
 	if(type->is_text && length.is_null()){
 		length = DEFAULT_STRING_LENGTH;
-		precision.clear_value();
+	}else if(type->is_integral){
+		length.clear_value();
 	}
 }
 
 void table_column::set_length(const db_long& nullable_value){
 	if(!is_text()){
 		throw runtime_error("trying to set length on non-text type");
-	}
-	length = nullable_value;
-}
-
-void table_column::set_precision(const db_long& nullable_value){
-	if(!is_text()){
-		throw runtime_error("trying to set precision on non-numeric type");
 	}
 	length = nullable_value;
 }
@@ -98,17 +89,17 @@ bool table_column::is_text() const {
 	return type->is_text;
 }
 
-bool table_column::equals(const table_column& that, bool ignore_precision){
+bool table_column::equals(const table_column& that, bool ignore_autoincrement){
 	//TODO: update with added attributes
 	if(
 		this->name == that.name &&
 		*this->type == *that.type &&
+		this->length == that.length &&
 		this->nullable == that.nullable &&
+		this->default_value_set == that.default_value_set &&
 		this->default_value == that.default_value &&
 		this->is_pkey == that.is_pkey &&
-		this->is_auto_inc == that.is_auto_inc &&
-		this->length == that.length &&
-		(ignore_precision || this->precision == that.precision)
+		(ignore_autoincrement || this->is_auto_inc == that.is_auto_inc)
 	){
 		return true;
 	}else{

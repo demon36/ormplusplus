@@ -16,6 +16,10 @@ void* sqlite_session::sqlite_query(const std::string& query){
 	return stmt;
 }
 
+bool sqlite_session::supports_autoincrement_check(){
+	return false;//see https://stackoverflow.com/questions/20979239/how-to-tell-if-a-sqlite-column-is-autoincrement
+}
+
 /**
  * @see https://www.sqlite.org/c3ref/c_blob.html
  */
@@ -161,16 +165,14 @@ table_schema sqlite_session::get_table_schema(const string& name){
 		string column_name = result.get_raw_field_value(i, "name").val;
 		string db_column_type = result.get_raw_field_value(i, "type").val;
 		db_long max_length;//todo: parse number between parentheses, ex: VARCHAR(34)
-		db_long num_precision;//todo: understand how sqlite does it
 		bool is_nullable = stoi(result.get_raw_field_value(i, "notnull").val.c_str()) == 0;
 		bool is_pkey = stoi(result.get_raw_field_value(i, "pk").val.c_str()) == 1;
-		bool is_auto_increment = true;//todo: fetch autoincrement info, will probably need to parse the table creation sql :S
+		bool is_auto_increment = false;//todo: fetch autoincrement info, will probably need to parse the table creation sql :S
 
 		table_column temp_column(
 				column_name,
 				get_type_info(db_column_type),
 				max_length,
-				num_precision,
 				is_nullable,
 				is_pkey,
 				is_auto_increment

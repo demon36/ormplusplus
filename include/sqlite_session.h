@@ -12,6 +12,7 @@ class sqlite_session : public db_session_base {
 private:
 	void* session_ptr;
 	void* sqlite_query(const std::string& query);
+	bool supports_autoincrement_check();
 	//todo: add these functions to db_session_base ?
 	static const type_info& get_type_info(int sqlite_type_enum);
 	static const type_info& get_type_info(const std::string& sqlite_col_type_name);

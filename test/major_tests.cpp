@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 			unique_ptr<db_session_base>(new sqlite_session("testdb.sqlite"))
 	};
 	for(auto& session : db_sessions){
-		cout<<"running tests on "<<typeid(*session).name()<<" database"<<endl;
+		cout<<"running tests on "<<ormplusplus::type_info::get_type_name(typeid(*session))<<" database"<<endl;
 		assert_table_creation(*session);
 		test_single_insert_and_select(*session);
 		cout<<"==================================================="<<endl;
