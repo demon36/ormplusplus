@@ -66,12 +66,9 @@ const type_info& sqlite_session::get_type_info(const std::string& sqlite_col_typ
 		c = (char)toupper(c);
 	}
 
-	//todo: add length to column info
-	//todo: fix this bs
-	if(normalized_case_name.find("VARCHAR") == 0){
-		normalized_case_name = "VARCHAR";
-	} else if(normalized_case_name.find("TEXT") == 0){
-		normalized_case_name = "TEXT";
+	size_t bracket_idx = normalized_case_name.find("(");
+	if(bracket_idx != string::npos){
+		normalized_case_name = normalized_case_name.substr(0, bracket_idx);
 	}
 
 	if(type_names_map.find(normalized_case_name) == type_names_map.end()){
@@ -127,6 +124,8 @@ void sqlite_session::create_table(const string& name, const table_schema& schema
 		if(columns_list[i].has_default_value()){
 			if(columns_list[i].get_default_value().is_null()){
 				query_stream << " DEFAULT NULL ";
+			}else if(columns_list[i].is_integral()){
+				query_stream << " DEFAULT " << columns_list[i].get_default_value() << " ";
 			}else{
 				query_stream << " DEFAULT '" << columns_list[i].get_default_value() << "' ";
 			}
@@ -164,7 +163,14 @@ table_schema sqlite_session::get_table_schema(const string& name){
 	for(size_t i = 0; i < result.get_num_rows(); i++){
 		string column_name = result.get_raw_field_value(i, "name").val;
 		string db_column_type = result.get_raw_field_value(i, "type").val;
-		db_long max_length;//todo: parse number between parentheses, ex: VARCHAR(34)
+		db_long max_length;
+		if(db_column_type.find("VARCHAR") == 0 || db_column_type.find("TEXT") == 0){
+			//ex: VARCHAR(34)
+			size_t bracket_idx = db_column_type.find("(");
+			string max_length_str = db_column_type.substr(bracket_idx+1, db_column_type.length()-bracket_idx-2);
+			max_length = stoi(max_length_str);
+			db_column_type = db_column_type.substr(0, bracket_idx);
+		}
 		bool is_nullable = stoi(result.get_raw_field_value(i, "notnull").val.c_str()) == 0;
 		bool is_pkey = stoi(result.get_raw_field_value(i, "pk").val.c_str()) == 1;
 		bool is_auto_increment = false;//todo: fetch autoincrement info, will probably need to parse the table creation sql :S

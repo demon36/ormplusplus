@@ -99,7 +99,7 @@ bool table_column::equals(const table_column& that, bool ignore_autoincrement){
 		this->default_value_set == that.default_value_set &&
 		this->default_value == that.default_value &&
 		this->is_pkey == that.is_pkey &&
-		(ignore_autoincrement || this->is_auto_inc == that.is_auto_inc)
+		(ignore_autoincrement || (this->is_auto_inc == that.is_auto_inc))
 	){
 		return true;
 	}else{
