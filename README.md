@@ -9,62 +9,62 @@ Targeting SQLite & MySQL support, others can be added in the future
 
 ### Usage example -not fully working yet- 
 ```cpp
-BOUND_MODEL(client, "client_info")
+struct client : public model<client>
 {
-public:
-	DEFINE_ATTRIB(db_string, name).with_default("nameless");
-	DEFINE_ATTRIB(db_int, age).with_default(5);
-	DEFINE_ATTRIB(db_int, height);
+	db_long id = initialize_attrib("id").auto_increment().as_primary();
+	db_string name = initialize_attrib("name").with_default("nameless");
+	db_int age = initialize_attrib("age").with_default("5").as_nullable();
+	db_int height = initialize_attrib("height");
+	db_datetime dob = initialize_attrib("dob").as_nullable(false);
+
+	// constexpr static const char* table_name = "clients";//optional override for actual table name, default is class name
 };
 
 int main(int argc, char** argv)
 {
-	db::set_default_session(make_shared<mysql_session>("localhost", "ormplusplus", "root", "root"));
+	sqlite_session sqlite("testdb.sqlite");
 	
-	if(!db::table_exists<client>()){
-		db::create_table<client>();
+	if(!sqlite::table_exists<client>()){
+		sqlite::create_table<client>();
 	}
 
-	std::vector<client> all_clients = client::get();
-	std::vector<client> young_clients = client::where({
+	std::vector<client> all_clients = sqlite.exec(client::select_many().where());
+	std::vector<client> young_clients = sqlite.exec(client::select_many().where({
 		{"age", "<", 45},
 		{"name", "=", null_value},
 	}).orderBy({
 		{"age", sort_dir::asc},
 		{"height", sort_dir::desc},
-	}).limit(100).get();
+	}).limit(100));
 	
-	client c0 = client::where({"id", 542}).find_first();
+	client c0 = sqlite.exec(client::select_one().where({"id", 542}));
 	client c1;
 	c1.name = "myname";
 	c1.age = 25;
-	c1.save();
+	sqlite.insert(c1);
 
-	return 0;
+	sqlite.exec(client::delete().where({"id", "=", 34}));
 }
 ```
 
-### TODO
-- [x] model definition
-- [x] table creation
-- [x] assert table exists with schema comparison
-- [x] DB session abstraction
-- [x] put DB supported types in one place
-- [x] update tests
-- [x] use logging
-- [x] get rid of Poco dependency
-- [x] add basic support for sqlite
-- [ ] select, insert, update, delete one
-- [ ] select, insert, update, delete many
-- [ ] order by, limit, group by, having
+### implemented features:
+- [x] schema definition
+- [x] model binding
+- [x] table creation & deletion
+- [x] check table exists with schema comparison
+- [x] logging
+- [x] basic support for mysql & sqlite
+- [ ] single row CRUD
+- [ ] multi row CRUD
+- [ ] order by, limit
 - [ ] insert or update if exists
-- [ ] nested where conditions
-- [ ] aggregate fns (AVG, COUNT, SUM, MAX, MIN)
 - [ ] separate sqlite and mysql compile time dependencies
-- [ ] autosave
-- [ ] check thread safety
+- [ ] nested where conditions
+- [ ] transactions
 - [ ] relational models (maybe?)
-- [ ] transactions (maybe?)
+- [ ] aggregate fns (AVG, COUNT, SUM, MAX, MIN)
+- [ ] group by, having
+- [ ] thread safety ?
 
 ### build instructions
 - install mysql and sqlite c connectors
