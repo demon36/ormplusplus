@@ -65,22 +65,24 @@ public:
 		return *this;
 	}
 
-	static std::vector<user_model> get(){
-		query<user_model> query;
-		return query.get();
-	}
-
 	static std::string get_table_name(){
 		return table_name_;
 	}
 
-	//TODO: implement nested conditions
-	static query<user_model> where(std::vector<query_condition> conditions){
-		return query<user_model>(conditions);
+	static query<user_model, query_type::_select_single> select_one(){
+		return {};
 	}
 
-	static query<user_model> where(query_condition condition){
-		return query<user_model>({condition});
+	static query<user_model, query_type::_select_many> select_many(){
+		return {};
+	}
+
+	static query<user_model, query_type::_delete> delete_(){
+		return {};
+	}
+
+	static query<user_model, query_type::_update> update(){
+		return {};
 	}
 
 	//TODO: add another variant that takes no template parameters and performs the with_default() check in runtime

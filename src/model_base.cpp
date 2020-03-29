@@ -1,4 +1,3 @@
-#include <db.h>
 #include "model_base.h"
 
 using namespace std;
@@ -91,10 +90,6 @@ void model_base::set_auto_inc_pkey(long value){
 			throw runtime_error("unsupported data type used for auto increment primary key");
 		}
 	}
-}
-
-void model_base::insert(bool update_auto_inc_pkey){
-	db::get_default_session().insert(*this, update_auto_inc_pkey);
 }
 
 }

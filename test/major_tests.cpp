@@ -33,8 +33,8 @@ struct mini_bus : public model<mini_bus>
 void test_model_definition(){
 	ASSERT(mini_bus::get_table_name() == "minibuses");
 	ASSERT(client::get_table_name() == "client");
-	ASSERT(db::is_user_model_class<client>());
-	ASSERT(!db::is_user_model_class<db_int>());
+	ASSERT(model_base::is_user_model_class<client>());
+	ASSERT(!model_base::is_user_model_class<db_int>());
 
 	client c;
 	ASSERT(c.id.is_null());
@@ -59,15 +59,15 @@ void test_model_definition(){
 	ASSERT(!schema.at("height").is_text());
 }
 
-void assert_table_creation(){
-	db::drop_table<client>();
-	ASSERT(!db::table_exists<client>());
-	db::create_table<client>();
-	ASSERT(db::table_exists<client>());
-	ASSERT(db::table_exists<client>(true));
+void assert_table_creation(db_session_base& dbsession){
+	dbsession.drop_table<client>();
+	ASSERT(!dbsession.table_exists<client>());
+	dbsession.create_table<client>();
+	ASSERT(dbsession.table_exists<client>());
+	ASSERT(dbsession.table_exists<client>(true));
 }
 
-void test_single_insert_and_select(){
+void test_single_insert_and_select(db_session_base& dbsession){
 	client c0;
 	attribs_map& temp = c0.get_attribs();
 	temp.size();
@@ -77,11 +77,9 @@ void test_single_insert_and_select(){
 	::tm dobtm;
 	strptime("1993-09-30 17:20:21", "%Y-%m-%d %H:%M:%S", &dobtm);
 	c0.dob = dobtm;
-	c0.insert(true);
+	dbsession.insert(c0, true);
 
-	client c1 = client::where({
-		{"id", "=", c0.id}
-	}).select_one();
+	client c1 = dbsession.execute(client::select_one().where({"id", "=", c0.id}));
 
 	ASSERT(c0.equals(c1));
 }
@@ -94,15 +92,14 @@ int main(int argc, char** argv)
 {
 	logger::set_level(logger::lvl::DBUG);
 	test_model_definition();
-	map<string, shared_ptr<db_session_base>> db_sessions = {
-		{"mysql", make_shared<mysql_session>("localhost", "ormplusplus", "root", "root")},
-		{"sqlite", make_shared<sqlite_session>("testdb.sqlite")}
+	unique_ptr<db_session_base> db_sessions[] = {
+			unique_ptr<db_session_base>(new mysql_session("localhost", "ormplusplus", "root", "root")),
+			unique_ptr<db_session_base>(new sqlite_session("testdb.sqlite"))
 	};
-	for(auto& session_entry : db_sessions){
-		cout<<"running tests on "<<session_entry.first<<" database"<<endl;
-		db::set_default_session(session_entry.second);
-		assert_table_creation();
-		test_single_insert_and_select();
+	for(auto& session : db_sessions){
+		cout<<"running tests on "<<typeid(*session).name()<<" database"<<endl;
+		assert_table_creation(*session);
+		test_single_insert_and_select(*session);
 		cout<<"==================================================="<<endl;
 	}
 	return 0;

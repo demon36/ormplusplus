@@ -5,10 +5,6 @@
 using namespace std;
 namespace ormplusplus {
 
-db_session_base::db_session_base() {
-	// TODO Auto-generated constructor stub
-}
-
 void db_session_base::drop_table(const std::string& name){
 	string query_string = "DROP TABLE IF EXISTS `" + name + "`;";
 	execute_void(query_string);
@@ -34,7 +30,7 @@ std::string db_session_base::build_query_string(const query_base& query){
 	//TODO: use logging for raw queries
 	if(query.get_type() == query_type::_null){
 		throw std::runtime_error("try to execute a query with null type");
-	}else if(query.get_type() == query_type::_select){
+	}else if(query.get_type() == query_type::_select_single || query.get_type() == query_type::_select_many){
 		query_stream << "select ";
 		print_col_names(query_stream, query.get_schema_ref());
 		query_stream << " from " << query.get_table_name();

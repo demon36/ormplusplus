@@ -2,7 +2,7 @@
 #define INCLUDE_DB_SESSION_BASE_H_
 
 #include "table_column.h"
-#include "query_base.h"
+#include "query.h"
 #include "model_base.h"
 #include "result_table.h"
 
@@ -11,13 +11,37 @@ namespace ormplusplus {
 
 class db_session_base {
 public:
-	db_session_base();
+	template <class user_model>
+	void create_table(){
+		model_base::assert_class_is_user_model<user_model>();
+		create_table(user_model::get_table_name(), user_model::get_schema());
+	}
+
 	virtual void create_table(const std::string& name, const table_schema& schema) = 0;
+
+	template <class user_model>
+	void drop_table(){
+		drop_table(user_model::get_table_name());
+	}
+
 	void drop_table(const std::string& name);
+
+	template <class user_model>
+	bool table_exists(bool check_schema = false){
+		model_base::assert_class_is_user_model<user_model>();
+		table_schema schema = user_model::get_schema();
+		if(check_schema){
+			return table_exists(user_model::get_table_name(), schema);
+		}else{
+			return table_exists(user_model::get_table_name());
+		}
+	}
+
 	virtual bool table_exists(const std::string& name) = 0;
 	bool table_exists(const std::string& name, table_schema& schema);
 	virtual table_schema get_table_schema(const std::string& name) = 0;
 	virtual std::string build_query_string(const query_base& query);
+
 	/**
 	 * inserts the provided model or updates it if exists
 	 */
@@ -35,7 +59,7 @@ public:
 	 * this function assumes query has already been checked against model schema
 	 */
 	template<class user_model>
-	std::vector<user_model> execute(const query_base& query){
+	std::vector<user_model> execute(const query<user_model, query_type::_select_many>& query){
 		result_table result = execute_flat(query);
 		std::vector<user_model> result_models(result.get_num_rows());
 
@@ -55,6 +79,21 @@ public:
 			}
 		}
 		return result_models;
+	}
+
+	//todo: should return optional<user_model>
+	//todo: make sure "limit" is set here
+	template<class user_model>
+	user_model execute(const query<user_model, query_type::_select_single>& query){
+		result_table result = execute_flat(query);
+		user_model model;
+
+		if(result.get_num_rows() > 0){
+			for(auto& attrib_element : model.attributes){
+				result.get_field_value(0, attrib_element.first, attrib_element.second);
+			}
+		}
+		return model;
 	}
 
 	virtual result_table execute_flat(const query_base& query) = 0;

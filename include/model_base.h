@@ -20,6 +20,20 @@ private:
 protected:
 	attribs_map attributes;
 public:
+
+	//TODO: would enable_if help here ?
+	template <class T>
+	static bool is_user_model_class(){
+		return std::is_base_of<model_base, T>::value;
+	}
+
+	template <class T>
+	static void assert_class_is_user_model(){
+		if(!is_user_model_class<T>()){
+			throw std::runtime_error("template parameter is not a legitimate child of model_base");
+		}
+	}
+
 	model_base(const std::string& table_name, table_schema& schema);
 	model_base(const model_base& that);
 	model_base(model_base&& that);
@@ -44,7 +58,7 @@ public:
 	 * @param update_auto_inc_pkey whether or not make additional query
 	 * for extracting inserted row id and updating current model
 	 */
-	void insert(bool update_auto_inc_pkey = false);
+//	void insert(bool update_auto_inc_pkey = false);
 //	void update();
 //	static std::vector<table_column> get_columns();
 //	static void add_column(std::string name, type_info type);

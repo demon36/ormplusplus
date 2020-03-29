@@ -12,8 +12,9 @@ namespace ormplusplus {
 
 //use enum classes
 enum class query_type{
-	_null,
-	_select,
+	_null,//todo: remove this value
+	_select_single,
+	_select_many,
 	_update,
 	_insert,
 	_delete,
@@ -41,7 +42,7 @@ protected:
 public:
 	//TODO: add const wherever it is possible
 	query_base() = delete;
-	query_base(const std::string& _table_name, const table_schema& _schema);
+	query_base(const std::string& _table_name, const table_schema& _schema, query_type _type);
 	query_base(const query_base& that) = default;
 	const std::string& get_table_name() const;
 	const table_schema& get_schema_ref() const;

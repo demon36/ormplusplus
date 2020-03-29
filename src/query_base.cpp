@@ -1,10 +1,9 @@
-#include <db.h>
 #include "query_base.h"
 
 namespace ormplusplus {
 
-query_base::query_base(const std::string& _table_name, const table_schema& _schema)
-: table_name(_table_name), schema(_schema)
+query_base::query_base(const std::string& _table_name, const table_schema& _schema, query_type _type)
+: table_name(_table_name), schema(_schema), type(_type)
 {
 }
 

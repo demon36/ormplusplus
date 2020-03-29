@@ -15,7 +15,6 @@ namespace ormplusplus {
 	bool logger::is_handle_open = false;
 	logger::lvl logger::m_level = lvl::WARNING;
 	//TODO: make thread safe
-	//TODO: add rotation maybe
 	void logger::use_file(const string& file_name){
 		if(is_handle_open){
 			log_file.close();

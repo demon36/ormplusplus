@@ -1,7 +1,6 @@
 #ifndef INCLUDE_QUERY_H_
 #define INCLUDE_QUERY_H_
 
-#include "db.h"
 #include "query_base.h"
 
 namespace ormplusplus{
@@ -10,22 +9,28 @@ namespace ormplusplus{
  * this class is responsible for storing query parameters and checking their
  * validity against model schema, and returning instance(s) of user_model upon request
  */
-template<class user_model>
+template<class user_model, query_type _type>
 class query : public query_base{
 public:
-	query() = delete;// : query_base(user_model::get_table_name()) {}
+	//todo: remove this ctor if useless
+	query() : query_base(user_model::get_table_name(), user_model::get_schema(), _type) {
+	}
+
 	query(const query& _query) : query_base(_query) {}
-	query(const std::vector<query_condition>& _conditions) : query_base(user_model::get_table_name(), user_model::get_schema()){
-		//TODO: assert conditions comply to column names and types
-		conditions = _conditions;
+
+	query& where(const std::vector<query_condition>& _conditions){
+		for(const query_condition& condition : _conditions){
+			conditions.push_back(condition);
+		}
+		return *this;
 	}
 
-	std::vector<user_model> select(){
-		//TODO: assert schema is not empty for type
-		type = query_type::_select;
-		return db::get_default_session().execute<user_model>(*this);
+	query& where(const query_condition& condition){
+		conditions.push_back(condition);
+		return *this;
 	}
 
+	/*
 	user_model select_one(){
 		this->limit = 1;
 		std::vector<user_model> objects = select();
@@ -34,7 +39,7 @@ public:
 		}else{
 			return objects[0].clone();
 		}
-	}
+	}*/
 
 //	operator std::vector<user_model>(){
 //		std::vector<user_model> models_list;
@@ -42,7 +47,10 @@ public:
 //	}
 
 	//TODO: throw exception if a decorator got called twice
+
 //	void remove();
+//TODO: assert conditions comply to column names and types
+//	Query& where()
 //	Query& update(std::vector<std::string>);
 //	void set(std::vector<std::string>);
 //	long count();
