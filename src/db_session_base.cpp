@@ -10,10 +10,15 @@ void db_session_base::drop_table(const std::string& name){
 	execute_void(query_string);
 }
 
-bool db_session_base::table_exists(const std::string& name, table_schema& schema){
-	auto found_schema = get_table_schema(name);
-	for(auto& column : schema){
-		table_column& found_column = found_schema[column.first];
+bool db_session_base::table_exists(const std::string& name, table_schema& model_schema){
+	auto db_schema = get_table_schema(name);
+	
+	if(model_schema.size() != db_schema.size()){
+		return false;
+	}
+
+	for(auto& column : model_schema){
+		table_column& found_column = db_schema[column.first];
 		if(!column.second.equals(found_column, column.second.get_precision().is_null())){
 			return false;
 		}
@@ -33,7 +38,7 @@ std::string db_session_base::build_query_string(const query_base& query){
 	}else if(query.get_type() == query_type::_select_single || query.get_type() == query_type::_select_many){
 		query_stream << "select ";
 		print_col_names(query_stream, query.get_schema_ref());
-		query_stream << " from " << query.get_table_name();
+		query_stream << " from `" << query.get_table_name() << "`";
 		if(!conditions.empty()){
 			query_stream << " WHERE ";
 		}

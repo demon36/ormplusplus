@@ -91,7 +91,7 @@ sqlite_session::sqlite_session(const string& db_path){
 bool sqlite_session::table_exists(const string& name){
 	string query = "SELECT name FROM sqlite_master WHERE type='table' AND name='"+name+"';";
 	result_table found_tables = execute_flat(query);
-	return !found_tables.get_num_rows() == 0;
+	return !(found_tables.get_num_rows() == 0);
 }
 
 void sqlite_session::create_table(const string& name, const table_schema& schema){

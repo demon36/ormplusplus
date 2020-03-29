@@ -233,7 +233,7 @@ public:
 
 	std::string to_string() const
 	{
-		return to_string(*value);
+		return std::to_string(value);
 	}
 
 	~nullable_field()

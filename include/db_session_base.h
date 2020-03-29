@@ -38,7 +38,7 @@ public:
 	}
 
 	virtual bool table_exists(const std::string& name) = 0;
-	bool table_exists(const std::string& name, table_schema& schema);
+	bool table_exists(const std::string& name, table_schema& model_schema);
 	virtual table_schema get_table_schema(const std::string& name) = 0;
 	virtual std::string build_query_string(const query_base& query);
 
