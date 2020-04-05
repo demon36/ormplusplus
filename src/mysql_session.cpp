@@ -8,6 +8,7 @@
 #include "logger.h"
 
 using namespace std;
+using namespace utils;
 
 namespace ormplusplus {
 

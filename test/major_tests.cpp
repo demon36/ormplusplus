@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace ormplusplus;
+using namespace utils;
 
 #define ASSERT(expression) print_test_result(#expression, expression)
 

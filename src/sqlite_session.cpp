@@ -5,6 +5,7 @@
 #include <sqlite3.h>
 
 using namespace std;
+using namespace utils;
 
 namespace ormplusplus {
 
