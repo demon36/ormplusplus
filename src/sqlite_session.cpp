@@ -1,3 +1,4 @@
+#ifdef SQLITE
 #include <logger.h>
 #include <sqlite_session.h>
 #include <typeindex>
@@ -283,3 +284,4 @@ sqlite_session::~sqlite_session() {
 }
 
 } /* namespace ormplusplus */
+#endif //if including sqlite in build

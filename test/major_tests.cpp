@@ -1,6 +1,11 @@
 #include <logger.h>
 #include "ormplusplus.h"
+#include "util.h"
 #include <iomanip>
+#include <iostream>
+#include <memory>
+#include "sqlite_session.h"
+#include "mysql_session.h"
 
 using namespace std;
 using namespace ormplusplus;
@@ -76,7 +81,7 @@ void test_single_insert_and_select(db_session_base& dbsession){
 	c0.name = "robert";
 	c0.height = 167;
 	::tm dobtm;
-	strptime("1993-09-30 17:20:21", "%Y-%m-%d %H:%M:%S", &dobtm);
+        util::from_string("1993-09-30 17:20:21", dobtm);
 	c0.dob = dobtm;
 	dbsession.insert(c0, true);
 

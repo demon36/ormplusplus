@@ -1,5 +1,6 @@
-#include <result_table.h>
+#include "result_table.h"
 #include "nullable_field.h"
+#include "util.h"
 
 namespace ormplusplus {
 
@@ -105,7 +106,7 @@ void result_table::get_field_value(size_t row_idx, size_t col_idx, nullable_fiel
 			//TODO: query datetime with same format, ex: "1993-09-30 17:20:21"
 			//TODO: use correct tz
 			::tm datetime;
-			strptime(value.c_str(), "%Y-%m-%d %H:%M:%S", &datetime);
+                        util::from_string(value, datetime);
 			field_handle.set_value_unsafe(datetime);
 		}else if(column_type == db_null::get_type_info()){
 			//TODO get rid of this case

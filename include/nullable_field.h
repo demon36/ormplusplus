@@ -3,10 +3,12 @@
 
 #include <memory>
 #include <type_traits>
+#include <iomanip>
 
 #include "attrib_initializer.h"
 #include "nullable_field_handle.h"
 #include "type_info.h"
+#include "util.h"
 
 namespace ormplusplus{
 
@@ -92,13 +94,6 @@ public:
 	}
 	*/
 
-	static void from_string(const std::string& src, int& dest)			{ dest = stoi(src); }
-	static void from_string(const std::string& src, long& dest)			{ dest = stol(src); }
-	static void from_string(const std::string& src, float& dest)		{ dest = stof(src); }
-	static void from_string(const std::string& src, double& dest)		{ dest = stod(src); }
-	static void from_string(const std::string& src, std::string& dest)	{ dest = src; }
-	static void from_string(const std::string& src, tm& dest)			{ strptime(src.c_str(), "%Y-%m-%d %H:%M:%S", &dest); }
-
 	nullable_field(attrib_initializer attrib_germ)
 	{
 		if(attrib_germ.has_default_value()){
@@ -108,7 +103,7 @@ public:
 				m_is_null = true;
 			} else {
 				std::string default_val = attrib_germ.get_default_value().val;
-				from_string(attrib_germ.get_default_value().val, value);
+				util::from_string(attrib_germ.get_default_value().val, value);
 				m_is_null = false;
 			}
 		}
@@ -278,7 +273,7 @@ typedef nullable_field<double> db_double;
 typedef nullable_field<std::string> db_string;
 typedef nullable_field<::tm> db_datetime;
 //TODO: is this specialization essential ?
-typedef nullable_field<nullptr_t> db_null;
+typedef nullable_field<std::nullptr_t> db_null;
 
 //TODO: replace by an empty constructor in nullable_field
 //to be used like if x == Null() -maybe?-

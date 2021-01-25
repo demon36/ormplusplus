@@ -5,13 +5,13 @@
 #include <string>
 #include <sstream>
 #include <typeindex>
+#include <ostream>
 #include "type_info.h"
 
 namespace ormplusplus {
 
 //TODO: remove this after removing nullable_field<nullptr_t>
 //needed for using nullable_field<nullptr_t>
-std::ostream& operator<<(std::ostream& outstream, nullptr_t value);
 
 /**
  * Encapsulates the nullable field data

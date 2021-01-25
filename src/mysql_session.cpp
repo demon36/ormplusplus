@@ -1,3 +1,4 @@
+#ifdef MYSQL
 #include <typeindex>
 #include <vector>
 
@@ -282,3 +283,4 @@ mysql_session::~mysql_session() {
 }
 
 } /* namespace ormplusplus */
+#endif //if including mysql in build

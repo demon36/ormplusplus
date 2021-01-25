@@ -7,10 +7,6 @@ using namespace std;
 
 namespace ormplusplus {
 
-ostream& operator<<(ostream& outstream, nullptr_t value){
-	return outstream;
-}
-
 nullable_field_handle::nullable_field_handle(const type_info& type, void* _primitive_value_ptr, bool* _is_null_ptr)
 : primitive_value_ptr(_primitive_value_ptr), is_null_ptr(_is_null_ptr), type_info_ref(type)
 {
@@ -115,7 +111,7 @@ string nullable_field_handle::to_string() const
 	}else if(type_info_ref.primitive_type_hash == typeid(::tm).hash_code()){
 		::tm& date = *(::tm*)primitive_value_ptr;
 	    char date_buffer[100] = {0};
-	    std::strftime(date_buffer, sizeof(date_buffer), "%F %X", &date);
+	    std::strftime(date_buffer, sizeof(date_buffer), "%Y-%m-%d %X", &date);
 		return date_buffer;
 	}else if(type_info_ref.primitive_type_hash == typeid(nullptr_t).hash_code()){
 		return "NULL";

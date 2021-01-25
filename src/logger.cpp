@@ -52,7 +52,7 @@ namespace utils {
 
 	    std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 	    char date_buffer[100] = {0};
-	    std::strftime(date_buffer, sizeof(date_buffer), "%F %X", std::localtime(&now));
+	    std::strftime(date_buffer, sizeof(date_buffer), "%Y-%m-%d %X", std::localtime(&now));
 
 	    log_lock.lock();
 		log_file << date_buffer << " | "<< left;
