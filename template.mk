@@ -15,9 +15,10 @@ PROJECT_NAME := $(shell basename $(CURDIR))
 MAJOR_VERSION := 0
 MINOR_VERSION := 1.9
 
-SRC_FILES := $(shell test -d $(SRC_DIR) && find $(SRC_DIR) -regex '.*\.\(c\|cc\|cpp\|cxx\)')
+DEP_SRC_DIRS := thirdparty/sqlite
+SRC_FILES := $(shell test -d $(SRC_DIR) && find $(SRC_DIR) $(DEP_SRC_DIRS) -regex '.*\.\(c\|cc\|cpp\|cxx\)')
 TEST_SRC_FILES := $(shell test -d $(TEST_SRC_DIR) && find $(TEST_SRC_DIR) -regex '.*\.\(c\|cc\|cpp\|cxx\)')
-OBJ_FILES := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/$(SRC_DIR)/%.o,$(SRC_FILES))
+OBJ_FILES := $(patsubst %,$(OBJ_DIR)/%.o,$(SRC_FILES))
 TEST_OBJ_FILES := $(patsubst $(TEST_SRC_DIR)/%,$(OBJ_DIR)/$(TEST_SRC_DIR)/%.o,$(TEST_SRC_FILES))
 DEP_FILES := $(patsubst $(SRC_DIR)/%,$(DEP_DIR)/$(SRC_DIR)/%.dep,$(SRC_FILES)) $(patsubst $(TEST_SRC_DIR)/%,$(DEP_DIR)/$(TEST_SRC_DIR)/%.dep,$(TEST_SRC_FILES))
 
@@ -26,15 +27,15 @@ A_FILE := $(PROJECT_NAME).a
 EXEC_FILE := $(PROJECT_NAME)
 TEST_FILE := main_test
 
-CFLAGS := -m$(ARCH) -Wall -Wconversion -Wshadow -Werror -g -std=c++11 -I$(INC_DIR) 
+CFLAGS := -m$(ARCH) -Wall -fpermissive -g -std=c++11 -I$(INC_DIR) # -Wconversion -Wshadow -Werror 
 CFLAGS_DEBUG := -DDEBUG
 CFLAGS_RELEASE := -O3 -w
-INC := #ex: -I./ext/thirdparty
+INC := -I./thirdparty/mariadb-connector-c/include
 LIBS := #ex: -L./ext/thirdparty/lib -lthirdpary
 
 LDFLAGS := -m$(ARCH)
-SO_LDFLAGS := -shared -Wl,-zdefs,-soname,$(SO_FILE).$(MAJOR_VERSION),-rpath,'$$ORIGIN'
-TEST_LDFLAGS := -L$(LIB_DIR) -l:$(SO_FILE) -Wl,-rpath,'$$ORIGIN/lib:$$ORIGIN/dep:$$ORIGIN/../../../$(LIB_DIR)'
+SO_LDFLAGS := -shared -Wl,-soname,$(SO_FILE).$(MAJOR_VERSION),-rpath,'$$ORIGIN'
+TEST_LDFLAGS := 
 
 ifeq ($(BUILD),debug)
 	CFLAGS += $(CFLAGS_DEBUG)
@@ -50,7 +51,7 @@ else
 $(error "allowed BUILD values are debug, release, coverage")
 endif
 
-all: shared static test
+all: test
 
 shared: depend $(LIB_DIR)/$(SO_FILE) $(LIB_DIR)/$(SO_DBG_FILE)
 
@@ -58,7 +59,7 @@ static: $(LIB_DIR)/$(A_FILE)
 
 exec: $(BIN_DIR)/$(EXEC_FILE) $(BIN_DIR)/$(EXEC_DBG_FILE)
 
-test: shared $(TEST_BIN_DIR)/$(TEST_FILE)
+test: $(TEST_BIN_DIR)/$(TEST_FILE)
 
 run: test
 	$(TEST_BIN_DIR)/$(TEST_FILE)
@@ -68,7 +69,7 @@ ifeq ($(BUILD),coverage)
 	xdg-open $(COV_REPORTS_DIR)/index.html
 endif
 
-$(OBJ_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%
+$(OBJ_DIR)/%.o: %
 	@mkdir -p $(@D) $(DEP_DIR)/$(<D)
 	$(CC) $(CFLAGS) $(INC) -fPIC -c -o $@ $< -MMD -MF $(DEP_DIR)/$<.dep
 
@@ -106,7 +107,7 @@ $(BIN_DIR)/$(EXEC_FILE): $(OBJ_FILES)
 	objcopy --strip-unneeded $< $<
 	objcopy --add-gnu-debuglink=$< $@
 
-$(TEST_BIN_DIR)/$(TEST_FILE): $(TEST_OBJ_FILES)
+$(TEST_BIN_DIR)/$(TEST_FILE): $(TEST_OBJ_FILES) $(OBJ_FILES)
 	@mkdir -p $(@D)
 	$(CC) -g $^ -o $@ $(LDFLAGS) $(TEST_LDFLAGS) $(LIBS) 
 
