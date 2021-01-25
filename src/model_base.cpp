@@ -70,7 +70,7 @@ bool model_base::auto_inc_pkey_col_exists() const{
 	return false;
 }
 
-void model_base::set_auto_inc_pkey(long value){
+void model_base::set_auto_inc_pkey(int64_t value){
 	table_column* column_ptr = nullptr;
 	for(auto& column : schema_ref){
 		if(column.second.is_auto_increment() && column.second.is_primary_key()){
@@ -82,9 +82,9 @@ void model_base::set_auto_inc_pkey(long value){
 	if(column_ptr == nullptr){
 		throw runtime_error("not auto increment primary key found");
 	}else{
-		if(column_ptr->get_type_info() == db_int::get_type_info()){
+		if(column_ptr->get_type_info() == db_int32::get_type_info()){
 			attributes.at(column_ptr->get_name()).set_value_unsafe<int>((int)value);//todo: use safer cast
-		}else if(column_ptr->get_type_info() == db_long::get_type_info()){
+		}else if(column_ptr->get_type_info() == db_int64::get_type_info()){
 			attributes.at(column_ptr->get_name()).set_value_unsafe<long>((long)value);
 		}else{
 			throw runtime_error("unsupported data type used for auto increment primary key");

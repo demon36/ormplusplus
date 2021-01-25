@@ -16,7 +16,7 @@ class table_column{
 private:
 	const std::string name;
 	const type_info* type = nullptr;//todo: is this safe ?
-	db_long length;
+	db_int64 length;
 	bool nullable = false;
 	bool default_value_set = false;
 	db_string default_value;//default value can be non-existent, NULL or "NULL" (or any other string)
@@ -25,12 +25,12 @@ private:
 public:
 	table_column();//todo: remove this ctor
 	table_column(const std::string& _name);
-	table_column(const std::string& _name, const type_info& _type_info, db_long _length, bool _is_nullable, bool _is_pkey, bool _is_auto_inc);
+	table_column(const std::string& _name, const type_info& _type_info, db_int64 _length, bool _is_nullable, bool _is_pkey, bool _is_auto_inc);
 
 	//todo: remove useless getters/setters
 	std::string get_name() const;
 	const type_info& get_type_info() const;
-	db_long get_length() const;
+	db_int64 get_length() const;
 	bool is_nullable() const;
 	bool has_default_value() const;
 	db_string get_default_value() const;
@@ -40,7 +40,7 @@ public:
 	bool is_text() const;
 
 	void set_type_info(const type_info& _type);//todo: use a mutable reference to sth constants -how?-
-	void set_length(const db_long& nullable_value);
+	void set_length(const db_int64& nullable_value);
 	void set_primary(bool value);
 	void set_nullable(bool value);
 	void set_default_value(const db_string& nullable_value);

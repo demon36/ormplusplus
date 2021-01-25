@@ -19,8 +19,8 @@ private:
 public:
 	query_condition(const std::string& _col_name, const std::string& _operator, const char* _value);
 	query_condition(const std::string& _col_name, const std::string& _operator, std::string _value);
-	query_condition(const std::string& _col_name, const std::string& _operator, int _value);
-	query_condition(const std::string& _col_name, const std::string& _operator, long _value);
+	query_condition(const std::string& _col_name, const std::string& _operator, int32_t _value);
+	query_condition(const std::string& _col_name, const std::string& _operator, int64_t _value);
 	query_condition(const std::string& _col_name, const std::string& _operator, db_null _value);
 
 	std::string get_col_name() const;

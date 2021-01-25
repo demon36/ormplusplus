@@ -92,9 +92,9 @@ void result_table::get_field_value(size_t row_idx, size_t col_idx, nullable_fiel
 		string value = opt_value.val;
 		//todo: replace all of these conditions with a usage of a proper version of nullable_field(column_type)
 		//todo: all of these conditions should be move to set_value(type_info, string)
-		if(column_type == db_int::get_type_info()){
+		if(column_type == db_int32::get_type_info()){
 			field_handle.set_value_unsafe(stoi(value));
-		}else if(column_type == db_long::get_type_info()){
+		}else if(column_type == db_int64::get_type_info()){
 			field_handle.set_value_unsafe(stol(value));
 		}else if(column_type == db_float::get_type_info()){
 			field_handle.set_value_unsafe(stof(value));

@@ -15,7 +15,7 @@ table_column::table_column(const string& _name)
 {
 }
 
-table_column::table_column(const string& _name, const type_info& _type_info, db_long _length, bool _nullable, bool _pkey, bool _auto_increment)
+table_column::table_column(const string& _name, const type_info& _type_info, db_int64 _length, bool _nullable, bool _pkey, bool _auto_increment)
 : name(_name), type(&_type_info)
 {
 	this->length = _length;
@@ -29,7 +29,7 @@ table_column::table_column(const string& _name, const type_info& _type_info, db_
 
 string table_column::get_name() const { return name; }
 const type_info& table_column::get_type_info() const { return *type; }
-db_long table_column::get_length() const { return length; }
+db_int64 table_column::get_length() const { return length; }
 bool table_column::is_nullable() const { return nullable; }
 bool table_column::has_default_value() const { return default_value_set; }
 db_string table_column::get_default_value () const { return default_value; }
@@ -45,7 +45,7 @@ void table_column::set_type_info(const type_info& _type){
 	}
 }
 
-void table_column::set_length(const db_long& nullable_value){
+void table_column::set_length(const db_int64& nullable_value){
 	if(!is_text()){
 		throw runtime_error("trying to set length on non-text type");
 	}

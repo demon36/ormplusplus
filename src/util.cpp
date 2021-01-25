@@ -7,11 +7,11 @@ using namespace std;
 
 namespace util{
     
-void from_string(const std::string& src, int& dest){
+void from_string(const std::string& src, int32_t& dest){
     dest = stoi(src);
 }
 
-void from_string(const std::string& src, long& dest){
+void from_string(const std::string& src, int64_t& dest){
     dest = stol(src);
 }
 

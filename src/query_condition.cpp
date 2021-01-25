@@ -9,12 +9,12 @@ query_condition::query_condition(const string& _column_name, const string& _oper
 {
 }
 
-query_condition::query_condition(const string& _column_name, const string& _operator, int _value)
+query_condition::query_condition(const string& _column_name, const string& _operator, int32_t _value)
 : col_name(_column_name), operator_(_operator), value(to_string(_value))//value_handle(nullable_field_handle::create(db_int::get_type_info(), _value))
 {
 }
 
-query_condition::query_condition(const string& _column_name, const string& _operator, long _value)
+query_condition::query_condition(const string& _column_name, const string& _operator, int64_t _value)
 : col_name(_column_name), operator_(_operator), value(to_string(_value))//value_handle(nullable_field_handle::create(db_long::get_type_info(), _value))
 {
 }

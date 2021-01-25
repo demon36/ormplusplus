@@ -5,8 +5,8 @@
 
 namespace util{
 
-void from_string(const std::string& src, int& dest);
-void from_string(const std::string& src, long& dest);
+void from_string(const std::string& src, int32_t& dest);
+void from_string(const std::string& src, int64_t& dest);
 void from_string(const std::string& src, float& dest);
 void from_string(const std::string& src, double& dest);
 void from_string(const std::string& src, std::string& dest);

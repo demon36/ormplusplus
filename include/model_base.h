@@ -46,7 +46,7 @@ public:
 	 * @return empty string if no primary key columns with auto increment values
 	 */
 	bool auto_inc_pkey_col_exists() const;
-	void set_auto_inc_pkey(long value);
+	void set_auto_inc_pkey(int64_t value);
 	bool equals(const model_base& that) const;
 	/**
 	 * inserts a new row or updates existing

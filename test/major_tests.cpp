@@ -21,16 +21,16 @@ void print_test_result(const string& expression, bool result){
 
 struct client : public model<client>
 {
-	db_long id = initialize_attrib("id").auto_increment().as_primary();
+	db_int64 id = initialize_attrib("id").auto_increment().as_primary();
 	db_string name = initialize_attrib("name").with_default("nameless");
-	db_int age = initialize_attrib("age").with_default("5").as_nullable();
-	db_int height = initialize_attrib("height");
+	db_int32 age = initialize_attrib("age").with_default("5").as_nullable();
+	db_int32 height = initialize_attrib("height");
 	db_datetime dob = initialize_attrib("dob").as_nullable(false);
 };
 
 struct mini_bus : public model<mini_bus>
 {
-	db_int id = initialize_attrib("id").auto_increment().as_primary();
+	db_int32 id = initialize_attrib("id").auto_increment().as_primary();
 	db_string model = initialize_attrib("model").with_default("my_van");
 	constexpr static const char* table_name = "minibuses";
 };
@@ -40,7 +40,7 @@ void test_model_definition(){
 	ASSERT(mini_bus::get_table_name() == "minibuses");
 	ASSERT(client::get_table_name() == "client");
 	ASSERT(model_base::is_user_model_class<client>());
-	ASSERT(!model_base::is_user_model_class<db_int>());
+	ASSERT(!model_base::is_user_model_class<db_int32>());
 
 	client c;
 	ASSERT(c.id.is_null());

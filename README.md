@@ -66,14 +66,16 @@ int main(int argc, char** argv)
 - [ ] group by, having
 - [ ] thread safety ?
 
-### build instructions
-- install mysql and sqlite c connectors
-
-``
+### build instructions for debian
+- install mysql and/or sqlite c connectors
+```sh
 sudo apt-get install default-libmysqlclient-dev libsqlite3-dev #on debian bullseye
-``
+```
 
 - run make
+```sh
+make DRIVERS=mysql,sqlite #or just one of them
+```
 
 ### guidelines
 - no `using` in header files

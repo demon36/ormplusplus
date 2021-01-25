@@ -31,7 +31,7 @@ const type_info& sqlite_session::get_type_info(int sqlite_type_id){
 	//todo: BROKEN LOGIC: sqlite fundamental datatypes cannot be mapped to ormplusplus data types
 	switch(sqlite_type_id){
 		case SQLITE_INTEGER:
-			return db_int::get_type_info();
+			return db_int32::get_type_info();
 //			return typeid(long).hash_code();
 
 		case SQLITE_FLOAT:
@@ -53,8 +53,8 @@ const type_info& sqlite_session::get_type_info(int sqlite_type_id){
 }
 
 const map<string, type_info> sqlite_session::type_names_map({
-	{"INT", db_int::get_type_info()},
-	{"INTEGER", db_long::get_type_info()},
+	{"INT", db_int32::get_type_info()},
+	{"INTEGER", db_int64::get_type_info()},
 	{"FLOAT", db_float::get_type_info()},
 	{"DOUBLE", db_double::get_type_info()},
 	{"VARCHAR", db_string::get_type_info()},
@@ -165,7 +165,7 @@ table_schema sqlite_session::get_table_schema(const string& name){
 	for(size_t i = 0; i < result.get_num_rows(); i++){
 		string column_name = result.get_raw_field_value(i, "name").val;
 		string db_column_type = result.get_raw_field_value(i, "type").val;
-		db_long max_length;
+		db_int64 max_length;
 		if(db_column_type.find("VARCHAR") == 0 || db_column_type.find("TEXT") == 0){
 			//ex: VARCHAR(34)
 			size_t bracket_idx = db_column_type.find("(");
@@ -219,7 +219,7 @@ void sqlite_session::insert(model_base& model, bool update_auto_inc_pkey){
 	}
 
 	if(update_auto_inc_pkey && model.auto_inc_pkey_col_exists()){
-		long last_insert_id = sqlite3_last_insert_rowid((sqlite3*)session_ptr); //  result.begin()->get(0).convert<long>();
+		int64_t last_insert_id = sqlite3_last_insert_rowid((sqlite3*)session_ptr); //  result.begin()->get(0).convert<long>();
 		model.set_auto_inc_pkey(last_insert_id);
 	}
 	return;

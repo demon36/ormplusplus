@@ -266,8 +266,8 @@ std::istream& operator>>(std::istream& is, const nullable_field<primitive_type>&
 }
 
 //remember to add conditions to nullable_field_base::is_integral and nullable_field_base::is_text at adding new specializations
-typedef nullable_field<int> db_int;
-typedef nullable_field<long> db_long;
+typedef nullable_field<int32_t> db_int32;
+typedef nullable_field<int64_t> db_int64;
 typedef nullable_field<float> db_float;
 typedef nullable_field<double> db_double;
 typedef nullable_field<std::string> db_string;
